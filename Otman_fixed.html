@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>عثمان للألعاب | O.F.G</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -1093,6 +1094,11 @@ img.console-float {
 }
 .image-card.is-ps5 .image-card-price { color: var(--red-bright); text-shadow: 0 0 10px rgba(204,0,0,0.5); }
 .image-card-price::after { content: ' JOD'; font-size: 0.55rem; color: rgba(255,255,255,0.45); margin-right: 2px; }
+.image-card-price.image-card-price-text::after { content: ''; }
+.image-card-price-text {
+  font-size: 0.82rem;
+  letter-spacing: 0;
+}
 .image-card-add {
   background: linear-gradient(135deg, var(--blue), #003a99);
   border: none; border-radius: 8px;
@@ -1106,6 +1112,128 @@ img.console-float {
 .image-card.is-ps5 .image-card-add { background: linear-gradient(135deg, var(--red), #800); }
 .image-card-add:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,85,204,0.5); }
 .image-card.is-ps5 .image-card-add:hover { box-shadow: 0 8px 20px rgba(204,0,0,0.5); }
+.image-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.image-card-trailer {
+  background: linear-gradient(135deg, #cc0000, #0055cc);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 8px 12px;
+  cursor: none;
+  white-space: nowrap;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.image-card-trailer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(255,45,85,0.45);
+}
+.trailer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.trailer-modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.trailer-box {
+  width: min(980px, 96vw);
+  background: linear-gradient(135deg, rgba(204,0,0,0.18), rgba(0,85,204,0.18)), rgba(5,5,16,0.98);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 70px rgba(204,0,0,0.35), 0 0 90px rgba(0,85,204,0.25);
+  transform: scale(0.96);
+  transition: transform 0.25s ease;
+}
+.trailer-modal.active .trailer-box {
+  transform: scale(1);
+}
+.trailer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.trailer-title {
+  font-weight: 900;
+  color: white;
+}
+.trailer-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  font-size: 1.2rem;
+  cursor: none;
+}
+.trailer-frame-wrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+.trailer-frame-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.trailer-frame-wrap iframe {
+  background: #000;
+}
+.trailer-embed-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 25px;
+  color: white;
+  background: linear-gradient(135deg, rgba(204,0,0,0.18), rgba(0,85,204,0.18)), #050510;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.trailer-embed-fallback.show {
+  opacity: 1;
+}
+.trailer-embed-fallback strong {
+  font-size: 1.15rem;
+  color: var(--red-bright);
+}
+.trailer-embed-fallback span {
+  color: rgba(255,255,255,0.65);
+  font-size: 0.9rem;
+}
 /* Brief click feedback (auto-removed after 350ms by JS) — keeps button enabled */
 .image-card-add.just-added {
   animation: justAddedPulse 0.35s ease;
@@ -1585,7 +1713,7 @@ body.in-page-mode .page-back-btn {
 }
 
 /* Button ripple */
-.btn-red, .btn-blue, .add-btn, .image-card-add, .cart-checkout-btn, .nav-cart-btn {
+.btn-red, .btn-blue, .add-btn, .image-card-add, .image-card-trailer, .cart-checkout-btn, .nav-cart-btn {
   position: relative;
   overflow: hidden;
 }
@@ -1791,6 +1919,16 @@ body.in-page-mode .page-back-btn {
 
 <!-- TOAST -->
 <div id="toast"><span class="toast-icon">🛒</span><span id="toast-msg">تمت الإضافة للسلة!</span></div>
+
+<div class="trailer-modal" id="trailer-modal" onclick="closeTrailer(event)">
+  <div class="trailer-box">
+    <div class="trailer-head">
+      <div class="trailer-title" id="trailer-title">Trailer</div>
+      <button class="trailer-close" onclick="closeTrailer()">×</button>
+    </div>
+    <div class="trailer-frame-wrap" id="trailer-frame-wrap"></div>
+  </div>
+</div>
 
 <!-- CART OVERLAY -->
 <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
@@ -2335,7 +2473,7 @@ body.in-page-mode .page-back-btn {
 <section id="ps4">
   <h2 class="section-title">سيديات <span>PS4</span></h2>
   <div class="section-line"></div>
-  <p class="section-subtitle">12 لعبة أصلية مميزة لجهاز PlayStation 4 — اضغط "أضف للسلة" لإضافة اللعبة</p>
+  <p class="section-subtitle">13 لعبة أصلية مميزة لجهاز PlayStation 4 — اضغط "أضف للسلة" لإضافة اللعبة</p>
   <div class="image-grid" id="ps4-grid">
     <!-- Cards rendered by JS -->
   </div>
@@ -2652,6 +2790,7 @@ function showComingSoon(section) {
 
 // ═══ GAME CATALOG ═══
 const PS4_GAMES = [
+  { name: 'Grand Theft Auto V',        img: 'https://img.youtube.com/vi/QkkoHAzjnUs/hqdefault.jpg', price: 20, genre: 'OPEN WORLD', trailer: 'x11pikj', trailerProvider: 'dailymotion' },
   { name: 'The Crew Motorfest',         img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM.jpeg',     price: 25, genre: 'RACING' },
   { name: 'Gran Turismo 7',             img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (1).jpeg', price: 28, genre: 'RACING' },
   { name: 'Elden Ring',                 img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (2).jpeg', price: 32, genre: 'RPG / SOULSLIKE' },
@@ -2679,7 +2818,20 @@ function renderGameGrid(targetId, games, platform) {
   const grid = document.getElementById(targetId);
   if (!grid) return;
   const isPS5 = platform === 'PS5';
-  grid.innerHTML = games.map(g => `
+  grid.innerHTML = games.map(g => {
+    const trailerButton = g.trailer
+      ? `<button class="image-card-trailer" onclick='openTrailer(${JSON.stringify(g.trailer)}, ${JSON.stringify(g.name)}, ${JSON.stringify(g.trailerProvider || 'youtube')}); event.stopPropagation();'>▶ تريلر</button>`
+      : '';
+    const priceHtml = g.priceLabel
+      ? `<div class="image-card-price image-card-price-text">${g.priceLabel}</div>`
+      : `<div class="image-card-price">${g.price}</div>`;
+    const addButton = g.price > 0 || g.priceLabel
+      ? `<button class="image-card-add"
+                    onclick='addToCart({name:${JSON.stringify(g.name)}, price:${g.price}, priceLabel:${JSON.stringify(g.priceLabel || '')}, img:${JSON.stringify(g.img)}, icon:"💿", kind:"game", platform:"${platform}"}); this.classList.add("just-added"); setTimeout(()=>this.classList.remove("just-added"),350);'>
+              🛒 أضف
+            </button>`
+      : '';
+    return `
     <div class="image-card${isPS5 ? ' is-ps5' : ''}">
       <div class="image-card-imgwrap">
         <span class="image-card-platform">${platform}</span>
@@ -2690,15 +2842,53 @@ function renderGameGrid(targetId, games, platform) {
         <div class="image-card-title">${g.name}</div>
         <div class="image-card-genre">${g.genre}</div>
         <div class="image-card-bottom">
-          <div class="image-card-price">${g.price}</div>
-          <button class="image-card-add"
-                  onclick='addToCart({name:${JSON.stringify(g.name)}, price:${g.price}, img:${JSON.stringify(g.img)}, icon:"💿", kind:"game", platform:"${platform}"}); this.classList.add("just-added"); setTimeout(()=>this.classList.remove("just-added"),350);'>
-            🛒 أضف
-          </button>
+          ${priceHtml}
+          <div class="image-card-actions">
+            ${trailerButton}
+            ${addButton}
+          </div>
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
+}
+
+function openTrailer(videoId, title, provider = 'youtube') {
+  const modal = document.getElementById('trailer-modal');
+  const frameWrap = document.getElementById('trailer-frame-wrap');
+  const isDailymotion = provider === 'dailymotion';
+  const params = new URLSearchParams(isDailymotion ? {
+    autoplay: '1',
+    mute: '0'
+  } : {
+    autoplay: '1',
+    rel: '0',
+    modestbranding: '1',
+    playsinline: '1',
+    origin: window.location.origin
+  });
+  const src = isDailymotion
+    ? `https://www.dailymotion.com/embed/video/${videoId}?${params.toString()}`
+    : `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+  document.getElementById('trailer-title').textContent = title;
+  frameWrap.innerHTML = `
+    <iframe src="${src}" title="${title}" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; picture-in-picture; web-share" allowfullscreen></iframe>
+    <div class="trailer-embed-fallback">
+      <strong>جاري تشغيل التريلر داخل الموقع</strong>
+      <span>إذا ظهر خطأ من المشغل، نبدل مصدر الفيديو بمصدر Embed آخر بدون تحميل الفيديو على الموقع.</span>
+    </div>`;
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTrailer(event) {
+  if (event && event.target.id !== 'trailer-modal') return;
+  const modal = document.getElementById('trailer-modal');
+  const frameWrap = document.getElementById('trailer-frame-wrap');
+  modal.classList.remove('active');
+  frameWrap.innerHTML = '';
+  document.body.style.overflow = '';
 }
 
 // ═══ SHARED CART SYSTEM ═══
@@ -2735,6 +2925,7 @@ function addToCart(arg1, price, icon) {
     cart.push({
       name: item.name,
       price: parseFloat(item.price),
+      priceLabel: item.priceLabel || null,
       icon: item.icon || '🎮',
       img: item.img || null,
       kind: item.kind || 'item',
@@ -2762,6 +2953,7 @@ function showToast(name) {
 function updateCartUI() {
   const total = cart.reduce((s, i) => s + i.price * (i.qty||1), 0);
   const count = cart.reduce((s, i) => s + (i.qty||1), 0);
+  const hasPriceRequest = cart.some(i => i.priceLabel);
   document.getElementById('nav-cart-count').textContent = count;
   const list = document.getElementById('cart-items-list');
   const footer = document.getElementById('cart-footer');
@@ -2784,13 +2976,13 @@ function updateCartUI() {
           <div class="cart-item-info">
             <div class="cart-item-name">${platformBadge}${item.name}${item.qty > 1 ? ` ×${item.qty}` : ''}</div>
             ${sectionBadge}
-            <div class="cart-item-price">${(item.price * (item.qty||1)).toFixed(2)} JOD</div>
+            <div class="cart-item-price">${item.priceLabel || `${(item.price * (item.qty||1)).toFixed(2)} JOD`}</div>
           </div>
           <button class="cart-item-remove" onclick="removeFromCart(${i})">✕</button>
         </div>`;
     }).join('');
     document.getElementById('cart-count').textContent = count;
-    document.getElementById('cart-total').textContent = total.toFixed(2);
+    document.getElementById('cart-total').textContent = hasPriceRequest ? `${total.toFixed(2)}+` : total.toFixed(2);
     footer.style.display = 'block';
   }
 }
@@ -2812,6 +3004,7 @@ function sendCartToWhatsApp() {
 
   const total = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
   const count = cart.reduce((s, i) => s + (i.qty || 1), 0);
+  const hasPriceRequest = cart.some(i => i.priceLabel);
   const e = {
     game: '\uD83C\uDFAE',
     sparkle: '\u2728',
@@ -2830,11 +3023,12 @@ function sendCartToWhatsApp() {
     const lineTotal = item.price * qty;
     const platform = item.platform ? `\n   ${e.game} النوع: ${item.platform}` : '';
     const section = item.section || item.platform || 'غير محدد';
+    const priceText = item.priceLabel || `${lineTotal.toFixed(2)} JOD`;
     return `#${index + 1}
    ${e.product} المنتج: ${item.name}${platform}
    ${e.game} القسم: ${section}
    ${e.qty} الكمية: ${qty}
-   ${e.price} السعر: ${lineTotal.toFixed(2)} JOD`;
+   ${e.price} السعر: ${priceText}`;
   }).join('\n────────────────\n');
 
   const message = `${e.game}${e.sparkle} طلب جديد من موقع Othman For Gaming ${e.sparkle}${e.game}
@@ -2847,7 +3041,7 @@ ${orderLines}
 ────────────────
 
 ${e.box} عدد القطع: ${count}
-${e.money} المجموع الكلي: ${total.toFixed(2)} JOD
+${e.money} المجموع الكلي: ${hasPriceRequest ? `${total.toFixed(2)} JOD + منتجات سعرها عند الطلب` : `${total.toFixed(2)} JOD`}
 
 ${e.check} يرجى تأكيد توفر الطلب
 ${e.truck} وطريقة الاستلام أو التوصيل
@@ -3121,7 +3315,7 @@ document.addEventListener('mouseleave', () => {
 
 // ════════════════ BUTTON RIPPLE ════════════════
 document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.btn-red, .btn-blue, .add-btn, .image-card-add, .cart-checkout-btn, .nav-cart-btn');
+  const btn = e.target.closest('.btn-red, .btn-blue, .add-btn, .image-card-add, .image-card-trailer, .cart-checkout-btn, .nav-cart-btn');
   if (!btn) return;
   const r = btn.getBoundingClientRect();
   const ripple = document.createElement('span');
