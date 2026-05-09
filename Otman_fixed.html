@@ -1071,6 +1071,43 @@ img.console-float {
   background: rgba(204,0,0,0.85);
   box-shadow: 0 0 12px rgba(204,0,0,0.6);
 }
+.product-condition-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 4;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #ff8a00, #cc0000);
+  border: 1px solid rgba(255,255,255,0.24);
+  box-shadow: 0 0 18px rgba(255,138,0,0.45);
+}
+.product-condition-badge.is-new {
+  background: linear-gradient(135deg, #00b83a, #007a28);
+  box-shadow: 0 0 18px rgba(0,184,58,0.55);
+}
+.device-showcase > .product-condition-badge {
+  top: 14px;
+  left: 14px;
+}
+.game-detail-condition {
+  width: fit-content;
+  color: #fff;
+  background: linear-gradient(135deg, #ff8a00, #cc0000);
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  box-shadow: 0 0 18px rgba(255,138,0,0.28);
+}
+.game-detail-condition.is-new {
+  background: linear-gradient(135deg, #00b83a, #007a28);
+  box-shadow: 0 0 18px rgba(0,184,58,0.42);
+}
 .image-card-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; }
 .image-card-title {
   font-weight: 700; font-size: 0.98rem;
@@ -1233,6 +1270,203 @@ img.console-float {
 .trailer-embed-fallback span {
   color: rgba(255,255,255,0.65);
   font-size: 0.9rem;
+}
+.game-detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.game-detail-modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.game-detail-modal,
+.game-detail-modal *,
+.trailer-modal,
+.trailer-modal *,
+#cart-sidebar,
+#cart-sidebar * {
+  cursor: auto !important;
+}
+.game-detail-modal button,
+.trailer-modal button,
+#cart-sidebar button,
+.game-detail-modal .image-card-add,
+.game-detail-modal .image-card-trailer {
+  cursor: pointer !important;
+}
+.game-detail-box {
+  width: min(920px, 96vw);
+  display: grid;
+  grid-template-columns: minmax(240px, 0.85fr) 1.15fr;
+  gap: 0;
+  position: relative;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,45,85,0.20), transparent 32%),
+    radial-gradient(circle at 82% 72%, rgba(42,140,255,0.18), transparent 34%),
+    rgba(8,8,22,0.98);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 0 70px rgba(204,0,0,0.32), 0 0 90px rgba(0,85,204,0.22);
+  transform: translateY(18px) scale(0.96);
+  transition: transform 0.25s ease;
+}
+.game-detail-modal.active .game-detail-box {
+  transform: none;
+}
+.game-detail-cover {
+  position: relative;
+  min-height: 430px;
+  background: rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+.game-detail-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 38%, rgba(5,5,16,0.88));
+  pointer-events: none;
+}
+.game-detail-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.game-detail-cover.no-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.game-detail-cover-icon {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(5rem, 13vw, 9rem);
+  filter: drop-shadow(0 0 30px rgba(255,45,85,0.55));
+}
+.game-detail-platform {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: white;
+  background: linear-gradient(135deg, var(--red), var(--blue));
+  padding: 8px 13px;
+  border-radius: 999px;
+  box-shadow: 0 0 22px rgba(204,0,0,0.45);
+}
+.game-detail-content {
+  position: relative;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+.game-detail-close {
+  position: absolute;
+  top: 14px;
+  inset-inline-end: 14px;
+  z-index: 20;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+.game-detail-close:hover {
+  background: var(--red);
+  transform: scale(1.08);
+}
+.game-detail-modal button,
+.game-detail-modal .image-card-add,
+.game-detail-modal .image-card-trailer {
+  cursor: pointer;
+}
+.game-detail-kicker {
+  width: fit-content;
+  font-family: 'Orbitron', monospace;
+  color: var(--blue-bright);
+  background: rgba(42,140,255,0.12);
+  border: 1px solid rgba(42,140,255,0.22);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  letter-spacing: 1px;
+}
+.game-detail-name {
+  font-size: clamp(1.7rem, 4vw, 3.1rem);
+  line-height: 1.08;
+  color: white;
+  font-weight: 900;
+}
+.game-detail-genre {
+  color: rgba(255,255,255,0.58);
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+}
+.game-detail-price {
+  width: fit-content;
+  color: #fff;
+  font-family: 'Orbitron', monospace;
+  font-size: 1.55rem;
+  font-weight: 900;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(204,0,0,0.28), rgba(0,85,204,0.22));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 0 28px rgba(204,0,0,0.20);
+}
+.game-detail-desc {
+  color: rgba(255,255,255,0.72);
+  line-height: 1.8;
+}
+.game-detail-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.game-detail-actions .image-card-add,
+.game-detail-actions .image-card-trailer {
+  min-width: 150px;
+  justify-content: center;
+  padding: 13px 18px;
+  font-size: 0.95rem;
+}
+@media (max-width: 760px) {
+  .game-detail-box {
+    grid-template-columns: 1fr;
+    max-height: 88vh;
+    overflow: auto;
+  }
+  .game-detail-cover {
+    min-height: 260px;
+  }
+  .game-detail-content {
+    padding: 24px 20px 26px;
+  }
 }
 /* Brief click feedback (auto-removed after 350ms by JS) — keeps button enabled */
 .image-card-add.just-added {
@@ -1930,6 +2164,10 @@ body.in-page-mode .page-back-btn {
   </div>
 </div>
 
+<div class="game-detail-modal" id="game-detail-modal" onclick="closeGameDetails(event)">
+  <div class="game-detail-box" id="game-detail-box"></div>
+</div>
+
 <!-- CART OVERLAY -->
 <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
 
@@ -1978,7 +2216,6 @@ body.in-page-mode .page-back-btn {
   </a>
   <ul class="nav-links">
     <li><a href="#home" class="active">الرئيسية</a></li>
-    <li><a href="#sections">تصفح الأقسام</a></li>
     <li><a href="#ps1-discs">سيديات PS1</a></li>
     <li><a href="#ps2">سيديات PS2</a></li>
     <li><a href="#ps3">سيديات PS3</a></li>
@@ -2792,7 +3029,7 @@ function showComingSoon(section) {
 const PS4_GAMES = [
   { name: 'Grand Theft Auto V',        img: 'https://img.youtube.com/vi/QkkoHAzjnUs/hqdefault.jpg', price: 20, genre: 'OPEN WORLD', trailer: 'x11pikj', trailerProvider: 'dailymotion' },
   { name: 'The Crew Motorfest',         img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM.jpeg',     price: 25, genre: 'RACING' },
-  { name: 'Gran Turismo 7',             img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (1).jpeg', price: 28, genre: 'RACING' },
+  { name: 'Gran Turismo 7',             img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (1).jpeg', price: 28, genre: 'RACING', condition: 'جديد' },
   { name: 'Elden Ring',                 img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (2).jpeg', price: 32, genre: 'RPG / SOULSLIKE' },
   { name: 'Minecraft',                  img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (3).jpeg', price: 22, genre: 'SANDBOX' },
   { name: 'Street Fighter 6',           img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (4).jpeg', price: 30, genre: 'FIGHTING' },
@@ -2819,22 +3056,28 @@ function renderGameGrid(targetId, games, platform) {
   if (!grid) return;
   const isPS5 = platform === 'PS5';
   grid.innerHTML = games.map(g => {
+    const condition = g.condition || 'مستعمل';
+    const conditionClass = condition === 'جديد' ? ' is-new' : '';
+    const detailData = encodeURIComponent(JSON.stringify({...g, platform, condition})).replace(/'/g, '%27');
+    const cartData = encodeURIComponent(JSON.stringify({name:g.name, price:g.price, priceLabel:g.priceLabel || '', img:g.img, icon:'💿', kind:'game', platform, condition})).replace(/'/g, '%27');
+    const trailerData = encodeURIComponent(JSON.stringify({id:g.trailer, title:g.name, provider:g.trailerProvider || 'youtube'})).replace(/'/g, '%27');
     const trailerButton = g.trailer
-      ? `<button class="image-card-trailer" onclick='openTrailer(${JSON.stringify(g.trailer)}, ${JSON.stringify(g.name)}, ${JSON.stringify(g.trailerProvider || 'youtube')}); event.stopPropagation();'>▶ تريلر</button>`
+      ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${trailerData}'); event.stopPropagation();">▶ تريلر</button>`
       : '';
     const priceHtml = g.priceLabel
       ? `<div class="image-card-price image-card-price-text">${g.priceLabel}</div>`
       : `<div class="image-card-price">${g.price}</div>`;
     const addButton = g.price > 0 || g.priceLabel
       ? `<button class="image-card-add"
-                    onclick='addToCart({name:${JSON.stringify(g.name)}, price:${g.price}, priceLabel:${JSON.stringify(g.priceLabel || '')}, img:${JSON.stringify(g.img)}, icon:"💿", kind:"game", platform:"${platform}"}); this.classList.add("just-added"); setTimeout(()=>this.classList.remove("just-added"),350);'>
+                    onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">
               🛒 أضف
             </button>`
       : '';
     return `
-    <div class="image-card${isPS5 ? ' is-ps5' : ''}">
+    <div class="image-card${isPS5 ? ' is-ps5' : ''}" onclick="openGameDetails(JSON.parse(decodeURIComponent('${detailData}')))">
       <div class="image-card-imgwrap">
         <span class="image-card-platform">${platform}</span>
+        <span class="product-condition-badge${conditionClass}">${condition}</span>
         <img class="image-card-img" src="${g.img}" alt="${g.name}" loading="lazy"
              onerror="this.style.objectFit='cover';this.src='Photo/logo.jpeg'"/>
       </div>
@@ -2852,6 +3095,205 @@ function renderGameGrid(targetId, games, platform) {
     </div>
   `;
   }).join('');
+}
+
+function addGameToCartFromEncoded(encodedItem, button) {
+  const item = JSON.parse(decodeURIComponent(encodedItem));
+  addToCart(item);
+  if (button) {
+    button.classList.add('just-added');
+    setTimeout(() => button.classList.remove('just-added'), 350);
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
+function parsePriceValue(priceText) {
+  const match = String(priceText || '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/\d+(?:\.\d+)?/);
+  return match ? parseFloat(match[0]) : 0;
+}
+
+function openGameDetails(game) {
+  const modal = document.getElementById('game-detail-modal');
+  const box = document.getElementById('game-detail-box');
+  const hasNumericPrice = Number(game.price || 0) > 0;
+  const priceText = game.priceText || game.priceLabel || (hasNumericPrice ? `${Number(game.price || 0).toFixed(2)} JOD` : 'حسب الطلب');
+  const detailLabel = game.platform || game.category || game.section || 'PRODUCT';
+  const genreText = game.genre || game.sub || game.specs || game.kindLabel || 'Othman For Gaming';
+  const descText = game.desc || game.description || game.sub || 'تفاصيل المنتج قابلة للتعديل، ويمكنك إضافة وصف خاص لكل منتج باستخدام data-desc على نفس الكرت.';
+  const iconText = game.icon || '🎮';
+  const coverHtml = game.img
+    ? `<img src="${escapeHtml(game.img)}" alt="${escapeHtml(game.name)}" onerror="this.closest('.game-detail-cover').classList.add('no-image');this.outerHTML='<span class=&quot;game-detail-cover-icon&quot;>${escapeHtml(iconText)}</span>'"/>`
+    : `<span class="game-detail-cover-icon">${escapeHtml(iconText)}</span>`;
+  const cartData = encodeURIComponent(JSON.stringify({
+    name: game.name,
+    price: hasNumericPrice ? Number(game.price || 0) : parsePriceValue(priceText),
+    priceLabel: game.priceLabel || (!hasNumericPrice && priceText ? priceText : ''),
+    img: game.img,
+    icon: iconText,
+    kind: game.kind || 'item',
+    platform: game.platform || null,
+    section: game.section || game.category || null,
+    condition: game.condition || ''
+  })).replace(/'/g, '%27');
+  const trailerAction = game.trailer
+    ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${encodeURIComponent(JSON.stringify({id:game.trailer, title:game.name, provider:game.trailerProvider || 'youtube'})).replace(/'/g, '%27')}'); event.stopPropagation();">▶ مشاهدة التريلر</button>`
+    : '';
+  const addAction = game.canAdd !== false && (hasNumericPrice || game.priceLabel || game.addable)
+    ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">🛒 أضف للسلة</button>`
+    : '';
+  box.innerHTML = `
+    <button class="game-detail-close" onclick="closeGameDetails()">×</button>
+    <div class="game-detail-cover${game.img ? '' : ' no-image'}">
+      <span class="game-detail-platform">${escapeHtml(detailLabel)}</span>
+      ${coverHtml}
+    </div>
+    <div class="game-detail-content">
+      <div class="game-detail-kicker">${escapeHtml(detailLabel)}</div>
+      ${game.condition ? `<div class="game-detail-condition${game.condition === 'جديد' ? ' is-new' : ''}">${escapeHtml(game.condition)}</div>` : ''}
+      <div class="game-detail-name">${escapeHtml(game.name)}</div>
+      <div class="game-detail-genre">${escapeHtml(genreText)}</div>
+      <div class="game-detail-price">${escapeHtml(priceText)}</div>
+      <div class="game-detail-desc">${escapeHtml(descText)}</div>
+      <div class="game-detail-actions">
+        ${trailerAction}
+        ${addAction}
+      </div>
+    </div>`;
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeGameDetails(event) {
+  if (event && event.target.id !== 'game-detail-modal') return;
+  const modal = document.getElementById('game-detail-modal');
+  const box = document.getElementById('game-detail-box');
+  modal.classList.remove('active');
+  box.innerHTML = '';
+  if (!document.getElementById('trailer-modal')?.classList.contains('active')) {
+    document.body.style.overflow = '';
+  }
+}
+
+function productCardText(card, selectors) {
+  for (const selector of selectors) {
+    const el = card.querySelector(selector);
+    if (el && el.textContent.trim()) return el.textContent.trim();
+  }
+  return '';
+}
+
+function getProductSection(card) {
+  const section = card.closest('section');
+  if (!section) return 'Othman For Gaming';
+  if (section.id && PAGE_TITLES[section.id]) return PAGE_TITLES[section.id];
+  return section.querySelector('.section-title')?.textContent.trim().replace(/\s+/g, ' ') || 'Othman For Gaming';
+}
+
+function getProductKind(card) {
+  if (card.classList.contains('device-showcase') || card.classList.contains('device-card')) return 'device';
+  if (card.classList.contains('beauty-card')) return 'beauty';
+  if (card.classList.contains('acc-card')) return 'accessory';
+  return 'item';
+}
+
+function extractProductDetailsFromCard(card) {
+  const name = card.dataset.name || productCardText(card, [
+    '.device-name-big',
+    '.device-name',
+    '.acc-name',
+    '.beauty-name',
+    '.ps5-title',
+    '.ps4-title',
+    '.ps3-title',
+    '.game-title'
+  ]);
+  if (!name) return null;
+  const sub = card.dataset.sub || productCardText(card, [
+    '.device-tag',
+    '.device-sub',
+    '.acc-sub',
+    '.beauty-sub',
+    '.ps5-genre',
+    '.ps4-info',
+    '.ps3-genre',
+    '.game-genre'
+  ]);
+  const specs = [...card.querySelectorAll('.device-specs span')].map(el => el.textContent.trim()).filter(Boolean).join(' | ');
+  let priceText = card.dataset.price || productCardText(card, [
+    '.device-price-big',
+    '.price-tag',
+    '.acc-price',
+    '.beauty-price',
+    '.ps5-price',
+    '.ps4-price',
+    '.ps3-price',
+    '.game-price-back'
+  ]);
+  const numericPrice = parsePriceValue(priceText);
+  if (numericPrice > 0 && !/JOD|دينار|السعر|حسب/i.test(priceText)) priceText = `${numericPrice.toFixed(2)} JOD`;
+  const img = card.dataset.img || card.querySelector('img')?.getAttribute('src') || '';
+  const icon = card.dataset.icon || productCardText(card, [
+    '.acc-icon',
+    '.beauty-icon',
+    '.device-icon',
+    '.ps5-icon',
+    '.ps4-icon',
+    '.ps3-icon',
+    '.game-icon'
+  ]) || '🎮';
+  const section = getProductSection(card);
+  const canAdd = !!card.querySelector('.add-btn, .image-card-add');
+  const condition = card.dataset.condition || productCardText(card, ['.product-condition-badge']);
+  return {
+    name,
+    img,
+    icon,
+    price: numericPrice,
+    priceText: priceText || 'حسب الطلب',
+    priceLabel: numericPrice > 0 ? '' : (priceText || 'حسب الطلب'),
+    sub,
+    specs,
+    desc: card.dataset.desc || card.dataset.description || sub || specs,
+    category: section,
+    section,
+    kind: getProductKind(card),
+    kindLabel: section,
+    condition,
+    canAdd,
+    addable: canAdd
+  };
+}
+
+function markUsedProducts() {
+  document.querySelectorAll('.device-showcase, #playstation-devices .acc-card, #xbox-devices .acc-card, #nintendo-devices .acc-card, #wii-devices .acc-card, #vr-devices .acc-card').forEach(card => {
+    if (!card.dataset.condition) card.dataset.condition = 'مستعمل';
+    if (!card.querySelector('.product-condition-badge')) {
+      card.insertAdjacentHTML('afterbegin', `<span class="product-condition-badge${card.dataset.condition === 'جديد' ? ' is-new' : ''}">${card.dataset.condition}</span>`);
+    }
+  });
+}
+markUsedProducts();
+
+document.addEventListener('click', (event) => {
+  if (event.target.closest('button, a, input, textarea, select, .color-dot')) return;
+  const card = event.target.closest('.device-showcase, .device-card, .acc-card, .beauty-card, .game-card, .ps3-card, .ps4-card, .ps5-card');
+  if (!card || card.closest('#game-detail-modal, #trailer-modal, #cart-sidebar')) return;
+  const details = extractProductDetailsFromCard(card);
+  if (details) openGameDetails(details);
+});
+
+function openTrailerFromEncoded(encodedTrailer) {
+  const trailer = JSON.parse(decodeURIComponent(encodedTrailer));
+  openTrailer(trailer.id, trailer.title, trailer.provider);
 }
 
 function openTrailer(videoId, title, provider = 'youtube') {
@@ -2888,7 +3330,9 @@ function closeTrailer(event) {
   const frameWrap = document.getElementById('trailer-frame-wrap');
   modal.classList.remove('active');
   frameWrap.innerHTML = '';
-  document.body.style.overflow = '';
+  if (!document.getElementById('game-detail-modal')?.classList.contains('active')) {
+    document.body.style.overflow = '';
+  }
 }
 
 // ═══ SHARED CART SYSTEM ═══
@@ -2914,10 +3358,13 @@ function addToCart(arg1, price, icon) {
   }
   const itemSection = item.section || getCurrentCartSection();
   const itemPlatform = item.platform || null;
+  const triggerCard = (window.event?.target || document.activeElement)?.closest?.('.device-showcase, .device-card, .acc-card, .beauty-card, .image-card, .game-card, .ps3-card, .ps4-card, .ps5-card');
+  const itemCondition = item.condition || triggerCard?.dataset.condition || triggerCard?.querySelector?.('.product-condition-badge')?.textContent.trim() || null;
   const existing = cart.find(i =>
     i.name === item.name &&
     (i.section || '') === itemSection &&
-    (i.platform || null) === itemPlatform
+    (i.platform || null) === itemPlatform &&
+    (i.condition || null) === itemCondition
   );
   if (existing) {
     existing.qty = (existing.qty || 1) + 1;
@@ -2931,6 +3378,7 @@ function addToCart(arg1, price, icon) {
       kind: item.kind || 'item',
       platform: itemPlatform,
       section: itemSection,
+      condition: itemCondition,
       qty: 1
     });
   }
@@ -2970,12 +3418,15 @@ function updateCartUI() {
         : '';
       const sectionName = item.section || item.platform || 'غير محدد';
       const sectionBadge = `<div style="font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:4px;">القسم: ${sectionName}</div>`;
+      const conditionColor = item.condition === 'جديد' ? '#00d65a' : '#ffb366';
+      const conditionBadge = item.condition ? `<div style="font-size:0.72rem;color:${conditionColor};margin-top:3px;">الحالة: ${item.condition}</div>` : '';
       return `
         <div class="cart-item">
           ${visual}
           <div class="cart-item-info">
             <div class="cart-item-name">${platformBadge}${item.name}${item.qty > 1 ? ` ×${item.qty}` : ''}</div>
             ${sectionBadge}
+            ${conditionBadge}
             <div class="cart-item-price">${item.priceLabel || `${(item.price * (item.qty||1)).toFixed(2)} JOD`}</div>
           </div>
           <button class="cart-item-remove" onclick="removeFromCart(${i})">✕</button>
@@ -3023,10 +3474,12 @@ function sendCartToWhatsApp() {
     const lineTotal = item.price * qty;
     const platform = item.platform ? `\n   ${e.game} النوع: ${item.platform}` : '';
     const section = item.section || item.platform || 'غير محدد';
+    const condition = item.condition ? `\n   ${e.check} الحالة: ${item.condition}` : '';
     const priceText = item.priceLabel || `${lineTotal.toFixed(2)} JOD`;
     return `#${index + 1}
    ${e.product} المنتج: ${item.name}${platform}
    ${e.game} القسم: ${section}
+   ${condition}
    ${e.qty} الكمية: ${qty}
    ${e.price} السعر: ${priceText}`;
   }).join('\n────────────────\n');
