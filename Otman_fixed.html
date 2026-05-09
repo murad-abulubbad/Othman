@@ -1184,61 +1184,106 @@ body.in-page-mode .page-back-btn {
   box-shadow: 0 0 35px rgba(255,45,85,0.8);
 }
 
-/* PAGE TRANSITION OVERLAY (3-bar wipe + brand logo center-piece) */
+/* PAGE TRANSITION OVERLAY — 3 VERTICAL bars: Nintendo (red) | Xbox (green) | PlayStation (blue) */
 #page-transition {
   position: fixed; inset: 0; z-index: 99997;
   pointer-events: none;
-  display: flex; flex-direction: column;
+  display: flex; flex-direction: row;
+  direction: ltr; /* lock LTR so red=left, blue=right matches the reference */
 }
 #page-transition .trans-bar {
   flex: 1;
-  transform: scaleX(0);
-  transform-origin: right center;
-  transition: transform 0.55s cubic-bezier(0.85,0,0.15,1);
+  transform: translateY(-105%);
+  transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1);
   position: relative;
   overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
 }
-/* Subtle dark veil at the bottom of each bar for depth (no bright top highlight) */
+/* Subtle top-light / bottom-shadow for depth on each bar */
 #page-transition .trans-bar::before {
   content: '';
   position: absolute; inset: 0;
   background: linear-gradient(180deg,
-    rgba(255,255,255,0.06) 0%,
-    rgba(0,0,0,0.0) 45%,
-    rgba(0,0,0,0.30) 100%);
+    rgba(255,255,255,0.10) 0%,
+    rgba(255,255,255,0.0) 35%,
+    rgba(0,0,0,0.0) 65%,
+    rgba(0,0,0,0.35) 100%);
   pointer-events: none;
 }
-/* 3 bars match the O.F.G logo: O = red, F = green, G = blue — DEEP, not bright */
+/* 3 bars match the brand: Nintendo=red, Xbox=green, PlayStation=blue */
 #page-transition .trans-bar:nth-child(1) {
-  background: linear-gradient(135deg, #8A0019 0%, #D6002A 50%, #A60020 100%);
-  box-shadow: inset 0 0 80px rgba(0,0,0,0.35);
+  background: linear-gradient(155deg, #B40020 0%, #E40026 50%, #8E0018 100%);
+  box-shadow: inset 0 0 90px rgba(0,0,0,0.30);
   transition-delay: 0s;
 }
 #page-transition .trans-bar:nth-child(2) {
-  background: linear-gradient(135deg, #006B22 0%, #00B83A 50%, #008A2C 100%);
-  box-shadow: inset 0 0 80px rgba(0,0,0,0.35);
-  transition-delay: 0.06s;
+  background: linear-gradient(155deg, #008A2C 0%, #00B83A 50%, #006B22 100%);
+  box-shadow: inset 0 0 90px rgba(0,0,0,0.30);
+  transition-delay: 0.07s;
 }
 #page-transition .trans-bar:nth-child(3) {
-  background: linear-gradient(135deg, #0A3DA8 0%, #1E6FE6 50%, #1453B8 100%);
-  box-shadow: inset 0 0 80px rgba(0,0,0,0.35);
-  transition-delay: 0.12s;
+  background: linear-gradient(155deg, #0F47C0 0%, #1655D8 50%, #0A38A8 100%);
+  box-shadow: inset 0 0 90px rgba(0,0,0,0.30);
+  transition-delay: 0.14s;
 }
-#page-transition.show .trans-bar { transform: scaleX(1); }
-#page-transition.exit .trans-bar { transform-origin: left center; transform: scaleX(0); }
+#page-transition.show .trans-bar { transform: translateY(0); }
+#page-transition.exit .trans-bar { transform: translateY(105%); }
+
+/* Console logos centered on each colored bar — natural colors, strong shadow for depth */
+#page-transition .trans-bar-logo {
+  position: relative;
+  width: clamp(140px, 22vw, 280px);
+  height: auto;
+  max-height: 55vh;
+  object-fit: contain;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.55);
+  /* Strong drop-shadow only — natural logo colors are preserved */
+  filter:
+    drop-shadow(0 10px 22px rgba(0,0,0,0.55))
+    drop-shadow(0 0 12px rgba(0,0,0,0.35));
+  transition: opacity 0.45s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* Xbox: green logo on green bar would blend in — flip to pure white silhouette */
+#page-transition .trans-bar:nth-child(2) .trans-bar-logo {
+  filter:
+    brightness(0) invert(1)
+    drop-shadow(0 10px 22px rgba(0,0,0,0.55));
+}
+#page-transition.show .trans-bar-logo {
+  opacity: 1;
+  transform: scale(1);
+}
+#page-transition.show .trans-bar:nth-child(1) .trans-bar-logo { transition-delay: 0.20s; }
+#page-transition.show .trans-bar:nth-child(2) .trans-bar-logo { transition-delay: 0.30s; }
+#page-transition.show .trans-bar:nth-child(3) .trans-bar-logo { transition-delay: 0.40s; }
+#page-transition.exit .trans-bar-logo {
+  opacity: 0;
+  transform: scale(1.2);
+  transition-delay: 0s;
+}
+@media (max-width: 700px) {
+  #page-transition .trans-bar-logo { width: clamp(80px, 22vw, 180px); }
+}
 
 #page-transition .trans-content {
-  position: absolute; inset: 0;
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 6vh; /* sit below the 3 console logos */
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 28px;
-  opacity: 0; transform: scale(0.7);
-  transition: opacity 0.35s 0.28s, transform 0.55s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 14px;
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.3s 0.55s, transform 0.5s 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-#page-transition.show .trans-content { opacity: 1; transform: scale(1); }
-#page-transition.exit .trans-content { opacity: 0; transform: scale(1.2); transition-delay: 0s; }
+#page-transition.show .trans-content { opacity: 1; transform: translateY(0); }
+#page-transition.exit .trans-content { opacity: 0; transform: translateY(20px); transition-delay: 0s; }
 
-.trans-logo-orbits {
+/* The orbit + center O.F.G image is hidden during this transition —
+   the 3 console logos on the bars are the showcase now */
+.trans-logo-orbits { display: none; }
+.trans-logo-orbits-hidden-fallback {
   position: relative;
   width: clamp(180px, 22vw, 250px);
   height: clamp(180px, 22vw, 250px);
@@ -1279,18 +1324,24 @@ body.in-page-mode .page-back-btn {
      and we read it here via var() with inline fallback so cycling works. */
   position: relative;
   inset: auto;
-  display: block;
+  display: inline-block;
+  padding: 10px 26px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 999px;
   font-family: 'Orbitron', monospace;
-  font-size: clamp(1.6rem, 5vw, 3.2rem);
+  font-size: clamp(1.05rem, 2.6vw, 1.6rem);
   font-weight: 900;
   color: var(--trans-title-color, #D6002A);
-  letter-spacing: 8px;
+  letter-spacing: 5px;
   text-align: center;
   text-shadow:
     0 0 8px var(--trans-title-color, #D6002A),
     0 0 18px var(--trans-title-color, #D6002A),
     0 4px 16px rgba(0,0,0,0.6);
-  opacity: 1; transform: none;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.45);
   transition: color 0.25s ease, text-shadow 0.25s ease;
 }
 
@@ -1442,9 +1493,15 @@ body.in-page-mode .page-back-btn {
 
 <!-- PAGE TRANSITION OVERLAY -->
 <div id="page-transition">
-  <div class="trans-bar"></div>
-  <div class="trans-bar"></div>
-  <div class="trans-bar"></div>
+  <div class="trans-bar trans-bar-red">
+    <img class="trans-bar-logo" src="Photo/Nintendo.png" alt="Nintendo" decoding="async" fetchpriority="high"/>
+  </div>
+  <div class="trans-bar trans-bar-green">
+    <img class="trans-bar-logo" src="Photo/XboxBack.webp" alt="Xbox" decoding="async" fetchpriority="high"/>
+  </div>
+  <div class="trans-bar trans-bar-blue">
+    <img class="trans-bar-logo" src="Photo/PSback.webp" alt="PlayStation" decoding="async" fetchpriority="high"/>
+  </div>
   <div class="trans-content">
     <div class="trans-logo-orbits">
       <span class="trans-orbit"></span>
@@ -2327,7 +2384,7 @@ function navigateToPage(pageId, push = true) {
 
   _pageTransitionLock = true;
 
-  // Phase 1 — slide bars across (cover the screen)
+  // Phase 1 — slide bars across, console logos pop in, page title appears
   overlay.classList.remove('exit');
   overlay.classList.add('show');
 
@@ -2372,8 +2429,8 @@ function navigateToPage(pageId, push = true) {
     setTimeout(() => {
       overlay.classList.remove('show', 'exit');
       _pageTransitionLock = false;
-    }, 600);
-  }, 600);
+    }, 700);
+  }, 1200); // hold long enough for the console logos to fully appear
 }
 
 // Intercept clicks on internal anchor links (#devices, #ps4, etc.)
