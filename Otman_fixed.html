@@ -472,6 +472,217 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
   box-shadow: 0 0 10px var(--red);
 }
 .section-line.visible { width: 200px; }
+.section-search {
+  max-width: 600px; margin: 0 auto 30px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.section-search-top {
+  display: flex; gap: 10px;
+}
+.section-search-icon {
+  position: absolute; left: 18px; top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.4);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+.section-search-top .search-input {
+  flex: 1;
+  padding: 14px 20px 14px 50px;
+  background: rgba(10,15,40,0.6);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  color: white; font-family: 'Cairo', sans-serif;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  position: relative;
+}
+.section-search-top .search-input:focus {
+  outline: none; border-color: var(--red-bright);
+  background: rgba(10,15,40,0.8);
+  box-shadow: 0 0 20px rgba(255,45,85,0.3);
+}
+.section-search-top .search-input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+.section-search-price {
+  display: flex; gap: 10px;
+}
+.section-search-price input {
+  flex: 1; padding: 12px 15px;
+  background: rgba(10,15,40,0.6);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: white; font-family: 'Cairo', sans-serif;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+.section-search-price input:focus {
+  outline: none; border-color: var(--red-bright);
+  background: rgba(10,15,40,0.8);
+}
+.section-search-price input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+.image-card-actions {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.favorite-btn {
+  width: 100%; height: 32px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.5);
+}
+.favorite-btn:hover {
+  background: rgba(255,45,85,0.3);
+  border-color: var(--red-bright);
+  color: var(--red-bright);
+  transform: scale(1.05);
+}
+.favorite-btn.active {
+  color: var(--red-bright);
+  background: rgba(255,45,85,0.4);
+  border-color: var(--red-bright);
+  animation: heartPulse 0.4s ease-out;
+}
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.favorite-sidebar {
+  position: fixed; top: 0; right: -420px;
+  width: 400px; height: 100vh;
+  background: rgba(10,15,40,0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(255,45,85,0.3);
+  z-index: 99990;
+  transition: right 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  display: flex; flex-direction: column;
+  padding: 25px;
+  box-shadow: -10px 0 40px rgba(0,0,0,0.6);
+}
+.favorite-sidebar.active { right: 0; }
+.favorite-sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.favorite-sidebar-title {
+  font-size: 1.3rem; font-weight: 700; color: white;
+}
+.favorite-sidebar-close {
+  width: 36px; height: 36px;
+  background: rgba(255,45,85,0.2);
+  border: 1px solid rgba(255,45,85,0.4);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.favorite-sidebar-close:hover {
+  background: rgba(255,45,85,0.4);
+  transform: rotate(90deg);
+}
+.favorite-sidebar-content {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 15px;
+}
+.favorite-sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+.favorite-sidebar-content::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+}
+.favorite-sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--red-bright);
+  border-radius: 3px;
+}
+.favorite-item {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex; gap: 12px;
+  align-items: center;
+  transition: all 0.3s;
+}
+.favorite-item:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,45,85,0.3);
+}
+.favorite-item-img {
+  width: 60px; height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.favorite-item-info {
+  flex: 1;
+}
+.favorite-item-name {
+  font-weight: 600; font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+.favorite-item-price {
+  color: var(--red-bright); font-family: 'Orbitron', monospace;
+  font-size: 0.9rem;
+}
+.favorite-item-remove {
+  width: 30px; height: 30px;
+  background: rgba(255,45,85,0.2);
+  border: none;
+  border-radius: 50%;
+  color: white; font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex; align-items: center; justify-content: center;
+}
+.favorite-item-remove:hover {
+  background: rgba(255,45,85,0.4);
+  transform: scale(1.1);
+}
+.favorite-sidebar-empty {
+  text-align: center; padding: 40px 20px;
+  color: rgba(255,255,255,0.4);
+}
+.favorite-sidebar-empty-icon {
+  font-size: 3rem; margin-bottom: 15px;
+}
+.favorite-toggle-btn {
+  position: fixed; top: 50%; right: 20px;
+  transform: translateY(-50%);
+  width: 50px; height: 50px;
+  background: linear-gradient(135deg, var(--red), var(--red-bright));
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 99985;
+  box-shadow: 0 4px 20px rgba(255,45,85,0.5);
+  transition: all 0.3s;
+}
+.favorite-toggle-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 30px rgba(255,45,85,0.7);
+}
+.favorite-toggle-badge {
+  position: absolute; top: -5px; right: -5px;
+  background: var(--blue-bright);
+  color: white;
+  font-size: 0.75rem; font-weight: 700;
+  min-width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #0E0E1F;
+}
 
 /* DEVICE GRID */
 .device-grid {
@@ -2174,6 +2385,7 @@ body.in-page-mode .page-back-btn {
 <!-- CART SIDEBAR -->
 <div id="cart-sidebar">
   <div class="cart-header">
+
     <div class="cart-title">🛒 سلة التسوق</div>
     <button class="cart-close" onclick="closeCart()">✕</button>
   </div>
@@ -2193,6 +2405,27 @@ body.in-page-mode .page-back-btn {
     <button type="button" class="cart-checkout-btn" onclick="sendCartToWhatsApp()">📲 إرسال الطلب على واتساب</button>
   </div>
 </div>
+
+<!-- FAVORITE SIDEBAR -->
+<div class="favorite-sidebar" id="favorite-sidebar">
+  <div class="favorite-sidebar-header">
+    <div class="favorite-sidebar-title">❤ المفضلات</div>
+    <button class="favorite-sidebar-close" onclick="closeFavoriteSidebar()">✕</button>
+  </div>
+  <div class="favorite-sidebar-content" id="favorite-content">
+    <div class="favorite-sidebar-empty">
+      <div class="favorite-sidebar-empty-icon">❤</div>
+      <p>لا توجد مفضلات بعد</p>
+      <p style="font-size:0.85rem;margin-top:8px;">اضغط على القلب لحفظ المنتجات</p>
+    </div>
+  </div>
+</div>
+
+<!-- FAVORITE TOGGLE BUTTON -->
+<button class="favorite-toggle-btn" onclick="toggleFavoriteSidebar()">
+  ❤
+  <span class="favorite-toggle-badge" style="display:none">0</span>
+</button>
 
 <!-- LOADER -->
 <div id="loader">
@@ -2537,6 +2770,16 @@ body.in-page-mode .page-back-btn {
   <h2 class="section-title">الأجهزة <span>المتوفرة</span></h2>
   <div class="section-line"></div>
   <p class="section-subtitle">أحدث أجهزة الألعاب بأسعار منافسة وضمان معتمد</p>
+  <div class="section-search">
+    <div class="section-search-top">
+      <span class="section-search-icon">🔍</span>
+      <input type="text" placeholder="ابحث عن جهاز..." class="search-input" data-target=".devices-grid">
+      <div class="section-search-price">
+        <input type="number" placeholder="من" class="price-from" min="0">
+        <input type="number" placeholder="إلى" class="price-to" min="0">
+      </div>
+    </div>
+  </div>
   <div class="devices-grid">
 
     <!-- PS5 -->
@@ -2711,6 +2954,16 @@ body.in-page-mode .page-back-btn {
   <h2 class="section-title">سيديات <span>PS4</span></h2>
   <div class="section-line"></div>
   <p class="section-subtitle">13 لعبة أصلية مميزة لجهاز PlayStation 4 — اضغط "أضف للسلة" لإضافة اللعبة</p>
+  <div class="section-search">
+    <div class="section-search-top">
+      <span class="section-search-icon">🔍</span>
+      <input type="text" placeholder="ابحث عن لعبة..." class="search-input" data-target="#ps4-grid">
+      <div class="section-search-price">
+        <input type="number" placeholder="من" class="price-from" min="0">
+        <input type="number" placeholder="إلى" class="price-to" min="0">
+      </div>
+    </div>
+  </div>
   <div class="image-grid" id="ps4-grid">
     <!-- Cards rendered by JS -->
   </div>
@@ -2721,6 +2974,16 @@ body.in-page-mode .page-back-btn {
   <h2 class="section-title">سيديات <span>PS5</span></h2>
   <div class="section-line"></div>
   <p class="section-subtitle">7 ألعاب من الجيل الجديد بإصدارات حصرية</p>
+  <div class="section-search">
+    <div class="section-search-top">
+      <span class="section-search-icon">🔍</span>
+      <input type="text" placeholder="ابحث عن لعبة..." class="search-input" data-target="#ps5-grid">
+      <div class="section-search-price">
+        <input type="number" placeholder="من" class="price-from" min="0">
+        <input type="number" placeholder="إلى" class="price-to" min="0">
+      </div>
+    </div>
+  </div>
   <div class="image-grid" id="ps5-grid">
     <!-- Cards rendered by JS -->
   </div>
@@ -2855,6 +3118,16 @@ body.in-page-mode .page-back-btn {
   <h2 class="section-title"><span>إكسسوارات</span> وملحقات</h2>
   <div class="section-line"></div>
   <p class="section-subtitle">ملحقات أصلية لتعزيز تجربة اللعب</p>
+  <div class="section-search">
+    <div class="section-search-top">
+      <span class="section-search-icon">🔍</span>
+      <input type="text" placeholder="ابحث عن إكسسوارات..." class="search-input" data-target=".acc-grid">
+      <div class="section-search-price">
+        <input type="number" placeholder="من" class="price-from" min="0">
+        <input type="number" placeholder="إلى" class="price-to" min="0">
+      </div>
+    </div>
+  </div>
   <div class="acc-grid">
 
     <div class="acc-card"><span class="acc-badge badge-hot">HOT</span>
@@ -2931,6 +3204,16 @@ body.in-page-mode .page-back-btn {
   <h2 class="section-title">قسم <span>التجميل</span></h2>
   <div class="section-line"></div>
   <p class="section-subtitle">خصص جهازك بأسلوبك الخاص</p>
+  <div class="section-search">
+    <div class="section-search-top">
+      <span class="section-search-icon">🔍</span>
+      <input type="text" placeholder="ابحث عن تجميل..." class="search-input" data-target=".beauty-grid">
+      <div class="section-search-price">
+        <input type="number" placeholder="من" class="price-from" min="0">
+        <input type="number" placeholder="إلى" class="price-to" min="0">
+      </div>
+    </div>
+  </div>
   <div class="beauty-grid">
 
     <div class="beauty-card">
@@ -3087,6 +3370,7 @@ function renderGameGrid(targetId, games, platform) {
         <div class="image-card-bottom">
           ${priceHtml}
           <div class="image-card-actions">
+            <button class="favorite-btn" onclick="toggleFavorite(this, '${encodeURIComponent(JSON.stringify({...g, platform, condition})).replace(/'/g, '%27')}'); event.stopPropagation();">❤</button>
             ${trailerButton}
             ${addButton}
           </div>
@@ -3282,6 +3566,140 @@ function markUsedProducts() {
   });
 }
 markUsedProducts();
+
+// ════════════════ FAVORITES / WISHLIST ════════════════
+function getFavorites() {
+  try {
+    return JSON.parse(localStorage.getItem('othman_favorites') || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function saveFavorites(favorites) {
+  localStorage.setItem('othman_favorites', JSON.stringify(favorites));
+  updateFavoriteBadge();
+}
+
+function toggleFavorite(btn, productData) {
+  const product = JSON.parse(decodeURIComponent(productData));
+  const favorites = getFavorites();
+  const index = favorites.findIndex(f => f.name === product.name && f.platform === product.platform);
+  
+  if (index > -1) {
+    favorites.splice(index, 1);
+    btn.classList.remove('active');
+  } else {
+    favorites.push(product);
+    btn.classList.add('active');
+  }
+  
+  saveFavorites(favorites);
+  renderFavorites();
+}
+
+function isFavorite(product) {
+  const favorites = getFavorites();
+  return favorites.some(f => f.name === product.name && f.platform === product.platform);
+}
+
+function removeFavorite(name, platform) {
+  const favorites = getFavorites();
+  const index = favorites.findIndex(f => f.name === name && f.platform === platform);
+  if (index > -1) {
+    favorites.splice(index, 1);
+    saveFavorites(favorites);
+    renderFavorites();
+    updateFavoriteButtons();
+  }
+}
+
+function updateFavoriteButtons() {
+  const favorites = getFavorites();
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    const card = btn.closest('.image-card, .device-showcase, .acc-card, .beauty-card');
+    if (card) {
+      const name = card.querySelector('.image-card-title, .device-name-big, .device-name, .acc-name, .beauty-name')?.textContent;
+      const platform = card.querySelector('.image-card-platform')?.textContent || '';
+      if (name) {
+        const isFav = favorites.some(f => f.name === name && f.platform === platform);
+        btn.classList.toggle('active', isFav);
+      }
+    }
+  });
+}
+
+function updateFavoriteBadge() {
+  const favorites = getFavorites();
+  const badge = document.querySelector('.favorite-toggle-badge');
+  if (badge) {
+    badge.textContent = favorites.length;
+    badge.style.display = favorites.length > 0 ? 'flex' : 'none';
+  }
+}
+
+function renderFavorites() {
+  const favorites = getFavorites();
+  const content = document.querySelector('.favorite-sidebar-content');
+  if (!content) return;
+  
+  if (favorites.length === 0) {
+    content.innerHTML = `
+      <div class="favorite-sidebar-empty">
+        <div class="favorite-sidebar-empty-icon">❤</div>
+        <p>لا توجد مفضلات بعد</p>
+        <p style="font-size:0.85rem;margin-top:8px;">اضغط على القلب لحفظ المنتجات</p>
+      </div>
+    `;
+    return;
+  }
+  
+  content.innerHTML = favorites.map(f => `
+    <div class="favorite-item">
+      ${f.img ? `<img class="favorite-item-img" src="${f.img}" alt="${f.name}" onerror="this.style.display='none'"/>` : ''}
+      <div class="favorite-item-info">
+        <div class="favorite-item-name">${f.name}</div>
+        ${f.price ? `<div class="favorite-item-price">${f.price} JOD</div>` : ''}
+        ${f.platform ? `<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px;">${f.platform}</div>` : ''}
+      </div>
+      <button class="favorite-item-remove" onclick="removeFavorite('${f.name.replace(/'/g, "\\'")}', '${f.platform || ''}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function toggleFavoriteSidebar() {
+  document.querySelector('.favorite-sidebar').classList.toggle('active');
+}
+
+function closeFavoriteSidebar() {
+  document.querySelector('.favorite-sidebar').classList.remove('active');
+}
+
+function searchInSection(input) {
+  const targetSelector = input.dataset.target;
+  if (!targetSelector) return;
+  const section = input.closest('section');
+  if (!section) return;
+  const container = section.querySelector(targetSelector);
+  if (!container) return;
+  const query = input.value.trim().toLowerCase();
+  const priceFrom = section.querySelector('.price-from')?.value || '';
+  const priceTo = section.querySelector('.price-to')?.value || '';
+  const minPrice = parseFloat(priceFrom) || 0;
+  const maxPrice = parseFloat(priceTo) || Infinity;
+  const cards = container.querySelectorAll('.image-card, .device-showcase, .acc-card, .beauty-card');
+  cards.forEach(card => {
+    const name = card.querySelector('.image-card-title, .device-name-big, .device-name, .acc-name, .beauty-name, .ps5-title, .ps4-title, .ps3-title, .game-title')?.textContent.toLowerCase() || '';
+    const genre = card.querySelector('.image-card-genre, .device-tag, .device-sub, .acc-sub, .beauty-sub, .ps5-genre, .ps4-info, .ps3-genre, .game-genre')?.textContent.toLowerCase() || '';
+    const specs = [...card.querySelectorAll('.device-specs span')].map(el => el.textContent.toLowerCase()).join(' ');
+    const priceText = card.querySelector('.image-card-price, .device-price-big, .price-tag, .acc-price, .beauty-price, .ps5-price, .ps4-price, .ps3-price, .game-price-back')?.textContent || '';
+    const price = parseFloat(priceText.replace(/[^\d.]/g, '')) || 0;
+    const textMatch = query === '' || name.includes(query) || genre.includes(query) || specs.includes(query);
+    const priceMatch = (price >= minPrice && price <= maxPrice);
+    const match = textMatch && priceMatch;
+    card.style.display = match ? '' : 'none';
+  });
+}
 
 document.addEventListener('click', (event) => {
   if (event.target.closest('button, a, input, textarea, select, .color-dot')) return;
@@ -3814,6 +4232,22 @@ document.addEventListener('click', (e) => {
 renderGameGrid('ps4-grid', PS4_GAMES, 'PS4');
 renderGameGrid('ps5-grid', PS5_GAMES, 'PS5');
 watchPrices();
+
+// Initialize favorites (must be after grids are rendered)
+renderFavorites();
+updateFavoriteButtons();
+updateFavoriteBadge();
+
+// Initialize search listeners after grids are rendered
+document.querySelectorAll('.search-input').forEach(input => {
+  input.addEventListener('input', () => searchInSection(input));
+});
+document.querySelectorAll('.price-from, .price-to').forEach(input => {
+  input.addEventListener('input', (e) => {
+    const searchInput = e.target.closest('.section-search').querySelector('.search-input');
+    if (searchInput) searchInSection(searchInput);
+  });
+});
 
 // Buttons no longer have a persistent "added" lock — every click adds another copy
 // and the toast confirms it. Function kept (no-op) since other places still call it.
