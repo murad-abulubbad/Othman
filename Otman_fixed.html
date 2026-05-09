@@ -505,11 +505,8 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
 .section-search-top .search-input::placeholder {
   color: rgba(255,255,255,0.4);
 }
-.section-search-price {
-  display: flex; gap: 10px;
-}
-.section-search-price input {
-  flex: 1; padding: 12px 15px;
+.section-search-top .price-max {
+  width: 120px; padding: 12px 15px;
   background: rgba(10,15,40,0.6);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 8px;
@@ -517,11 +514,11 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
   font-size: 0.85rem;
   transition: all 0.3s;
 }
-.section-search-price input:focus {
+.section-search-top .price-max:focus {
   outline: none; border-color: var(--red-bright);
   background: rgba(10,15,40,0.8);
 }
-.section-search-price input::placeholder {
+.section-search-top .price-max::placeholder {
   color: rgba(255,255,255,0.4);
 }
 .image-card-actions {
@@ -2774,10 +2771,7 @@ body.in-page-mode .page-back-btn {
     <div class="section-search-top">
       <span class="section-search-icon">🔍</span>
       <input type="text" placeholder="ابحث عن جهاز..." class="search-input" data-target=".devices-grid">
-      <div class="section-search-price">
-        <input type="number" placeholder="من" class="price-from" min="0">
-        <input type="number" placeholder="إلى" class="price-to" min="0">
-      </div>
+      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
     </div>
   </div>
   <div class="devices-grid">
@@ -2958,10 +2952,7 @@ body.in-page-mode .page-back-btn {
     <div class="section-search-top">
       <span class="section-search-icon">🔍</span>
       <input type="text" placeholder="ابحث عن لعبة..." class="search-input" data-target="#ps4-grid">
-      <div class="section-search-price">
-        <input type="number" placeholder="من" class="price-from" min="0">
-        <input type="number" placeholder="إلى" class="price-to" min="0">
-      </div>
+      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
     </div>
   </div>
   <div class="image-grid" id="ps4-grid">
@@ -2978,10 +2969,7 @@ body.in-page-mode .page-back-btn {
     <div class="section-search-top">
       <span class="section-search-icon">🔍</span>
       <input type="text" placeholder="ابحث عن لعبة..." class="search-input" data-target="#ps5-grid">
-      <div class="section-search-price">
-        <input type="number" placeholder="من" class="price-from" min="0">
-        <input type="number" placeholder="إلى" class="price-to" min="0">
-      </div>
+      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
     </div>
   </div>
   <div class="image-grid" id="ps5-grid">
@@ -3122,10 +3110,7 @@ body.in-page-mode .page-back-btn {
     <div class="section-search-top">
       <span class="section-search-icon">🔍</span>
       <input type="text" placeholder="ابحث عن إكسسوارات..." class="search-input" data-target=".acc-grid">
-      <div class="section-search-price">
-        <input type="number" placeholder="من" class="price-from" min="0">
-        <input type="number" placeholder="إلى" class="price-to" min="0">
-      </div>
+      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
     </div>
   </div>
   <div class="acc-grid">
@@ -3208,10 +3193,7 @@ body.in-page-mode .page-back-btn {
     <div class="section-search-top">
       <span class="section-search-icon">🔍</span>
       <input type="text" placeholder="ابحث عن تجميل..." class="search-input" data-target=".beauty-grid">
-      <div class="section-search-price">
-        <input type="number" placeholder="من" class="price-from" min="0">
-        <input type="number" placeholder="إلى" class="price-to" min="0">
-      </div>
+      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
     </div>
   </div>
   <div class="beauty-grid">
@@ -3683,10 +3665,8 @@ function searchInSection(input) {
   const container = section.querySelector(targetSelector);
   if (!container) return;
   const query = input.value.trim().toLowerCase();
-  const priceFrom = section.querySelector('.price-from')?.value || '';
-  const priceTo = section.querySelector('.price-to')?.value || '';
-  const minPrice = parseFloat(priceFrom) || 0;
-  const maxPrice = parseFloat(priceTo) || Infinity;
+  const maxPriceInput = section.querySelector('.price-max');
+  const maxPrice = maxPriceInput ? parseFloat(maxPriceInput.value) || Infinity : Infinity;
   const cards = container.querySelectorAll('.image-card, .device-showcase, .acc-card, .beauty-card');
   cards.forEach(card => {
     const name = card.querySelector('.image-card-title, .device-name-big, .device-name, .acc-name, .beauty-name, .ps5-title, .ps4-title, .ps3-title, .game-title')?.textContent.toLowerCase() || '';
@@ -3695,7 +3675,7 @@ function searchInSection(input) {
     const priceText = card.querySelector('.image-card-price, .device-price-big, .price-tag, .acc-price, .beauty-price, .ps5-price, .ps4-price, .ps3-price, .game-price-back')?.textContent || '';
     const price = parseFloat(priceText.replace(/[^\d.]/g, '')) || 0;
     const textMatch = query === '' || name.includes(query) || genre.includes(query) || specs.includes(query);
-    const priceMatch = (price >= minPrice && price <= maxPrice);
+    const priceMatch = price <= maxPrice;
     const match = textMatch && priceMatch;
     card.style.display = match ? '' : 'none';
   });
@@ -4242,7 +4222,7 @@ updateFavoriteBadge();
 document.querySelectorAll('.search-input').forEach(input => {
   input.addEventListener('input', () => searchInSection(input));
 });
-document.querySelectorAll('.price-from, .price-to').forEach(input => {
+document.querySelectorAll('.price-max').forEach(input => {
   input.addEventListener('input', (e) => {
     const searchInput = e.target.closest('.section-search').querySelector('.search-input');
     if (searchInput) searchInSection(searchInput);
