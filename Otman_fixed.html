@@ -2706,7 +2706,15 @@ let cart = JSON.parse(localStorage.getItem('ofg-cart') || '[]');
 
 function saveCart() { localStorage.setItem('ofg-cart', JSON.stringify(cart)); }
 
-// Accepts EITHER (name, price, icon) OR an object {name, price, icon, img, kind, platform}
+function getCurrentCartSection() {
+  const activeSection = document.querySelector('section.page-active');
+  const hashId = (location.hash || '').replace('#', '');
+  const pageId = activeSection?.id || hashId;
+  if (pageId && PAGE_TITLES[pageId]) return PAGE_TITLES[pageId];
+  return 'الرئيسية';
+}
+
+// Accepts EITHER (name, price, icon) OR an object {name, price, icon, img, kind, platform, section}
 function addToCart(arg1, price, icon) {
   let item;
   if (typeof arg1 === 'object' && arg1 !== null) {
@@ -2714,7 +2722,13 @@ function addToCart(arg1, price, icon) {
   } else {
     item = { name: arg1, price: price, icon: icon };
   }
-  const existing = cart.find(i => i.name === item.name);
+  const itemSection = item.section || getCurrentCartSection();
+  const itemPlatform = item.platform || null;
+  const existing = cart.find(i =>
+    i.name === item.name &&
+    (i.section || '') === itemSection &&
+    (i.platform || null) === itemPlatform
+  );
   if (existing) {
     existing.qty = (existing.qty || 1) + 1;
   } else {
@@ -2724,7 +2738,8 @@ function addToCart(arg1, price, icon) {
       icon: item.icon || '🎮',
       img: item.img || null,
       kind: item.kind || 'item',
-      platform: item.platform || null,
+      platform: itemPlatform,
+      section: itemSection,
       qty: 1
     });
   }
@@ -2761,11 +2776,14 @@ function updateCartUI() {
       const platformBadge = item.platform
         ? `<span style="font-family:'Orbitron',monospace;font-size:0.55rem;background:rgba(204,0,0,0.2);color:#ff8080;padding:2px 6px;border-radius:8px;margin-right:6px;letter-spacing:1px;">${item.platform}</span>`
         : '';
+      const sectionName = item.section || item.platform || 'غير محدد';
+      const sectionBadge = `<div style="font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:4px;">القسم: ${sectionName}</div>`;
       return `
         <div class="cart-item">
           ${visual}
           <div class="cart-item-info">
             <div class="cart-item-name">${platformBadge}${item.name}${item.qty > 1 ? ` ×${item.qty}` : ''}</div>
+            ${sectionBadge}
             <div class="cart-item-price">${(item.price * (item.qty||1)).toFixed(2)} JOD</div>
           </div>
           <button class="cart-item-remove" onclick="removeFromCart(${i})">✕</button>
@@ -2811,8 +2829,10 @@ function sendCartToWhatsApp() {
     const qty = item.qty || 1;
     const lineTotal = item.price * qty;
     const platform = item.platform ? `\n   ${e.game} النوع: ${item.platform}` : '';
+    const section = item.section || item.platform || 'غير محدد';
     return `#${index + 1}
    ${e.product} المنتج: ${item.name}${platform}
+   ${e.game} القسم: ${section}
    ${e.qty} الكمية: ${qty}
    ${e.price} السعر: ${lineTotal.toFixed(2)} JOD`;
   }).join('\n────────────────\n');
