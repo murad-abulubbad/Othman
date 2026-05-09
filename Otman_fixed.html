@@ -181,11 +181,17 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
   0%   { text-shadow: 0 0 4px currentColor, 0 0 10px currentColor; transform: translateY(0); }
   100% { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor; transform: translateY(-1px); }
 }
-.nav-links { display: flex; gap: 4px; list-style: none; flex-direction: row-reverse; }
+.nav-links {
+  display: flex; gap: 4px; list-style: none; flex-direction: row-reverse;
+  max-width: calc(100vw - 280px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-links::-webkit-scrollbar { display: none; }
 .nav-links a {
   text-decoration: none;
-  font-size: 0.85rem; font-weight: 700;
-  padding: 5px 12px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 700;
+  padding: 5px 10px; border-radius: 20px;
   white-space: nowrap;
   transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
   /* Continuous 3-color cycle (deep red → green → blue) — each link at a different phase */
@@ -215,6 +221,14 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
 .nav-links li:nth-child(7) a { animation-delay: -6.6s; }
 .nav-links li:nth-child(8) a { animation-delay: -7.7s; }
 .nav-links li:nth-child(9) a { animation-delay: -8.8s; }
+.nav-links li:nth-child(10) a { animation-delay: -9.9s; }
+.nav-links li:nth-child(11) a { animation-delay: -11s; }
+.nav-links li:nth-child(12) a { animation-delay: -12.1s; }
+.nav-links li:nth-child(13) a { animation-delay: -13.2s; }
+.nav-links li:nth-child(14) a { animation-delay: -14.3s; }
+.nav-links li:nth-child(15) a { animation-delay: -15.4s; }
+.nav-links li:nth-child(16) a { animation-delay: -16.5s; }
+.nav-links li:nth-child(17) a { animation-delay: -17.6s; }
 
 .nav-links a:hover, .nav-links a.active {
   background: rgba(255,255,255,0.08);
@@ -1137,6 +1151,7 @@ img.console-float {
 @keyframes orbitSpin { to { transform: rotate(360deg); } }
 
 /* ════════════════ PAGE-MODE — each section is its own page ════════════════ */
+body:not(.in-page-mode) section:not(#home):not(#sections) { display: none !important; }
 body.in-page-mode #home,
 body.in-page-mode .stats-section,
 body.in-page-mode #sections { display: none !important; }
@@ -1211,17 +1226,20 @@ body.in-page-mode .page-back-btn {
   pointer-events: none;
 }
 /* 3 bars match the brand: Nintendo=red, Xbox=green, PlayStation=blue */
-#page-transition .trans-bar:nth-child(1) {
+#page-transition .trans-bar:nth-child(1),
+#page-transition .trans-bar-red {
   background: linear-gradient(155deg, #B40020 0%, #E40026 50%, #8E0018 100%);
   box-shadow: inset 0 0 90px rgba(0,0,0,0.30);
   transition-delay: 0s;
 }
-#page-transition .trans-bar:nth-child(2) {
+#page-transition .trans-bar:nth-child(2),
+#page-transition .trans-bar-green {
   background: linear-gradient(155deg, #008A2C 0%, #00B83A 50%, #006B22 100%);
   box-shadow: inset 0 0 90px rgba(0,0,0,0.30);
   transition-delay: 0.07s;
 }
-#page-transition .trans-bar:nth-child(3) {
+#page-transition .trans-bar:nth-child(3),
+#page-transition .trans-bar-blue {
   background: linear-gradient(155deg, #0F47C0 0%, #1655D8 50%, #0A38A8 100%);
   box-shadow: inset 0 0 90px rgba(0,0,0,0.30);
   transition-delay: 0.14s;
@@ -1245,11 +1263,22 @@ body.in-page-mode .page-back-btn {
     drop-shadow(0 0 12px rgba(0,0,0,0.35));
   transition: opacity 0.45s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-/* Xbox: green logo on green bar would blend in — flip to pure white silhouette */
-#page-transition .trans-bar:nth-child(2) .trans-bar-logo {
-  filter:
-    brightness(0) invert(1)
-    drop-shadow(0 10px 22px rgba(0,0,0,0.55));
+/* PlayStation logo: drop the baked-in checker background using "lighten"
+   blend mode — the dark checker disappears against the bright blue bar
+   while the white logo survives. */
+#page-transition .trans-bar-logo-blend {
+  mix-blend-mode: lighten;
+  /* drop-shadow filter looks bad with lighten (creates a dark halo) — drop it */
+  filter: none;
+}
+/* Xbox logo: solid green background behind the image hides checkerboard */
+#page-transition .trans-bar-logo-xbox {
+  mix-blend-mode: lighten;
+  filter: none;
+}
+/* Inline SVG Xbox icon — already pure white, just needs the same shadow as logos */
+#page-transition .trans-bar-logo-svg {
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,0.55));
 }
 #page-transition.show .trans-bar-logo {
   opacity: 1;
@@ -1354,15 +1383,79 @@ body.in-page-mode .page-back-btn {
   50% { filter: drop-shadow(0 0 18px currentColor) drop-shadow(0 0 30px currentColor); }
 }
 
-/* ════════════════ 3D CARD TILT + SHINE ════════════════ */
+/* ════════════════ PS5-STYLE 3D TILT + PARALLAX POP-OUT + HOLOGRAPHIC GLARE ════════════════ */
 .image-card, .device-showcase, .acc-card, .beauty-card {
   transform-style: preserve-3d;
   --rx: 0deg; --ry: 0deg;
+  --mx: 50%; --my: 50%;
   will-change: transform;
+  /* PS5 "snap back" cubic-bezier when leaving the card */
+  transition:
+    transform 0.55s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.55s cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 0.4s ease;
 }
-.image-card.is-tilted, .device-showcase.is-tilted, .acc-card.is-tilted, .beauty-card.is-tilted {
-  transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-8px) scale(1.02);
-  transition: transform 0.15s ease-out, box-shadow 0.3s, border-color 0.3s;
+.image-card.is-tilted,
+.device-showcase.is-tilted,
+.acc-card.is-tilted,
+.beauty-card.is-tilted {
+  transform:
+    perspective(900px)
+    rotateX(var(--rx))
+    rotateY(var(--ry))
+    translateY(-12px) scale(1.025);
+  /* Snappy follow-the-mouse while tilted */
+  transition:
+    transform 0.18s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Parallax pop-out — inner elements lift forward on the Z-axis when tilted */
+.image-card .image-card-imgwrap,
+.image-card .image-card-platform,
+.image-card .image-card-title,
+.image-card .image-card-genre,
+.image-card .image-card-price,
+.image-card .image-card-add {
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.image-card.is-tilted .image-card-imgwrap  { transform: translateZ(35px); }
+.image-card.is-tilted .image-card-platform { transform: translateZ(75px) scale(1.08); }
+.image-card.is-tilted .image-card-title    { transform: translateZ(20px); }
+.image-card.is-tilted .image-card-genre    { transform: translateZ(14px); }
+.image-card.is-tilted .image-card-price    { transform: translateZ(45px); }
+.image-card.is-tilted .image-card-add      { transform: translateZ(58px); }
+
+/* Holographic glare — radial sheen that follows the cursor */
+.image-card { position: relative; }
+.image-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    520px circle at var(--mx) var(--my),
+    rgba(255,255,255,0.22) 0%,
+    rgba(255,255,255,0.10) 22%,
+    rgba(120,180,255,0.06) 38%,
+    transparent 60%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  z-index: 4;
+}
+.image-card.is-tilted::after { opacity: 1; }
+/* PS5-tinted glare for red (PS5) cards — a touch of warm red in the sheen */
+.image-card.is-ps5::after {
+  background: radial-gradient(
+    520px circle at var(--mx) var(--my),
+    rgba(255,255,255,0.22) 0%,
+    rgba(255,180,180,0.10) 22%,
+    rgba(255,100,120,0.07) 38%,
+    transparent 60%
+  );
 }
 .image-card-imgwrap::before {
   content: ''; position: absolute; inset: 0;
@@ -1497,10 +1590,10 @@ body.in-page-mode .page-back-btn {
     <img class="trans-bar-logo" src="Photo/Nintendo.png" alt="Nintendo" decoding="async" fetchpriority="high"/>
   </div>
   <div class="trans-bar trans-bar-green">
-    <img class="trans-bar-logo" src="Photo/XboxBack.webp" alt="Xbox" decoding="async" fetchpriority="high"/>
+    <img class="trans-bar-logo trans-bar-logo-xbox" src="Photo/XboxBack.jpeg" alt="Xbox" decoding="async" fetchpriority="high"/>
   </div>
   <div class="trans-bar trans-bar-blue">
-    <img class="trans-bar-logo" src="Photo/PSback.webp" alt="PlayStation" decoding="async" fetchpriority="high"/>
+    <img class="trans-bar-logo trans-bar-logo-blend" src="Photo/PSback.webp" alt="PlayStation" decoding="async" fetchpriority="high"/>
   </div>
   <div class="trans-content">
     <div class="trans-logo-orbits">
@@ -1568,13 +1661,23 @@ body.in-page-mode .page-back-btn {
   </a>
   <ul class="nav-links">
     <li><a href="#home" class="active">الرئيسية</a></li>
-    <li><a href="#devices">الأجهزة</a></li>
-    <li><a href="#ps2">PS2</a></li>
-    <li><a href="#ps3">PS3</a></li>
-    <li><a href="#ps4">PS4</a></li>
-    <li><a href="#ps5">PS5</a></li>
-    <li><a href="#accessories">إكسسوارات</a></li>
-    <li><a href="#beauty">تجميل</a></li>
+    <li><a href="#sections">تصفح الأقسام</a></li>
+    <li><a href="#ps1-discs">سيديات PS1</a></li>
+    <li><a href="#ps2">سيديات PS2</a></li>
+    <li><a href="#ps3">سيديات PS3</a></li>
+    <li><a href="#ps4">سيديات PS4</a></li>
+    <li><a href="#ps5">سيديات PS5</a></li>
+    <li><a href="#xbox-discs">سيديات Xbox</a></li>
+    <li><a href="#wii-discs">سيديات Wii</a></li>
+    <li><a href="#umd-discs">سيديات UMD</a></li>
+    <li><a href="#playstation-devices">أجهزة PlayStation</a></li>
+    <li><a href="#xbox-devices">أجهزة Xbox</a></li>
+    <li><a href="#nintendo-devices">أجهزة نينتندو</a></li>
+    <li><a href="#wii-devices">أجهزة Wii</a></li>
+    <li><a href="#vr-devices">أجهزة VR</a></li>
+    <li><a href="#steering-devices">أجهزة ستيرنج</a></li>
+    <li><a href="#ps-xbox-accessories">إكسسوارات</a></li>
+    <li><a href="#repair-service">صيانة</a></li>
   </ul>
   <button class="nav-cart-btn" onclick="openCart()">
     🛒 السلة <span class="cart-badge" id="nav-cart-count">0</span>
@@ -1728,7 +1831,7 @@ body.in-page-mode .page-back-btn {
     <p class="hero-sub" style="font-size:1.1rem;margin-top:5px;">وجهتك الأولى لكل ما يتعلق بعالم الألعاب<br>أجهزة • ألعاب • إكسسوارات • تجميل</p>
     <div class="hero-btns">
       <a href="#sections" class="btn-red" style="text-decoration:none;padding:14px 35px;border-radius:6px;font-weight:700;display:inline-block;">تصفح الأقسام</a>
-      <a href="#ps5" class="btn-blue" style="text-decoration:none;padding:14px 35px;border-radius:6px;font-weight:700;display:inline-block;">ألعاب PS5</a>
+      <a href="#ps5" class="btn-blue" style="text-decoration:none;padding:14px 35px;border-radius:6px;font-weight:700;display:inline-block;">سيديات PS5</a>
     </div>
   </div>
   <div class="marquee-wrap">
@@ -1778,40 +1881,85 @@ body.in-page-mode .page-back-btn {
   <h2 class="section-title">تصفح <span>الأقسام</span></h2>
   <div class="section-line"></div>
   <div class="sections-grid">
-    <a href="#devices" class="section-nav-card">
-      <span class="section-nav-icon">🎮</span>
-      <div class="section-nav-name">الأجهزة</div>
-      <div class="section-nav-sub">PS4, PS5 وأكثر</div>
+    <a href="#ps1-discs" class="section-nav-card">
+      <span class="section-nav-icon">💿</span>
+      <div class="section-nav-name">سيديات PS1</div>
+      <div class="section-nav-sub">ألعاب كلاسيك</div>
     </a>
     <a href="#ps2" class="section-nav-card">
       <span class="section-nav-icon">💿</span>
-      <div class="section-nav-name">PS2</div>
+      <div class="section-nav-name">سيديات PS2</div>
       <div class="section-nav-sub">كلاسيكيات لا تُنسى</div>
     </a>
     <a href="#ps3" class="section-nav-card">
       <span class="section-nav-icon">🏆</span>
-      <div class="section-nav-name">PS3</div>
-      <div class="section-nav-sub">جيل Cell Processor</div>
+      <div class="section-nav-name">سيديات PS3</div>
+      <div class="section-nav-sub">جيل PlayStation 3</div>
     </a>
     <a href="#ps4" class="section-nav-card">
       <span class="section-nav-icon">⚡</span>
-      <div class="section-nav-name">PS4</div>
-      <div class="section-nav-sub">12 لعبة متوفرة</div>
+      <div class="section-nav-name">سيديات PS4</div>
+      <div class="section-nav-sub">ألعاب PS4</div>
     </a>
     <a href="#ps5" class="section-nav-card">
       <span class="section-nav-icon">🚀</span>
-      <div class="section-nav-name">PS5</div>
-      <div class="section-nav-sub">7 ألعاب من الجيل الجديد</div>
+      <div class="section-nav-name">سيديات PS5</div>
+      <div class="section-nav-sub">الجيل الجديد</div>
     </a>
-    <a href="#accessories" class="section-nav-card">
+    <a href="#xbox-discs" class="section-nav-card">
+      <span class="section-nav-icon">🟢</span>
+      <div class="section-nav-name">سيديات Xbox One/SX</div>
+      <div class="section-nav-sub">Xbox One و Series X</div>
+    </a>
+    <a href="#wii-discs" class="section-nav-card">
+      <span class="section-nav-icon">🎯</span>
+      <div class="section-nav-name">سيديات Wii</div>
+      <div class="section-nav-sub">ألعاب Nintendo Wii</div>
+    </a>
+    <a href="#umd-discs" class="section-nav-card">
+      <span class="section-nav-icon">💽</span>
+      <div class="section-nav-name">سيديات UMD</div>
+      <div class="section-nav-sub">ألعاب PSP</div>
+    </a>
+    <a href="#playstation-devices" class="section-nav-card">
+      <span class="section-nav-icon">🎮</span>
+      <div class="section-nav-name">أجهزة PlayStation</div>
+      <div class="section-nav-sub">PS2, PS4, PS5</div>
+    </a>
+    <a href="#xbox-devices" class="section-nav-card">
+      <span class="section-nav-icon">🟩</span>
+      <div class="section-nav-name">أجهزة Xbox</div>
+      <div class="section-nav-sub">Xbox One و Series S</div>
+    </a>
+    <a href="#nintendo-devices" class="section-nav-card">
+      <span class="section-nav-icon">🔴</span>
+      <div class="section-nav-name">أجهزة نينتندو</div>
+      <div class="section-nav-sub">Nintendo Consoles</div>
+    </a>
+    <a href="#wii-devices" class="section-nav-card">
+      <span class="section-nav-icon">🎯</span>
+      <div class="section-nav-name">أجهزة Wii</div>
+      <div class="section-nav-sub">Nintendo Wii</div>
+    </a>
+    <a href="#vr-devices" class="section-nav-card">
+      <span class="section-nav-icon">🥽</span>
+      <div class="section-nav-name">أجهزة VR</div>
+      <div class="section-nav-sub">واقع افتراضي</div>
+    </a>
+    <a href="#steering-devices" class="section-nav-card">
+      <span class="section-nav-icon">🏎️</span>
+      <div class="section-nav-name">أجهزة ستيرنج</div>
+      <div class="section-nav-sub">قيادة وسباق</div>
+    </a>
+    <a href="#ps-xbox-accessories" class="section-nav-card">
       <span class="section-nav-icon">🎧</span>
-      <div class="section-nav-name">إكسسوارات</div>
+      <div class="section-nav-name">إكسسوارات PS / Xbox</div>
       <div class="section-nav-sub">ملحقات أصلية</div>
     </a>
-    <a href="#beauty" class="section-nav-card">
-      <span class="section-nav-icon">✨</span>
-      <div class="section-nav-name">تجميل</div>
-      <div class="section-nav-sub">خصصها بأسلوبك</div>
+    <a href="#repair-service" class="section-nav-card">
+      <span class="section-nav-icon">🛠️</span>
+      <div class="section-nav-name">خدمة صيانة</div>
+      <div class="section-nav-sub">فحص وتصليح</div>
     </a>
   </div>
 </section>
@@ -1966,45 +2114,21 @@ body.in-page-mode .page-back-btn {
 
 <!-- ════════════════ PS2 ════════════════ -->
 <section id="ps2">
-  <h2 class="section-title">جهاز <span>PlayStation 2</span></h2>
+  <h2 class="section-title">سيديات <span>PS2</span></h2>
   <div class="section-line"></div>
-  <p class="section-subtitle">الجهاز الكلاسيكي الأسطوري — أكثر من 25 سنة من المتعة</p>
+  <p class="section-subtitle">سيديات وألعاب PlayStation 2 الكلاسيكية</p>
 
-  <div class="feature-grid">
-    <div class="feature-img-wrap">
-      <img src="Photo/Ps2.jpeg" alt="PlayStation 2 Slim"/>
-    </div>
-    <div>
-      <span style="display:inline-block;font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:4px;color:var(--red-bright);border:1px solid rgba(255,45,85,0.5);padding:5px 14px;border-radius:20px;margin-bottom:18px;">CLASSIC EDITION</span>
-      <h3 style="font-family:'Orbitron',monospace;font-size:2rem;color:white;margin-bottom:14px;font-weight:900;">PS2 Slim</h3>
-      <p style="color:rgba(255,255,255,0.75);line-height:1.9;font-size:1rem;margin-bottom:22px;">
-        جهاز <strong style="color:var(--red-bright);">PlayStation 2 Slim</strong> الأصلي بحالة ممتازة، يأتي مع يد تحكم DualShock 2 أصلية وكل الكوابل اللازمة للتوصيل.
-        <br><br>
-        مكتبة ألعاب أسطورية: <em>God of War, GTA San Andreas, Tekken 5, Dragon Ball Z, Resident Evil 4</em> وأكثر من 1000 لعبة كلاسيكية.
-      </p>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;">
-        <span style="font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:2px;background:rgba(255,45,85,0.15);color:#ff8080;border:1px solid rgba(255,45,85,0.3);padding:5px 12px;border-radius:14px;">DUALSHOCK 2</span>
-        <span style="font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:2px;background:rgba(42,140,255,0.15);color:#88aaff;border:1px solid rgba(42,140,255,0.3);padding:5px 12px;border-radius:14px;">DVD PLAYER</span>
-        <span style="font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:2px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.3);padding:5px 12px;border-radius:14px;">RETRO</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-        <div class="device-price-big" style="margin:0;font-size:2.4rem;">75</div>
-        <button class="add-btn" style="flex:1;min-width:200px;padding:14px 28px;font-size:1rem;" onclick="addToCart({name:'PlayStation 2 Slim', price:75, icon:'💿', img:'Photo/Ps2.jpeg', kind:'device'})">🛒 أضف للسلة</button>
-      </div>
-    </div>
-  </div>
-
-  <div style="max-width:900px;margin:60px auto 0;text-align:center;padding:0 20px;">
-    <p style="color:rgba(255,255,255,0.5);font-size:0.95rem;line-height:1.8;">
-      💿 ألعاب PS2 الأصلية تأتي قريباً لمتجرنا — تابعنا للحصول على آخر التحديثات
-    </p>
-    <p class="countdown" style="margin-top:14px;font-family:'Orbitron',monospace;color:var(--red-bright);letter-spacing:5px;font-size:0.8rem;">⏳ MORE GAMES COMING SOON ⏳</p>
+  <div class="coming-soon-block">
+    <span class="big-icon">💿</span>
+    <h3>سيديات PS2</h3>
+    <p>ألعاب PS2 الأصلية تأتي قريباً لمتجرنا<br>God of War | GTA San Andreas | Tekken 5 | Resident Evil 4</p>
+    <p class="countdown">⏳ COMING SOON ⏳</p>
   </div>
 </section>
 
 <!-- ════════════════ PS3 (COMING SOON) ════════════════ -->
 <section id="ps3">
-  <h2 class="section-title">ألعاب <span>PS3</span></h2>
+  <h2 class="section-title">سيديات <span>PS3</span></h2>
   <div class="section-line"></div>
   <div class="coming-soon-block">
     <span class="big-icon">🏆</span>
@@ -2016,7 +2140,7 @@ body.in-page-mode .page-back-btn {
 
 <!-- ════════════════ PS4 GAMES ════════════════ -->
 <section id="ps4">
-  <h2 class="section-title">ألعاب <span>PS4</span></h2>
+  <h2 class="section-title">سيديات <span>PS4</span></h2>
   <div class="section-line"></div>
   <p class="section-subtitle">12 لعبة أصلية مميزة لجهاز PlayStation 4 — اضغط "أضف للسلة" لإضافة اللعبة</p>
   <div class="image-grid" id="ps4-grid">
@@ -2026,11 +2150,135 @@ body.in-page-mode .page-back-btn {
 
 <!-- ════════════════ PS5 GAMES ════════════════ -->
 <section id="ps5">
-  <h2 class="section-title">ألعاب <span>PS5</span></h2>
+  <h2 class="section-title">سيديات <span>PS5</span></h2>
   <div class="section-line"></div>
   <p class="section-subtitle">7 ألعاب من الجيل الجديد بإصدارات حصرية</p>
   <div class="image-grid" id="ps5-grid">
     <!-- Cards rendered by JS -->
+  </div>
+</section>
+
+<section id="ps1-discs">
+  <h2 class="section-title">سيديات <span>PS1</span></h2>
+  <div class="section-line"></div>
+  <div class="coming-soon-block">
+    <span class="big-icon">💿</span>
+    <h3>سيديات PS1</h3>
+    <p>ألعاب بلايستيشن 1 الكلاسيكية ستكون متوفرة ضمن هذا القسم<br>Crash | Tekken | Resident Evil | Winning Eleven</p>
+    <p class="countdown">⏳ COMING SOON ⏳</p>
+  </div>
+</section>
+
+<section id="xbox-discs">
+  <h2 class="section-title">سيديات <span>Xbox One/SX</span></h2>
+  <div class="section-line"></div>
+  <div class="coming-soon-block">
+    <span class="big-icon">🟢</span>
+    <h3>سيديات Xbox</h3>
+    <p>ألعاب Xbox One و Xbox Series X/S الأصلية ستكون متوفرة هنا</p>
+    <p class="countdown">⏳ COMING SOON ⏳</p>
+  </div>
+</section>
+
+<section id="wii-discs">
+  <h2 class="section-title">سيديات <span>Wii</span></h2>
+  <div class="section-line"></div>
+  <div class="coming-soon-block">
+    <span class="big-icon">🎯</span>
+    <h3>سيديات Nintendo Wii</h3>
+    <p>ألعاب Wii العائلية والكلاسيكية ستكون ضمن هذا القسم</p>
+    <p class="countdown">⏳ COMING SOON ⏳</p>
+  </div>
+</section>
+
+<section id="umd-discs">
+  <h2 class="section-title">سيديات <span>UMD</span></h2>
+  <div class="section-line"></div>
+  <div class="coming-soon-block">
+    <span class="big-icon">💽</span>
+    <h3>ألعاب PSP UMD</h3>
+    <p>سيديات UMD الأصلية الخاصة بجهاز PSP ستكون متوفرة هنا</p>
+    <p class="countdown">⏳ COMING SOON ⏳</p>
+  </div>
+</section>
+
+<section id="playstation-devices">
+  <h2 class="section-title">أجهزة <span>PlayStation</span></h2>
+  <div class="section-line"></div>
+  <p class="section-subtitle">أجهزة PlayStation المتوفرة في المتجر</p>
+  <div class="acc-grid">
+    <div class="acc-card"><span class="acc-icon">🎮</span><div class="acc-name">PlayStation 5</div><div class="acc-sub">Slim Digital | مع DualSense</div><div class="acc-price">499 JOD</div><button class="add-btn" onclick="addToCart({name:'PlayStation 5 Slim', price:499, icon:'🎮', img:'Photo/Ps5.jpeg', kind:'device'})">🛒 أضف للسلة</button></div>
+    <div class="acc-card"><span class="acc-icon">🎮</span><div class="acc-name">PlayStation 4 PRO</div><div class="acc-sub">1TB | 4K HDR</div><div class="acc-price">285 JOD</div><button class="add-btn" onclick="addToCart({name:'PlayStation 4 Pro 1TB', price:285, icon:'🎮', img:'Photo/Ps4.jpeg', kind:'device'})">🛒 أضف للسلة</button></div>
+    <div class="acc-card"><span class="acc-icon">💿</span><div class="acc-name">PlayStation 2 Slim</div><div class="acc-sub">جهاز كلاسيكي + يد DualShock 2</div><div class="acc-price">75 JOD</div><button class="add-btn" onclick="addToCart({name:'PlayStation 2 Slim', price:75, icon:'💿', img:'Photo/Ps2.jpeg', kind:'device'})">🛒 أضف للسلة</button></div>
+  </div>
+</section>
+
+<section id="xbox-devices">
+  <h2 class="section-title">أجهزة <span>Xbox</span></h2>
+  <div class="section-line"></div>
+  <p class="section-subtitle">أجهزة Xbox المتوفرة</p>
+  <div class="acc-grid">
+    <div class="acc-card"><span class="acc-icon">🟢</span><div class="acc-name">Xbox One</div><div class="acc-sub">500GB | يد لاسلكية أصلية</div><div class="acc-price">185 JOD</div><button class="add-btn" onclick="addToCart({name:'Xbox One 500GB', price:185, icon:'🟢', img:'Photo/Xbox360.jpeg', kind:'device'})">🛒 أضف للسلة</button></div>
+    <div class="acc-card"><span class="acc-icon">⚪</span><div class="acc-name">Xbox Series S</div><div class="acc-sub">512GB SSD | Digital</div><div class="acc-price">325 JOD</div><button class="add-btn" onclick="addToCart({name:'Xbox Series S 512GB', price:325, icon:'⚪', kind:'device'})">🛒 أضف للسلة</button></div>
+  </div>
+</section>
+
+<section id="nintendo-devices">
+  <h2 class="section-title">أجهزة <span>نينتندو</span></h2>
+  <div class="section-line"></div>
+  <p class="section-subtitle">أجهزة Nintendo المتوفرة</p>
+  <div class="acc-grid">
+    <div class="acc-card"><span class="acc-icon">🔴</span><div class="acc-name">Nintendo Wii</div><div class="acc-sub">جهاز كلاسيكي بريموت لاسلكي</div><div class="acc-price">95 JOD</div><button class="add-btn" onclick="addToCart({name:'Nintendo Wii', price:95, icon:'🎯', kind:'device'})">🛒 أضف للسلة</button></div>
+  </div>
+</section>
+
+<section id="wii-devices">
+  <h2 class="section-title">أجهزة <span>Wii</span></h2>
+  <div class="section-line"></div>
+  <p class="section-subtitle">أجهزة Wii وملحقاتها</p>
+  <div class="acc-grid">
+    <div class="acc-card"><span class="acc-icon">🎯</span><div class="acc-name">Nintendo Wii</div><div class="acc-sub">Wii Remote | Motion | Retro</div><div class="acc-price">95 JOD</div><button class="add-btn" onclick="addToCart({name:'Nintendo Wii', price:95, icon:'🎯', kind:'device'})">🛒 أضف للسلة</button></div>
+  </div>
+</section>
+
+<section id="vr-devices">
+  <h2 class="section-title">أجهزة <span>VR</span></h2>
+  <div class="section-line"></div>
+  <p class="section-subtitle">نظارات الواقع الافتراضي</p>
+  <div class="acc-grid">
+    <div class="acc-card"><span class="acc-badge badge-new">NEW</span><span class="acc-icon">🥽</span><div class="acc-name">PS VR2</div><div class="acc-sub">نظارة الواقع الافتراضي</div><div class="acc-price">395 JOD</div><button class="add-btn" onclick="addToCart({name:'PlayStation VR2', price:395, icon:'🥽', kind:'accessory'})">🛒 أضف للسلة</button></div>
+  </div>
+</section>
+
+<section id="steering-devices">
+  <h2 class="section-title">أجهزة <span>ستيرنج</span></h2>
+  <div class="section-line"></div>
+  <div class="coming-soon-block">
+    <span class="big-icon">🏎️</span>
+    <h3>ستيرنجات القيادة</h3>
+    <p>ستيرنجات ألعاب السباق للبلايستيشن والإكس بوكس ستكون متوفرة هنا</p>
+    <p class="countdown">⏳ COMING SOON ⏳</p>
+  </div>
+</section>
+
+<section id="ps-xbox-accessories">
+  <h2 class="section-title">إكسسوارات <span>PS / Xbox</span></h2>
+  <div class="section-line"></div>
+  <p class="section-subtitle">إكسسوارات PlayStation و Xbox</p>
+  <div class="acc-grid">
+    <div class="acc-card"><span class="acc-icon">🎮</span><div class="acc-name">DualSense PS5</div><div class="acc-sub">يد تحكم لاسلكية أصلية</div><div class="acc-price">52 JOD</div><button class="add-btn" onclick="addToCart({name:'DualSense PS5 Controller', price:52, icon:'🎮', kind:'accessory'})">🛒 أضف للسلة</button></div>
+    <div class="acc-card"><span class="acc-icon">🎮</span><div class="acc-name">Xbox Wireless Pad</div><div class="acc-sub">يد تحكم Xbox أصلية</div><div class="acc-price">48 JOD</div><button class="add-btn" onclick="addToCart({name:'Xbox Wireless Controller', price:48, icon:'🎮', kind:'accessory'})">🛒 أضف للسلة</button></div>
+    <div class="acc-card"><span class="acc-icon">🎧</span><div class="acc-name">Pulse 3D Headset</div><div class="acc-sub">سماعة لاسلكية للـ PS5</div><div class="acc-price">68 JOD</div><button class="add-btn" onclick="addToCart({name:'Pulse 3D Wireless Headset', price:68, icon:'🎧', kind:'accessory'})">🛒 أضف للسلة</button></div>
+  </div>
+</section>
+
+<section id="repair-service">
+  <h2 class="section-title">خدمة <span>صيانة</span></h2>
+  <div class="section-line"></div>
+  <div class="acc-grid">
+    <div class="acc-card"><span class="acc-icon">🛠️</span><div class="acc-name">صيانة PlayStation</div><div class="acc-sub">فحص وتصليح أجهزة وأيدي</div><div class="acc-price">حسب الفحص</div></div>
+    <div class="acc-card"><span class="acc-icon">🔧</span><div class="acc-name">صيانة Xbox</div><div class="acc-sub">تصليح أجهزة Xbox وملحقاتها</div><div class="acc-price">حسب الفحص</div></div>
+    <div class="acc-card"><span class="acc-icon">🧰</span><div class="acc-name">تنظيف وصيانة عامة</div><div class="acc-sub">تنظيف داخلي وتبديل معجون حراري</div><div class="acc-price">حسب الفحص</div></div>
   </div>
 </section>
 
@@ -2346,13 +2594,25 @@ function closeCart() {
 }
 
 // ════════════════ PAGE-AS-PAGE ROUTER ════════════════
-const PAGE_IDS = ['devices','ps2','ps3','ps4','ps5','accessories','beauty'];
+const PAGE_IDS = ['devices','ps1-discs','ps2','ps3','ps4','ps5','xbox-discs','wii-discs','umd-discs','playstation-devices','xbox-devices','nintendo-devices','wii-devices','vr-devices','steering-devices','ps-xbox-accessories','repair-service','accessories','beauty'];
 const PAGE_TITLES = {
   devices: 'الأجهزة',
-  ps2: 'ألعاب PS2',
-  ps3: 'ألعاب PS3',
-  ps4: 'ألعاب PS4',
-  ps5: 'ألعاب PS5',
+  'ps1-discs': 'سيديات PS1',
+  ps2: 'سيديات PS2',
+  ps3: 'سيديات PS3',
+  ps4: 'سيديات PS4',
+  ps5: 'سيديات PS5',
+  'xbox-discs': 'سيديات Xbox',
+  'wii-discs': 'سيديات Wii',
+  'umd-discs': 'سيديات UMD',
+  'playstation-devices': 'أجهزة PlayStation',
+  'xbox-devices': 'أجهزة Xbox',
+  'nintendo-devices': 'أجهزة نينتندو',
+  'wii-devices': 'أجهزة Wii',
+  'vr-devices': 'أجهزة VR',
+  'steering-devices': 'أجهزة ستيرنج',
+  'ps-xbox-accessories': 'إكسسوارات PS / Xbox',
+  'repair-service': 'خدمة صيانة',
   accessories: 'الإكسسوارات',
   beauty: 'التجميل',
   home: 'الرئيسية'
@@ -2532,38 +2792,61 @@ function generateBgSymbols() {
 }
 generateBgSymbols();
 
-// ════════════════ 3D CARD TILT ════════════════
+// ════════════════ PS5-STYLE 3D CARD TILT + PARALLAX + HOLOGRAPHIC GLARE ════════════════
+// Targets: .image-card, .device-showcase, .acc-card, .beauty-card.
+// Sets   --rx/--ry  → rotation
+//        --mx/--my  → glare position (also reused by .section-nav-card spotlight)
+// Toggles .is-tilted to trigger the cubic-bezier CSS transitions.
+const TILT_SELECTOR = '.image-card, .device-showcase, .acc-card, .beauty-card';
+const TILT_MAX_DEG = 12;     // max rotation per axis in degrees
 let _tiltedCard = null;
+
+function _resetTiltedCard(card) {
+  if (!card) return;
+  card.classList.remove('is-tilted');
+  card.style.removeProperty('--rx');
+  card.style.removeProperty('--ry');
+  card.style.removeProperty('--mx');
+  card.style.removeProperty('--my');
+}
+
 document.addEventListener('mousemove', (e) => {
-  const card = e.target.closest('.image-card, .device-showcase, .acc-card, .beauty-card');
-  if (card && card !== _tiltedCard) {
-    if (_tiltedCard) {
-      _tiltedCard.classList.remove('is-tilted');
-      _tiltedCard.style.removeProperty('--rx');
-      _tiltedCard.style.removeProperty('--ry');
-    }
-    _tiltedCard = card;
+  const card = e.target.closest(TILT_SELECTOR);
+
+  // Switching between cards (or leaving) — reset the previous one cleanly
+  if (card !== _tiltedCard) {
+    _resetTiltedCard(_tiltedCard);
+    _tiltedCard = card || null;
   }
+
   if (card) {
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    card.style.setProperty('--rx', (-y * 9) + 'deg');
-    card.style.setProperty('--ry', (x * 9) + 'deg');
+    const r = card.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;     // 0..1
+    const py = (e.clientY - r.top)  / r.height;
+    const x  = px - 0.5, y = py - 0.5;             // -0.5..0.5
+    // Rotation (note: y inverted so the top tilts away from the viewer)
+    card.style.setProperty('--rx', (-y * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
+    card.style.setProperty('--ry', ( x * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
+    // Glare focal point (in % so the radial-gradient picks it up)
+    card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+    card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
     card.classList.add('is-tilted');
-  } else if (_tiltedCard) {
-    _tiltedCard.classList.remove('is-tilted');
-    _tiltedCard.style.removeProperty('--rx');
-    _tiltedCard.style.removeProperty('--ry');
-    _tiltedCard = null;
   }
-  // Section nav cards: spotlight follows cursor
+
+  // Section nav cards keep their independent spotlight track
   const navCard = e.target.closest('.section-nav-card');
   if (navCard) {
     const r = navCard.getBoundingClientRect();
-    navCard.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-    navCard.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    navCard.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100) + '%');
+    navCard.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
   }
+}, { passive: true });
+
+// Reset when the cursor leaves the document entirely (otherwise the card
+// would stay frozen in its tilted state)
+document.addEventListener('mouseleave', () => {
+  _resetTiltedCard(_tiltedCard);
+  _tiltedCard = null;
 });
 
 // ════════════════ BUTTON RIPPLE ════════════════
