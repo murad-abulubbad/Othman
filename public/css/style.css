@@ -2397,3 +2397,17 @@ html {
 section:not(#home) {
   background: rgba(6, 8, 28, 0.85) !important;
 }
+
+/* Disable infinite animations that cause scroll lag */
+.console-float,
+.energy-ring,
+.bg-symbol,
+.hero-logo-big,
+.stat-number {
+  animation: none !important;
+}
+
+/* Disable marquee animation */
+.marquee-track {
+  animation: none !important;
+}

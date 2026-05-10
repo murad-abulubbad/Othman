@@ -1000,7 +1000,18 @@ function startParticles() {
 
 // ═══ NAVBAR ═══
 const navbar = document.getElementById('navbar');
-window.addEventListener('scroll', () => { navbar.classList.toggle('shrunk', window.scrollY > 80); });
+let _lastScrollY = 0;
+let _ticking = false;
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  if (!_ticking) {
+    window.requestAnimationFrame(() => {
+      navbar.classList.toggle('shrunk', scrollY > 80);
+      _ticking = false;
+    });
+    _ticking = true;
+  }
+}, { passive: true });
 
 // ═══ SCROLL ANIMATIONS ═══
 const observer = new IntersectionObserver((entries) => {
