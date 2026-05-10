@@ -1789,8 +1789,8 @@ img.console-float {
 
 /* Hero centerpiece logo image */
 .hero-logo-img {
-  width: clamp(220px, 28vw, 360px);
-  height: clamp(220px, 28vw, 360px);
+  width: clamp(150px, 20vw, 240px);
+  height: clamp(150px, 20vw, 240px);
   object-fit: cover;
   border-radius: 50% !important;
   border: 3px solid rgba(255,255,255,0.08);
