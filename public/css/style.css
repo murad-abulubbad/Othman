@@ -1834,13 +1834,7 @@ img.console-float {
 @keyframes orbitSpin { to { transform: rotate(360deg); } }
 
 /* ════════════════ PAGE-MODE — each section is its own page ════════════════ */
-/* Hide homepage and show only categories */
-#home { display: none !important; }
-#sections { display: block !important; }
 body:not(.in-page-mode) section:not(#home):not(#sections) { display: none !important; }
-body:not(.in-page-mode) #home,
-body:not(.in-page-mode) #particle-canvas,
-body:not(.in-page-mode) .bg-symbols { display: none !important; }
 body.in-page-mode #home,
 body.in-page-mode .stats-section,
 body.in-page-mode #sections { display: none !important; }
