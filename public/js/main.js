@@ -789,7 +789,7 @@ function generateBgSymbols() {
     { ch: '□', cls: 's-square' },
     { ch: '△', cls: 's-triangle' }
   ];
-  const total = window.innerWidth < 768 ? 26 : 55;
+  const total = window.innerWidth < 768 ? 15 : 30;
   for (let i = 0; i < total; i++) {
     const v = variants[Math.floor(Math.random() * variants.length)];
     const bright = Math.random() < 0.35;
@@ -814,8 +814,10 @@ generateBgSymbols();
 //        --mx/--my  → glare position (also reused by .section-nav-card spotlight)
 // Toggles .is-tilted to trigger the cubic-bezier CSS transitions.
 const TILT_SELECTOR = '.image-card, .device-showcase, .acc-card, .beauty-card';
-const TILT_MAX_DEG = 12;     // max rotation per axis in degrees
+const TILT_MAX_DEG = 8;     // max rotation per axis in degrees
 let _tiltedCard = null;
+let _lastMouseMove = 0;
+const _THROTTLE_MS = 16; // ~60fps
 
 function _resetTiltedCard(card) {
   if (!card) return;
@@ -827,6 +829,9 @@ function _resetTiltedCard(card) {
 }
 
 document.addEventListener('mousemove', (e) => {
+  const now = performance.now();
+  if (now - _lastMouseMove < _THROTTLE_MS) return;
+  _lastMouseMove = now;
   const card = e.target.closest(TILT_SELECTOR);
 
   // Switching between cards (or leaving) — reset the previous one cleanly
@@ -969,7 +974,7 @@ function startParticles() {
   function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 20; i++) {
     particles.push({
       x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
       s: symbols[Math.floor(Math.random() * symbols.length)],
