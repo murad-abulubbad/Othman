@@ -1765,6 +1765,7 @@ img.console-float {
   position: fixed; inset: 0;
   pointer-events: none; z-index: 0;
   overflow: hidden;
+  contain: paint;
 }
 .bg-symbol {
   position: absolute;
@@ -1772,7 +1773,6 @@ img.console-float {
   font-weight: 900;
   user-select: none;
   filter: drop-shadow(0 0 20px currentColor);
-  will-change: transform, opacity;
   animation: bgFloatRise linear infinite;
 }
 .bg-symbol.s-x        { color: rgba(255, 80, 110, 0.30); }
