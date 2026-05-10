@@ -343,7 +343,7 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
   background:
     radial-gradient(ellipse at 15% 50%, rgba(204,0,0,0.2) 0%, transparent 55%),
     radial-gradient(ellipse at 85% 50%, rgba(0,85,204,0.2) 0%, transparent 55%);
-  animation: nebula 8s ease-in-out infinite alternate;
+  animation: none;
 }
 .split-line {
   position: absolute; inset: 0;
