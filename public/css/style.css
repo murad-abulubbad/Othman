@@ -20,7 +20,7 @@ body {
     radial-gradient(ellipse 100% 80% at 100% 100%, rgba(255, 25, 60, 0.78), transparent 58%),
     radial-gradient(ellipse 60% 80% at 50% 50%, rgba(120, 30, 110, 0.45), transparent 70%),
     linear-gradient(135deg, #0c1245 0%, #1a0d3a 50%, #3a0d18 100%);
-  background-attachment: fixed;
+  background-attachment: scroll;
   background-size: cover;
   color: var(--white);
   font-family: 'Cairo', sans-serif;
