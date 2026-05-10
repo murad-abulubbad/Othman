@@ -2254,8 +2254,8 @@ body.in-page-mode .page-back-btn {
     padding: 0 10px;
   }
   #home .hero-logo-img {
-    width: clamp(170px, 54vw, 215px);
-    height: clamp(170px, 54vw, 215px);
+    width: clamp(120px, 40vw, 160px);
+    height: clamp(120px, 40vw, 160px);
     margin-bottom: 18px;
   }
   #home .hero-logo-orbit { inset: -18px; }
