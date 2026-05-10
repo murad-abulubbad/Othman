@@ -493,7 +493,7 @@ function showToast(name) {
   const t = document.getElementById('toast');
   t.querySelector('.toast-icon').textContent = '🛒';
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 5000);
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 function updateCartUI() {
