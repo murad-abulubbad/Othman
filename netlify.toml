@@ -1,0 +1,12 @@
+[build]
+  publish = "public"
+
+[[redirects]]
+  from = "/"
+  to = "/Otman_fixed.html"
+  status = 200
+
+[[redirects]]
+  from = "/index.html"
+  to = "/Otman_fixed.html"
+  status = 200
