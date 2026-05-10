@@ -1835,7 +1835,7 @@ img.console-float {
 @keyframes orbitSpin { to { transform: rotate(360deg); } }
 
 /* ════════════════ PAGE-MODE — each section is its own page ════════════════ */
-body:not(.in-page-mode) section:not(#home):not(#sections) { display: none !important; }
+body:not(.in-page-mode) section:not(#home):not(#sections):not(.dynamic-category-section) { display: none !important; }
 body.in-page-mode #home,
 body.in-page-mode .stats-section,
 body.in-page-mode #sections { display: none !important; }

@@ -848,10 +848,10 @@ function _resetTiltedCard(card) {
      const px = (e.clientX - r.left) / r.width;     // 0..1
      const py = (e.clientY - r.top)  / r.height;
      const x  = px - 0.5, y = py - 0.5;             // -0.5..0.5
-      Rotation (note: y inverted so the top tilts away from the viewer)
+     // Rotation (note: y inverted so the top tilts away from the viewer)
      card.style.setProperty('--rx', (-y * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
      card.style.setProperty('--ry', ( x * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
-      Glare focal point (in % so the radial-gradient picks it up)
+     // Glare focal point (in % so the radial-gradient picks it up)
      card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
      card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
      card.classList.add('is-tilted');
@@ -955,6 +955,15 @@ window.addEventListener('load', () => {
     // startParticles(); // disabled for isolation testing
   }, 2200);
 });
+
+// Fallback: force hide loader after 5 seconds regardless
+setTimeout(() => {
+  const loader = document.getElementById('loader');
+  if (loader && !loader.classList.contains('hidden')) {
+    loader.classList.add('hidden');
+    console.warn('Loader force-hidden due to timeout');
+  }
+}, 5000);
 updateCartUI();
 
 // ═══ CURSOR ═══

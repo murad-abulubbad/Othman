@@ -5,46 +5,45 @@ import { db, collection, query, orderBy, getDocs } from '../firebase.js';
 // Builds sections-nav and all product sections dynamically.
 
 async function loadFirestoreData() {
+  console.log('Starting Firestore data load...');
   try {
     // Fetch Categories (ordered by createdAt asc)
     const categoriesQuery = query(collection(db, 'Categories'), orderBy('createdAt', 'asc'));
     const categoriesSnapshot = await getDocs(categoriesQuery);
     const categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log('Categories loaded:', categories.length);
+
+    // Build nav cards in #sections-grid
+    const sectionsGrid = document.getElementById('sections-grid');
+    if (sectionsGrid) {
+      if (categories.length === 0) {
+        sectionsGrid.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px;">لا توجد أقسام حالياً. أضف أقسام من لوحة الإدارة.<br><small>افتح Console (F12) للمزيد من المعلومات</small></div>';
+        console.log('No categories found in Firestore');
+      } else {
+        sectionsGrid.innerHTML = categories.map(cat => `
+          <a href="#cat-${cat.id}" class="section-card">
+            <div class="section-card-icon">🎮</div>
+            <div class="section-card-title">${cat.name}</div>
+            <div class="section-card-platform">${cat.platform || ''}</div>
+          </a>
+        `).join('');
+        console.log('Section cards rendered:', categories.length);
+      }
+    } else {
+      console.error('sections-grid element not found');
+    }
 
     // Fetch Items (ordered by createdAt desc)
     const itemsQuery = query(collection(db, 'Items'), orderBy('createdAt', 'desc'));
     const itemsSnapshot = await getDocs(itemsQuery);
     const items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    // Build nav cards in #sections-grid
-    const sectionsGrid = document.getElementById('sections-grid');
-    if (sectionsGrid) {
-      sectionsGrid.innerHTML = categories.map(cat => `
-        <a href="#cat-${cat.id}" class="section-card">
-          <div class="section-card-icon">🎮</div>
-          <div class="section-card-title">${cat.name}</div>
-          <div class="section-card-platform">${cat.platform || ''}</div>
-        </a>
-      `).join('');
-    }
+    console.log('Items loaded:', items.length);
 
     // Build dynamic sections in #dynamic-sections
     const dynamicSections = document.getElementById('dynamic-sections');
     if (dynamicSections) {
       dynamicSections.innerHTML = categories.map(cat => {
         const categoryItems = items.filter(item => item.categoryID === cat.id);
-        const itemsHtml = categoryItems.map(item => ({
-          name: item.name,
-          img: item.imageUrl,
-          price: item.discountPrice || item.originalPrice,
-          priceLabel: item.discountPrice && item.originalPrice 
-            ? `<span style="text-decoration:line-through;opacity:0.6;font-size:0.8em">${item.originalPrice}</span> ${item.discountPrice}` 
-            : '',
-          genre: item.genre,
-          condition: item.condition || 'مستعمل',
-          trailer: item.videoTrailerUrl,
-          platform: cat.platform
-        }));
 
         return `
           <section id="cat-${cat.id}" class="dynamic-category-section">
@@ -62,18 +61,25 @@ async function loadFirestoreData() {
           name: item.name,
           img: item.imageUrl,
           price: item.discountPrice || item.originalPrice,
-          priceLabel: item.discountPrice && item.originalPrice 
-            ? `<span style="text-decoration:line-through;opacity:0.6;font-size:0.8em">${item.originalPrice}</span> ${item.discountPrice}` 
+          priceLabel: item.discountPrice && item.originalPrice
+            ? `<span style="text-decoration:line-through;opacity:0.6;font-size:0.8em">${item.originalPrice}</span> ${item.discountPrice}`
             : '',
           genre: item.genre,
           condition: item.condition || 'مستعمل',
           trailer: item.videoTrailerUrl
         }));
-        
+
         if (formattedItems.length > 0) {
-          renderGameGrid(`grid-cat-${cat.id}`, formattedItems, cat.platform);
+          // Check if renderGameGrid is available
+          if (typeof renderGameGrid === 'function') {
+            renderGameGrid(`grid-cat-${cat.id}`, formattedItems, cat.platform);
+          } else {
+            console.error('renderGameGrid function not found. Make sure main.js is loaded before firestore-loader.js');
+          }
         }
       });
+    } else {
+      console.error('dynamic-sections element not found');
     }
 
     // Store category titles for page navigation
@@ -82,8 +88,14 @@ async function loadFirestoreData() {
       window._catPageTitles[`cat-${cat.id}`] = cat.name;
     });
 
+    console.log('Firestore data loaded successfully');
   } catch (error) {
     console.error('Error loading Firestore data:', error);
+    // Show error message to user
+    const sectionsGrid = document.getElementById('sections-grid');
+    if (sectionsGrid) {
+      sectionsGrid.innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 20px;">فشل تحميل البيانات. يرجى تحديث الصفحة.</div>';
+    }
   }
 }
 
