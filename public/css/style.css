@@ -558,6 +558,7 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
 .favorite-sidebar {
   position: fixed; top: 0; right: -420px;
   width: 400px; height: 100vh;
+  height: 100svh;
   background: rgba(10,15,40,0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -1683,6 +1684,7 @@ img.console-float {
   .game-detail-box {
     grid-template-columns: 1fr;
     max-height: 88vh;
+    max-height: 88svh;
     overflow: auto;
   }
   .game-detail-cover {
@@ -1936,6 +1938,7 @@ body.in-page-mode .page-back-btn {
   width: clamp(140px, 22vw, 280px);
   height: auto;
   max-height: 55vh;
+  max-height: 55svh;
   object-fit: contain;
   opacity: 0;
   pointer-events: none;
@@ -2332,6 +2335,28 @@ body.in-page-mode .page-back-btn {
   #home .marquee-wrap {
     margin-top: 24px;
     padding: 9px 0;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  html { scroll-behavior: auto; }
+  body { cursor: auto; }
+  #cursor, #cursor-dot { display: none !important; }
+  #particle-canvas, .bg-symbols, #bg-symbols { display: none !important; }
+  .bg-symbol { animation: none !important; }
+  .hero-bg, .scanlines { animation: none !important; }
+  .energy-ring { animation: none !important; }
+  .console-float,
+  .device-icon,
+  .marquee-track,
+  .hero-logo-img,
+  .hero-logo-big,
+  .nav-logo-wrap,
+  .loader-logo-img,
+  .loader-orbit,
+  .loader-bar,
+  .loader-text {
+    animation: none !important;
   }
 }
 
