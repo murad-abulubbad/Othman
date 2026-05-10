@@ -946,12 +946,29 @@ function syncAddedButtons() {
 syncAddedButtons();
 
 // ═══ LOADER ═══
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('loader').classList.add('hidden');
-    startParticles();
-  }, 2200);
+function hideLoaderOnce() {
+  if (hideLoaderOnce.done) return;
+  hideLoaderOnce.done = true;
+  const loader = document.getElementById('loader');
+  if (loader) loader.classList.add('hidden');
+  startParticlesIfAllowed();
+}
+
+function startParticlesIfAllowed() {
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  if (reduceMotion || coarsePointer) return;
+  startParticles();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(hideLoaderOnce, 400);
 });
+window.addEventListener('load', () => {
+  setTimeout(hideLoaderOnce, 400);
+});
+// Fallback for slow/stalled loads
+setTimeout(hideLoaderOnce, 8000);
 updateCartUI();
 
 // ═══ CURSOR ═══

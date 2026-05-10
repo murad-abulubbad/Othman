@@ -335,6 +335,7 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
 /* HERO */
 #home {
   position: relative; min-height: 100vh;
+  min-height: 100svh;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   overflow: hidden; padding-top: 70px;
 }
@@ -1840,6 +1841,7 @@ body.in-page-mode section:not(.page-active) { display: none !important; }
 body.in-page-mode section.page-active {
   display: block !important;
   min-height: calc(100vh - 70px);
+  min-height: calc(100svh - 70px);
   padding-top: 110px;
   padding-bottom: 100px;
   animation: pageEnter 0.8s cubic-bezier(0.25,0.46,0.45,0.94) both;
@@ -2386,6 +2388,7 @@ body {
   background-size: 100% 100% !important;
   background-repeat: no-repeat !important;
   min-height: 100vh;
+  min-height: 100svh;
 }
 
 /* Ensure html also has fallback background */
