@@ -828,7 +828,9 @@ function _resetTiltedCard(card) {
   card.style.removeProperty('--my');
 }
 
-document.addEventListener('mousemove', (e) => {
+// Skip tilt on mobile devices for performance
+if (window.innerWidth >= 900) {
+  document.addEventListener('mousemove', (e) => {
   const now = performance.now();
   if (now - _lastMouseMove < _THROTTLE_MS) return;
   _lastMouseMove = now;
@@ -862,13 +864,16 @@ document.addEventListener('mousemove', (e) => {
     navCard.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
   }
 }, { passive: true });
+}
 
 // Reset when the cursor leaves the document entirely (otherwise the card
 // would stay frozen in its tilted state)
-document.addEventListener('mouseleave', () => {
-  _resetTiltedCard(_tiltedCard);
-  _tiltedCard = null;
-});
+if (window.innerWidth >= 900) {
+  document.addEventListener('mouseleave', () => {
+    _resetTiltedCard(_tiltedCard);
+    _tiltedCard = null;
+  });
+}
 
 // ════════════════ BUTTON RIPPLE ════════════════
 document.addEventListener('click', (e) => {
@@ -955,17 +960,23 @@ window.addEventListener('load', () => {
 updateCartUI();
 
 // ═══ CURSOR ═══
-const cursor = document.getElementById('cursor');
-const cursorDot = document.getElementById('cursor-dot');
-document.addEventListener('mousemove', (e) => {
-  cursor.style.left = (e.clientX - 11) + 'px';
-  cursor.style.top = (e.clientY - 11) + 'px';
-  cursorDot.style.left = (e.clientX - 3) + 'px';
-  cursorDot.style.top = (e.clientY - 3) + 'px';
-});
+// Skip cursor on mobile devices for performance
+if (window.innerWidth >= 900) {
+  const cursor = document.getElementById('cursor');
+  const cursorDot = document.getElementById('cursor-dot');
+  document.addEventListener('mousemove', (e) => {
+    cursor.style.left = (e.clientX - 11) + 'px';
+    cursor.style.top = (e.clientY - 11) + 'px';
+    cursorDot.style.left = (e.clientX - 3) + 'px';
+    cursorDot.style.top = (e.clientY - 3) + 'px';
+  });
+}
 
 // ═══ PARTICLES ═══
 function startParticles() {
+  // Skip on mobile devices for performance
+  if (window.innerWidth < 900) return;
+  
   const canvas = document.getElementById('particle-canvas');
   const ctx = canvas.getContext('2d');
   let W, H;

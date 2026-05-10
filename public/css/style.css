@@ -2386,3 +2386,26 @@ body.in-page-mode .page-back-btn {
     transform: none !important;
   }
 }
+
+
+/* ════════════════ CRITICAL MOBILE BACKGROUND FIX ════════════════ */
+/* background-attachment: fixed is broken on Samsung Internet & iOS Safari
+   with multiple gradients — causes white/blank areas. Force scroll on mobile. */
+@media (max-width: 900px) {
+  body {
+    background-attachment: scroll !important;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat !important;
+    min-height: 100vh;
+  }
+
+  /* Ensure html also has fallback background to prevent any white flash */
+  html {
+    background: #0c1245;
+  }
+
+  /* Force section veils to use solid colors instead of relying on backdrop */
+  section:not(#home) {
+    background: rgba(6, 8, 28, 0.85) !important;
+  }
+}
