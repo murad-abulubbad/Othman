@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -38,7 +38,7 @@
     <div class="trans-logo-orbits">
       <span class="trans-orbit"></span>
       <span class="trans-orbit trans-orbit-2"></span>
-      <img src="images/logo.jpg" class="trans-logo-img" alt="O.F.G"/>
+      <img src="images/logo.jpg" class="trans-logo-img" alt="O.F.G" loading="lazy"/>
     </div>
     <div class="trans-logo">O.F.G</div>
   </div>
@@ -160,10 +160,10 @@
   <!-- GAMING CONSOLE COLLAGE -->
   <div class="console-collage">
     <!-- PS5 (left top) — REAL PHOTO -->
-    <img class="console-float ps5 is-photo" src="images/Ps5.jpeg" alt="PlayStation 5"/>
+    <img class="console-float ps5 is-photo" src="images/Ps5.jpeg" alt="PlayStation 5" loading="lazy"/>
 
     <!-- XBOX (left bottom) — REAL PHOTO -->
-    <img class="console-float xbox is-photo" src="images/Xbox360.jpeg" alt="Xbox"/>
+    <img class="console-float xbox is-photo" src="images/Xbox360.jpeg" alt="Xbox" loading="lazy"/>
 
     <!-- NINTENDO WII (right top) -->
     <svg class="console-float wii" viewBox="0 0 100 230" xmlns="http://www.w3.org/2000/svg">
@@ -286,7 +286,7 @@
     <div style="position:relative;display:inline-block;">
       <span class="hero-logo-orbit"></span>
       <span class="hero-logo-orbit orbit2"></span>
-      <img src="images/logo.jpg" alt="O.F.G — عثمان للألعاب" class="hero-logo-img"/>
+      <img src="images/logo.jpg" alt="O.F.G — عثمان للألعاب" class="hero-logo-img" loading="eager"/>
     </div>
     <div class="hero-badge">متجر الألعاب الأول في الأردن</div>
     <p class="hero-sub" style="font-size:1.1rem;margin-top:5px;">وجهتك الأولى لكل ما يتعلق بعالم الألعاب<br>أجهزة • ألعاب • إكسسوارات • تجميل</p>
@@ -400,6 +400,6 @@
 <!-- ════ FIRESTORE DYNAMIC LOADER ════
      Fetches Categories + Items from Firestore.
      Builds sections-nav and all product sections dynamically.          -->
-<script type="module" src="js/firestore-loader.js"></script>
+<script type="module" src="js/firestore-loader.js" defer></script>
 </body>
 </html>
