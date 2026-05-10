@@ -1,6 +1,6 @@
 import { db } from '../firebase.js';
 import {
-  collection, getDocs, query, orderBy, limit
+  collection, getDocs, query, orderBy
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // Show skeleton while loading
@@ -10,15 +10,10 @@ import {
 })();
 
 (async () => {
-  const itemsQuery = query(
-    collection(db, 'Items'),
-    orderBy('createdAt', 'desc'),
-    limit(200)
-  );
   try {
     const [catSnap, itemSnap] = await Promise.all([
       getDocs(query(collection(db, 'Categories'), orderBy('createdAt', 'asc'))),
-      getDocs(itemsQuery)
+      getDocs(query(collection(db, 'Items'),      orderBy('createdAt', 'desc')))
     ]);
 
     const categories = catSnap.docs.map(d => ({ id: d.id, ...d.data() }));

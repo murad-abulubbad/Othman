@@ -15,9 +15,6 @@ const PS4_GAMES = [];
 // Static fallback removed. Items are fetched from the Firestore "Items" collection.
 const PS5_GAMES = [];
 
-const IS_TOUCH_DEVICE = (navigator.maxTouchPoints || 0) > 0 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
-const IS_ANDROID = /Android/i.test(navigator.userAgent || '');
-
 function renderGameGrid(targetId, games, platform) {
   const grid = document.getElementById(targetId);
   if (!grid) return;
@@ -786,15 +783,13 @@ function watchPrices() {
 function generateBgSymbols() {
   const wrap = document.getElementById('bg-symbols');
   if (!wrap) return;
-  if (IS_ANDROID && IS_TOUCH_DEVICE) return;
   const variants = [
     { ch: '✕', cls: 's-x' },
     { ch: '○', cls: 's-circle' },
     { ch: '□', cls: 's-square' },
     { ch: '△', cls: 's-triangle' }
   ];
-  const baseTotal = window.innerWidth < 768 ? 8 : 15;
-  const total = IS_TOUCH_DEVICE ? Math.min(4, baseTotal) : baseTotal;
+  const total = window.innerWidth < 768 ? 8 : 15;
   for (let i = 0; i < total; i++) {
     const v = variants[Math.floor(Math.random() * variants.length)];
     const bright = Math.random() < 0.35;
@@ -833,49 +828,47 @@ function _resetTiltedCard(card) {
   card.style.removeProperty('--my');
 }
 
-if (!IS_TOUCH_DEVICE) {
-  document.addEventListener('mousemove', (e) => {
-    const now = performance.now();
-    if (now - _lastMouseMove < _THROTTLE_MS) return;
-    _lastMouseMove = now;
-    const card = e.target.closest(TILT_SELECTOR);
+document.addEventListener('mousemove', (e) => {
+  const now = performance.now();
+  if (now - _lastMouseMove < _THROTTLE_MS) return;
+  _lastMouseMove = now;
+  const card = e.target.closest(TILT_SELECTOR);
 
-    // Switching between cards (or leaving) — reset the previous one cleanly
-    if (card !== _tiltedCard) {
-      _resetTiltedCard(_tiltedCard);
-      _tiltedCard = card || null;
-    }
-
-    if (card) {
-      const r = card.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width;     // 0..1
-      const py = (e.clientY - r.top)  / r.height;
-      const x  = px - 0.5, y = py - 0.5;             // -0.5..0.5
-      // Rotation (note: y inverted so the top tilts away from the viewer)
-      card.style.setProperty('--rx', (-y * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
-      card.style.setProperty('--ry', ( x * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
-      // Glare focal point (in % so the radial-gradient picks it up)
-      card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
-      card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
-      card.classList.add('is-tilted');
-    }
-
-    // Section nav cards keep their independent spotlight track
-    const navCard = e.target.closest('.section-nav-card');
-    if (navCard) {
-      const r = navCard.getBoundingClientRect();
-      navCard.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100) + '%');
-      navCard.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
-    }
-  }, { passive: true });
-
-  // Reset when the cursor leaves the document entirely (otherwise the card
-  // would stay frozen in its tilted state)
-  document.addEventListener('mouseleave', () => {
+  // Switching between cards (or leaving) — reset the previous one cleanly
+  if (card !== _tiltedCard) {
     _resetTiltedCard(_tiltedCard);
-    _tiltedCard = null;
-  });
-}
+    _tiltedCard = card || null;
+  }
+
+  if (card) {
+    const r = card.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;     // 0..1
+    const py = (e.clientY - r.top)  / r.height;
+    const x  = px - 0.5, y = py - 0.5;             // -0.5..0.5
+    // Rotation (note: y inverted so the top tilts away from the viewer)
+    card.style.setProperty('--rx', (-y * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
+    card.style.setProperty('--ry', ( x * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
+    // Glare focal point (in % so the radial-gradient picks it up)
+    card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+    card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+    card.classList.add('is-tilted');
+  }
+
+  // Section nav cards keep their independent spotlight track
+  const navCard = e.target.closest('.section-nav-card');
+  if (navCard) {
+    const r = navCard.getBoundingClientRect();
+    navCard.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100) + '%');
+    navCard.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+  }
+}, { passive: true });
+
+// Reset when the cursor leaves the document entirely (otherwise the card
+// would stay frozen in its tilted state)
+document.addEventListener('mouseleave', () => {
+  _resetTiltedCard(_tiltedCard);
+  _tiltedCard = null;
+});
 
 // ════════════════ BUTTON RIPPLE ════════════════
 document.addEventListener('click', (e) => {
@@ -953,56 +946,34 @@ function syncAddedButtons() {
 syncAddedButtons();
 
 // ═══ LOADER ═══
-function hideLoaderOnce() {
-  if (hideLoaderOnce.done) return;
-  hideLoaderOnce.done = true;
-  const loader = document.getElementById('loader');
-  if (loader) loader.classList.add('hidden');
-  startParticlesIfAllowed();
-}
-
-function startParticlesIfAllowed() {
-  if (IS_TOUCH_DEVICE) return;
-  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const coarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-  if (reduceMotion || coarsePointer) return;
-  startParticles();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(hideLoaderOnce, 400);
-});
 window.addEventListener('load', () => {
-  setTimeout(hideLoaderOnce, 400);
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+    // startParticles(); // disabled for isolation testing
+  }, 2200);
 });
-// Fallback for slow/stalled loads
-setTimeout(hideLoaderOnce, 8000);
 updateCartUI();
 
 // ═══ CURSOR ═══
 const cursor = document.getElementById('cursor');
 const cursorDot = document.getElementById('cursor-dot');
-if (!IS_TOUCH_DEVICE) {
-  document.addEventListener('mousemove', (e) => {
-    cursor.style.left = (e.clientX - 11) + 'px';
-    cursor.style.top = (e.clientY - 11) + 'px';
-    cursorDot.style.left = (e.clientX - 3) + 'px';
-    cursorDot.style.top = (e.clientY - 3) + 'px';
-  });
-}
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = (e.clientX - 11) + 'px';
+  cursor.style.top = (e.clientY - 11) + 'px';
+  cursorDot.style.left = (e.clientX - 3) + 'px';
+  cursorDot.style.top = (e.clientY - 3) + 'px';
+});
 
 // ═══ PARTICLES ═══
 function startParticles() {
   const canvas = document.getElementById('particle-canvas');
-  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   let W, H;
   const symbols = ['✕','○','□','△','×'];
   const particles = [];
-  let running = true;
   function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
   resize();
-  window.addEventListener('resize', resize, { passive: true });
+  window.addEventListener('resize', resize);
   for (let i = 0; i < 10; i++) {
     particles.push({
       x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
@@ -1013,7 +984,6 @@ function startParticles() {
     });
   }
   function drawFrame() {
-    if (!running) return;
     ctx.clearRect(0, 0, W, H);
     particles.forEach(p => {
       ctx.save(); ctx.globalAlpha = p.opacity;
@@ -1026,15 +996,11 @@ function startParticles() {
     requestAnimationFrame(drawFrame);
   }
   drawFrame();
-  document.addEventListener('visibilitychange', () => {
-    running = !document.hidden;
-    if (running) requestAnimationFrame(drawFrame);
-  });
 }
 
 // ═══ NAVBAR ═══
 const navbar = document.getElementById('navbar');
-window.addEventListener('scroll', () => { navbar.classList.toggle('shrunk', window.scrollY > 80); }, { passive: true });
+window.addEventListener('scroll', () => { navbar.classList.toggle('shrunk', window.scrollY > 80); });
 
 // ═══ SCROLL ANIMATIONS ═══
 const observer = new IntersectionObserver((entries) => {
