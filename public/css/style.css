@@ -2371,6 +2371,16 @@ body.in-page-mode .page-back-btn {
   /* Hide custom cursor on touch devices */
   #cursor, #cursor-dot { display: none !important; }
 
+  /* Simplify toast on mobile to reduce lag */
+  #toast {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    background: rgba(5,5,16,0.98) !important;
+    transition: none !important;
+  }
+
   /* Reduce particles & background symbols opacity for performance */
   #particle-canvas { opacity: 0.4; }
   .bg-symbol { display: none; }
