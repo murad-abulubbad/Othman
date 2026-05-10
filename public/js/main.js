@@ -828,47 +828,47 @@ function _resetTiltedCard(card) {
   card.style.removeProperty('--my');
 }
 
-document.addEventListener('mousemove', (e) => {
-  const now = performance.now();
-  if (now - _lastMouseMove < _THROTTLE_MS) return;
-  _lastMouseMove = now;
-  const card = e.target.closest(TILT_SELECTOR);
-
-  // Switching between cards (or leaving) — reset the previous one cleanly
-  if (card !== _tiltedCard) {
-    _resetTiltedCard(_tiltedCard);
-    _tiltedCard = card || null;
-  }
-
-  if (card) {
-    const r = card.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width;     // 0..1
-    const py = (e.clientY - r.top)  / r.height;
-    const x  = px - 0.5, y = py - 0.5;             // -0.5..0.5
-    // Rotation (note: y inverted so the top tilts away from the viewer)
-    card.style.setProperty('--rx', (-y * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
-    card.style.setProperty('--ry', ( x * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
-    // Glare focal point (in % so the radial-gradient picks it up)
-    card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
-    card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
-    card.classList.add('is-tilted');
-  }
-
-  // Section nav cards keep their independent spotlight track
-  const navCard = e.target.closest('.section-nav-card');
-  if (navCard) {
-    const r = navCard.getBoundingClientRect();
-    navCard.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100) + '%');
-    navCard.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
-  }
-}, { passive: true });
+// document.addEventListener('mousemove', (e) => {
+//   const now = performance.now();
+//   if (now - _lastMouseMove < _THROTTLE_MS) return;
+//   _lastMouseMove = now;
+//   const card = e.target.closest(TILT_SELECTOR);
+//
+//   // Switching between cards (or leaving) — reset the previous one cleanly
+//   if (card !== _tiltedCard) {
+//     _resetTiltedCard(_tiltedCard);
+//     _tiltedCard = card || null;
+//   }
+//
+//   if (card) {
+//     const r = card.getBoundingClientRect();
+//     const px = (e.clientX - r.left) / r.width;     // 0..1
+//     const py = (e.clientY - r.top)  / r.height;
+//     const x  = px - 0.5, y = py - 0.5;             // -0.5..0.5
+//     // Rotation (note: y inverted so the top tilts away from the viewer)
+//     card.style.setProperty('--rx', (-y * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
+//     card.style.setProperty('--ry', ( x * TILT_MAX_DEG * 2).toFixed(2) + 'deg');
+//     // Glare focal point (in % so the radial-gradient picks it up)
+//     card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+//     card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+//     card.classList.add('is-tilted');
+//   }
+//
+//   // Section nav cards keep their independent spotlight track
+//   const navCard = e.target.closest('.section-nav-card');
+//   if (navCard) {
+//     const r = navCard.getBoundingClientRect();
+//     navCard.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100) + '%');
+//     navCard.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+//   }
+// }, { passive: true });
 
 // Reset when the cursor leaves the document entirely (otherwise the card
 // would stay frozen in its tilted state)
-document.addEventListener('mouseleave', () => {
-  _resetTiltedCard(_tiltedCard);
-  _tiltedCard = null;
-});
+// document.addEventListener('mouseleave', () => {
+//   _resetTiltedCard(_tiltedCard);
+//   _tiltedCard = null;
+// });
 
 // ════════════════ BUTTON RIPPLE ════════════════
 document.addEventListener('click', (e) => {
@@ -949,7 +949,7 @@ syncAddedButtons();
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.getElementById('loader').classList.add('hidden');
-    startParticles();
+    // startParticles(); // disabled for isolation testing
   }, 2200);
 });
 updateCartUI();
@@ -1000,7 +1000,18 @@ function startParticles() {
 
 // ═══ NAVBAR ═══
 const navbar = document.getElementById('navbar');
-window.addEventListener('scroll', () => { navbar.classList.toggle('shrunk', window.scrollY > 80); });
+let _lastScrollY = 0;
+let _ticking = false;
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  if (!_ticking) {
+    window.requestAnimationFrame(() => {
+      navbar.classList.toggle('shrunk', scrollY > 80);
+      _ticking = false;
+    });
+    _ticking = true;
+  }
+}, { passive: true });
 
 // ═══ SCROLL ANIMATIONS ═══
 const observer = new IntersectionObserver((entries) => {

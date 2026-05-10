@@ -20,7 +20,7 @@ body {
     radial-gradient(ellipse 100% 80% at 100% 100%, rgba(255, 25, 60, 0.78), transparent 58%),
     radial-gradient(ellipse 60% 80% at 50% 50%, rgba(120, 30, 110, 0.45), transparent 70%),
     linear-gradient(135deg, #0c1245 0%, #1a0d3a 50%, #3a0d18 100%);
-  background-attachment: scroll;
+  background-attachment: fixed;
   background-size: cover;
   color: var(--white);
   font-family: 'Cairo', sans-serif;
@@ -343,7 +343,7 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
   background:
     radial-gradient(ellipse at 15% 50%, rgba(204,0,0,0.2) 0%, transparent 55%),
     radial-gradient(ellipse at 85% 50%, rgba(0,85,204,0.2) 0%, transparent 55%);
-  animation: nebula 8s ease-in-out infinite alternate;
+  animation: none;
 }
 .split-line {
   position: absolute; inset: 0;
@@ -1061,6 +1061,8 @@ footer {
   pointer-events: none; z-index: 1;
   overflow: hidden;
 }
+/* Isolation test: disable hero collage */
+#home .console-collage { display: none; }
 .console-float {
   position: absolute;
   filter: drop-shadow(0 25px 50px rgba(0,0,0,0.7));
@@ -1763,7 +1765,6 @@ img.console-float {
   position: fixed; inset: 0;
   pointer-events: none; z-index: 0;
   overflow: hidden;
-  contain: paint;
 }
 .bg-symbol {
   position: absolute;
@@ -1771,6 +1772,7 @@ img.console-float {
   font-weight: 900;
   user-select: none;
   filter: drop-shadow(0 0 20px currentColor);
+  will-change: transform, opacity;
   animation: bgFloatRise linear infinite;
 }
 .bg-symbol.s-x        { color: rgba(255, 80, 110, 0.30); }
@@ -2396,3 +2398,16 @@ section:not(#home) {
   background: rgba(6, 8, 28, 0.85) !important;
 }
 
+/* Disable infinite animations that cause scroll lag */
+.console-float,
+.energy-ring,
+.bg-symbol,
+.hero-logo-big,
+.stat-number {
+  animation: none !important;
+}
+
+/* Disable marquee animation */
+.marquee-track {
+  animation: none !important;
+}
