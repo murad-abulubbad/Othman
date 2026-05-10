@@ -43,7 +43,7 @@ function renderGameGrid(targetId, games, platform) {
         ${(platform && platform !== 'Other' && platform !== 'أخرى') ? `<span class="image-card-platform">${platform}</span>` : ''}
         <span class="product-condition-badge${conditionClass}">${condition}</span>
         <img class="image-card-img" src="${g.img}" alt="${g.name}" loading="lazy"
-             onerror="this.style.objectFit='cover';this.src='Photo/logo.jpeg'"/>
+             onerror="this.style.objectFit='cover';this.src='images/logo.jpg'"/>
       </div>
       <div class="image-card-body">
         <div class="image-card-title">${g.name}</div>
