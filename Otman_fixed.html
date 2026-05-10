@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -6,6 +6,11 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>عثمان للألعاب | O.F.G</title>
 <link rel="icon" type="image/jpeg" href="Photo/logo.jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://res.cloudinary.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1354,9 +1359,11 @@ img.console-float {
   font-family: 'Orbitron', monospace;
   font-size: 1.15rem; font-weight: 900;
   color: #6699ff;
+  direction: ltr;
+  unicode-bidi: embed;
 }
 .image-card.is-ps5 .image-card-price { color: var(--red-bright); text-shadow: 0 0 10px rgba(204,0,0,0.5); }
-.image-card-price::after { content: ' JOD'; font-size: 0.55rem; color: rgba(255,255,255,0.45); margin-right: 2px; }
+.image-card-price::after { content: ''; }
 .image-card-price.image-card-price-text::after { content: ''; }
 .image-card-price-text {
   font-size: 0.82rem;
@@ -1665,6 +1672,8 @@ img.console-float {
   background: linear-gradient(135deg, rgba(204,0,0,0.28), rgba(0,85,204,0.22));
   border: 1px solid rgba(255,255,255,0.12);
   box-shadow: 0 0 28px rgba(204,0,0,0.20);
+  direction: ltr;
+  unicode-bidi: embed;
 }
 .game-detail-desc {
   color: rgba(255,255,255,0.72);
@@ -2471,24 +2480,9 @@ body.in-page-mode .page-back-btn {
       <div class="nav-brand"><span>O</span>.<span>F</span>.<span>G</span></div>
     </div>
   </a>
-  <ul class="nav-links">
+  <ul class="nav-links" id="nav-links">
     <li><a href="#home" class="active">الرئيسية</a></li>
-    <li><a href="#ps1-discs">سيديات PS1</a></li>
-    <li><a href="#ps2">سيديات PS2</a></li>
-    <li><a href="#ps3">سيديات PS3</a></li>
-    <li><a href="#ps4">سيديات PS4</a></li>
-    <li><a href="#ps5">سيديات PS5</a></li>
-    <li><a href="#xbox-discs">سيديات Xbox</a></li>
-    <li><a href="#wii-discs">سيديات Wii</a></li>
-    <li><a href="#umd-discs">سيديات UMD</a></li>
-    <li><a href="#playstation-devices">أجهزة PlayStation</a></li>
-    <li><a href="#xbox-devices">أجهزة Xbox</a></li>
-    <li><a href="#nintendo-devices">أجهزة نينتندو</a></li>
-    <li><a href="#wii-devices">أجهزة Wii</a></li>
-    <li><a href="#vr-devices">أجهزة VR</a></li>
-    <li><a href="#steering-devices">أجهزة ستيرنج</a></li>
-    <li><a href="#ps-xbox-accessories">إكسسوارات</a></li>
-    <li><a href="#repair-service">صيانة</a></li>
+    <!-- category links injected by Firestore -->
   </ul>
   <button class="nav-cart-btn" onclick="openCart()">
     🛒 السلة <span class="cart-badge" id="nav-cart-count">0</span>
@@ -2701,580 +2695,17 @@ body.in-page-mode .page-back-btn {
   </div>
 </div>
 
-<!-- SECTIONS NAV -->
+<!-- SECTIONS NAV — populated from Firestore Categories -->
 <section id="sections">
   <h2 class="section-title">تصفح <span>الأقسام</span></h2>
   <div class="section-line"></div>
-  <div class="sections-grid">
-    <a href="#ps1-discs" class="section-nav-card">
-      <span class="section-nav-icon">💿</span>
-      <div class="section-nav-name">سيديات PS1</div>
-      <div class="section-nav-sub">ألعاب كلاسيك</div>
-    </a>
-    <a href="#ps2" class="section-nav-card">
-      <span class="section-nav-icon">💿</span>
-      <div class="section-nav-name">سيديات PS2</div>
-      <div class="section-nav-sub">كلاسيكيات لا تُنسى</div>
-    </a>
-    <a href="#ps3" class="section-nav-card">
-      <span class="section-nav-icon">🏆</span>
-      <div class="section-nav-name">سيديات PS3</div>
-      <div class="section-nav-sub">جيل PlayStation 3</div>
-    </a>
-    <a href="#ps4" class="section-nav-card">
-      <span class="section-nav-icon">⚡</span>
-      <div class="section-nav-name">سيديات PS4</div>
-      <div class="section-nav-sub">ألعاب PS4</div>
-    </a>
-    <a href="#ps5" class="section-nav-card">
-      <span class="section-nav-icon">🚀</span>
-      <div class="section-nav-name">سيديات PS5</div>
-      <div class="section-nav-sub">الجيل الجديد</div>
-    </a>
-    <a href="#xbox-discs" class="section-nav-card">
-      <span class="section-nav-icon">🟢</span>
-      <div class="section-nav-name">سيديات Xbox One/SX</div>
-      <div class="section-nav-sub">Xbox One و Series X</div>
-    </a>
-    <a href="#wii-discs" class="section-nav-card">
-      <span class="section-nav-icon">🎯</span>
-      <div class="section-nav-name">سيديات Wii</div>
-      <div class="section-nav-sub">ألعاب Nintendo Wii</div>
-    </a>
-    <a href="#umd-discs" class="section-nav-card">
-      <span class="section-nav-icon">💽</span>
-      <div class="section-nav-name">سيديات UMD</div>
-      <div class="section-nav-sub">ألعاب PSP</div>
-    </a>
-    <a href="#playstation-devices" class="section-nav-card">
-      <span class="section-nav-icon">🎮</span>
-      <div class="section-nav-name">أجهزة PlayStation</div>
-      <div class="section-nav-sub">PS2, PS4, PS5</div>
-    </a>
-    <a href="#xbox-devices" class="section-nav-card">
-      <span class="section-nav-icon">🟩</span>
-      <div class="section-nav-name">أجهزة Xbox</div>
-      <div class="section-nav-sub">Xbox One و Series S</div>
-    </a>
-    <a href="#nintendo-devices" class="section-nav-card">
-      <span class="section-nav-icon">🔴</span>
-      <div class="section-nav-name">أجهزة نينتندو</div>
-      <div class="section-nav-sub">Nintendo Consoles</div>
-    </a>
-    <a href="#wii-devices" class="section-nav-card">
-      <span class="section-nav-icon">🎯</span>
-      <div class="section-nav-name">أجهزة Wii</div>
-      <div class="section-nav-sub">Nintendo Wii</div>
-    </a>
-    <a href="#vr-devices" class="section-nav-card">
-      <span class="section-nav-icon">🥽</span>
-      <div class="section-nav-name">أجهزة VR</div>
-      <div class="section-nav-sub">واقع افتراضي</div>
-    </a>
-    <a href="#steering-devices" class="section-nav-card">
-      <span class="section-nav-icon">🏎️</span>
-      <div class="section-nav-name">أجهزة ستيرنج</div>
-      <div class="section-nav-sub">قيادة وسباق</div>
-    </a>
-    <a href="#ps-xbox-accessories" class="section-nav-card">
-      <span class="section-nav-icon">🎧</span>
-      <div class="section-nav-name">إكسسوارات PS / Xbox</div>
-      <div class="section-nav-sub">ملحقات أصلية</div>
-    </a>
-    <a href="#repair-service" class="section-nav-card">
-      <span class="section-nav-icon">🛠️</span>
-      <div class="section-nav-name">خدمة صيانة</div>
-      <div class="section-nav-sub">فحص وتصليح</div>
-    </a>
+  <div class="sections-grid" id="sections-grid">
+    <!-- nav cards injected by JS -->
   </div>
 </section>
 
-<!-- ════════════════ DEVICES SECTION ════════════════ -->
-<section id="devices">
-  <h2 class="section-title">الأجهزة <span>المتوفرة</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">أحدث أجهزة الألعاب بأسعار منافسة وضمان معتمد</p>
-  <div class="section-search">
-    <div class="section-search-top">
-      <span class="section-search-icon">🔍</span>
-      <input type="text" placeholder="ابحث عن جهاز..." class="search-input" data-target=".devices-grid">
-      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
-    </div>
-  </div>
-  <div class="devices-grid">
-
-    <!-- PS5 -->
-    <div class="device-showcase">
-      <div class="device-svg-wrap">
-        <img class="device-photo" src="Photo/Ps5.jpeg" alt="PlayStation 5"
-             onerror="this.style.display='none'"/>
-      </div>
-      <div class="device-name-big">PlayStation 5</div>
-      <div class="device-tag">Slim Digital | مع DualSense</div>
-      <div class="device-specs"><span>825GB SSD</span><span>4K @ 120FPS</span><span>RAY TRACING</span></div>
-      <div class="device-price-big">499</div>
-      <button class="add-btn" onclick="addToCart({name:'PlayStation 5 Slim', price:499, icon:'🎮', img:'Photo/Ps5.jpeg', kind:'device'})">🛒 أضف للسلة</button>
-    </div>
-
-    <!-- PS4 PRO -->
-    <div class="device-showcase">
-      <div class="device-svg-wrap">
-        <img class="device-photo" src="Photo/Ps4.jpeg" alt="PlayStation 4 Pro"
-             onerror="this.style.display='none'"/>
-      </div>
-      <div class="device-name-big">PlayStation 4 PRO</div>
-      <div class="device-tag">1TB | معالج محسّن للـ 4K + DualShock</div>
-      <div class="device-specs"><span>1TB HDD</span><span>4K HDR</span><span>BOOST MODE</span></div>
-      <div class="device-price-big">285</div>
-      <button class="add-btn" onclick="addToCart({name:'PlayStation 4 Pro 1TB', price:285, icon:'🎮', img:'Photo/Ps4.jpeg', kind:'device'})">🛒 أضف للسلة</button>
-    </div>
-
-    <!-- PS2 (NEW — using real photo) -->
-    <div class="device-showcase">
-      <div class="device-svg-wrap">
-        <img class="device-photo" src="Photo/Ps2.jpeg" alt="PlayStation 2"
-             onerror="this.style.display='none'"/>
-      </div>
-      <div class="device-name-big">PlayStation 2 Slim</div>
-      <div class="device-tag">جهاز كلاسيكي + يد DualShock 2</div>
-      <div class="device-specs"><span>DVD</span><span>RETRO</span><span>كلاسيكي</span></div>
-      <div class="device-price-big">75</div>
-      <button class="add-btn" onclick="addToCart({name:'PlayStation 2 Slim', price:75, icon:'💿', img:'Photo/Ps2.jpeg', kind:'device'})">🛒 أضف للسلة</button>
-    </div>
-
-    <!-- PS4 SLIM -->
-    <div class="device-showcase">
-      <div class="device-svg-wrap">
-        <svg viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="dev-ps4sB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c2028"/><stop offset="100%" stop-color="#0a0a10"/></linearGradient></defs>
-          <rect x="10" y="20" width="200" height="55" rx="6" fill="url(#dev-ps4sB)" stroke="#444"/>
-          <rect x="40" y="35" width="140" height="3" fill="#000"/>
-          <text x="110" y="60" text-anchor="middle" font-family="Arial" font-size="10" font-weight="700" fill="#0099ff" letter-spacing="2">PS4</text>
-        </svg>
-      </div>
-      <div class="device-name-big">PlayStation 4 Slim</div>
-      <div class="device-tag">500GB | تصميم نحيف</div>
-      <div class="device-specs"><span>500GB HDD</span><span>FULL HD</span><span>HDR</span></div>
-      <div class="device-price-big">220</div>
-      <button class="add-btn" onclick="addToCart({name:'PlayStation 4 Slim 500GB', price:220, icon:'🎮', kind:'device'})">🛒 أضف للسلة</button>
-    </div>
-
-    <!-- XBOX ONE -->
-    <div class="device-showcase">
-      <div class="device-svg-wrap">
-        <img class="device-photo" src="Photo/Xbox360.jpeg" alt="Xbox One"
-             onerror="this.style.display='none'"/>
-      </div>
-      <div class="device-name-big">Xbox One</div>
-      <div class="device-tag">جهاز Microsoft + يد لاسلكية أصلية</div>
-      <div class="device-specs"><span>500GB</span><span>FULL HD</span><span>WIRELESS PAD</span></div>
-      <div class="device-price-big">185</div>
-      <button class="add-btn" onclick="addToCart({name:'Xbox One 500GB', price:185, icon:'🟢', img:'Photo/Xbox360.jpeg', kind:'device'})">🛒 أضف للسلة</button>
-    </div>
-
-    <!-- XBOX SERIES S -->
-    <div class="device-showcase">
-      <div class="device-svg-wrap">
-        <svg viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="dev-xss" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#f0f0f0"/><stop offset="50%" stop-color="#fff"/><stop offset="100%" stop-color="#ccc"/></linearGradient></defs>
-          <rect x="15" y="15" width="190" height="100" rx="8" fill="url(#dev-xss)" stroke="#aaa"/>
-          <circle cx="55" cy="65" r="28" fill="#1a1a1a"/>
-          <circle cx="55" cy="65" r="22" fill="#0a0a0a" opacity="0.9"/>
-          <text x="135" y="62" text-anchor="middle" font-family="Arial" font-size="11" font-weight="900" fill="#0a8" letter-spacing="2">XBOX</text>
-          <text x="135" y="78" text-anchor="middle" font-family="Arial" font-size="8" fill="#888" letter-spacing="2">SERIES S</text>
-        </svg>
-      </div>
-      <div class="device-name-big">Xbox Series S</div>
-      <div class="device-tag">512GB | تصميم رقمي مدمج</div>
-      <div class="device-specs"><span>512GB SSD</span><span>1440p @ 120FPS</span><span>DIGITAL</span></div>
-      <div class="device-price-big">325</div>
-      <button class="add-btn" onclick="addToCart({name:'Xbox Series S 512GB', price:325, icon:'⚪', kind:'device'})">🛒 أضف للسلة</button>
-    </div>
-
-    <!-- NINTENDO WII -->
-    <div class="device-showcase">
-      <div class="device-svg-wrap">
-        <svg viewBox="0 0 100 230" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="dev-wiW" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#dadae5"/><stop offset="50%" stop-color="#fff"/><stop offset="100%" stop-color="#aab"/></linearGradient></defs>
-          <rect x="22" y="10" width="56" height="210" rx="4" fill="url(#dev-wiW)" stroke="#99a"/>
-          <rect x="32" y="92" width="36" height="2" fill="#666"/>
-          <text x="50" y="60" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" font-style="italic" fill="#0099ff">Wii</text>
-          <circle cx="50" cy="170" r="3" fill="#0066ff"/>
-          <rect x="35" y="185" width="6" height="1.5" fill="#777"/><rect x="46" y="185" width="6" height="1.5" fill="#777"/><rect x="57" y="185" width="6" height="1.5" fill="#777"/>
-        </svg>
-      </div>
-      <div class="device-name-big">Nintendo Wii</div>
-      <div class="device-tag">جهاز كلاسيكي بريموت لاسلكي</div>
-      <div class="device-specs"><span>WII REMOTE</span><span>MOTION</span><span>RETRO</span></div>
-      <div class="device-price-big">95</div>
-      <button class="add-btn" onclick="addToCart({name:'Nintendo Wii', price:95, icon:'🎯', kind:'device'})">🛒 أضف للسلة</button>
-    </div>
-
-    <!-- GAMING PC -->
-    <div class="device-showcase">
-      <div class="device-svg-wrap">
-        <svg viewBox="0 0 220 280" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="dev-pcB" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1a22"/><stop offset="100%" stop-color="#000"/></linearGradient>
-            <radialGradient id="dev-fanR" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff0066" stop-opacity="0.8"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-            <radialGradient id="dev-fanB" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00ccff" stop-opacity="0.8"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-            <linearGradient id="dev-rgb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ff00aa"/><stop offset="50%" stop-color="#0055cc"/><stop offset="100%" stop-color="#00ffff"/></linearGradient>
-          </defs>
-          <rect x="20" y="10" width="180" height="265" rx="3" fill="url(#dev-pcB)" stroke="#3a3a3a"/>
-          <rect x="35" y="25" width="150" height="200" rx="2" fill="#0a0a14"/>
-          <circle cx="70" cy="65" r="22" fill="url(#dev-fanR)"/>
-          <circle cx="70" cy="65" r="20" fill="none" stroke="#ff0066" stroke-width="1"/>
-          <circle cx="150" cy="65" r="22" fill="url(#dev-fanB)"/>
-          <circle cx="150" cy="65" r="20" fill="none" stroke="#0099ff" stroke-width="1"/>
-          <circle cx="110" cy="125" r="28" fill="url(#dev-fanB)"/>
-          <circle cx="110" cy="125" r="26" fill="none" stroke="#00ccff" stroke-width="1.2"/>
-          <rect x="40" y="170" width="140" height="35" fill="#0a0a0e" stroke="#444" stroke-width="0.5"/>
-          <rect x="40" y="180" width="140" height="3" fill="url(#dev-rgb)"/>
-          <text x="110" y="198" text-anchor="middle" font-family="Arial" font-size="9" font-weight="900" fill="#fff">RTX 4080</text>
-          <circle cx="35" cy="245" r="3" fill="#00ff66"/>
-        </svg>
-      </div>
-      <div class="device-name-big">Gaming PC RGB</div>
-      <div class="device-tag">RTX 4080 | i9 | 32GB DDR5</div>
-      <div class="device-specs"><span>RTX 4080</span><span>32GB DDR5</span><span>2TB NVMe</span></div>
-      <div class="device-price-big">1850</div>
-      <button class="add-btn" onclick="addToCart({name:'Gaming PC RGB - RTX 4080', price:1850, icon:'🖥️', kind:'device'})">🛒 أضف للسلة</button>
-    </div>
-
-  </div>
-</section>
-
-<!-- ════════════════ PS2 ════════════════ -->
-<section id="ps2">
-  <h2 class="section-title">سيديات <span>PS2</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">سيديات وألعاب PlayStation 2 الكلاسيكية</p>
-
-  <div class="coming-soon-block">
-    <span class="big-icon">💿</span>
-    <h3>سيديات PS2</h3>
-    <p>ألعاب PS2 الأصلية تأتي قريباً لمتجرنا<br>God of War | GTA San Andreas | Tekken 5 | Resident Evil 4</p>
-    <p class="countdown">⏳ COMING SOON ⏳</p>
-  </div>
-</section>
-
-<!-- ════════════════ PS3 (COMING SOON) ════════════════ -->
-<section id="ps3">
-  <h2 class="section-title">سيديات <span>PS3</span></h2>
-  <div class="section-line"></div>
-  <div class="coming-soon-block">
-    <span class="big-icon">🏆</span>
-    <h3>قسم PS3 قادم قريباً</h3>
-    <p>أفضل ألعاب جيل Cell Processor ستكون متوفرة لديك بأسعار خاصة<br>The Last of Us | GTA V | Uncharted Trilogy | FIFA 14</p>
-    <p class="countdown">⏳ COMING SOON ⏳</p>
-  </div>
-</section>
-
-<!-- ════════════════ PS4 GAMES ════════════════ -->
-<section id="ps4">
-  <h2 class="section-title">سيديات <span>PS4</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">13 لعبة أصلية مميزة لجهاز PlayStation 4 — اضغط "أضف للسلة" لإضافة اللعبة</p>
-  <div class="section-search">
-    <div class="section-search-top">
-      <span class="section-search-icon">🔍</span>
-      <input type="text" placeholder="ابحث عن لعبة..." class="search-input" data-target="#ps4-grid">
-      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
-    </div>
-  </div>
-  <div class="image-grid" id="ps4-grid">
-    <!-- Cards rendered by JS -->
-  </div>
-</section>
-
-<!-- ════════════════ PS5 GAMES ════════════════ -->
-<section id="ps5">
-  <h2 class="section-title">سيديات <span>PS5</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">7 ألعاب من الجيل الجديد بإصدارات حصرية</p>
-  <div class="section-search">
-    <div class="section-search-top">
-      <span class="section-search-icon">🔍</span>
-      <input type="text" placeholder="ابحث عن لعبة..." class="search-input" data-target="#ps5-grid">
-      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
-    </div>
-  </div>
-  <div class="image-grid" id="ps5-grid">
-    <!-- Cards rendered by JS -->
-  </div>
-</section>
-
-<section id="ps1-discs">
-  <h2 class="section-title">سيديات <span>PS1</span></h2>
-  <div class="section-line"></div>
-  <div class="coming-soon-block">
-    <span class="big-icon">💿</span>
-    <h3>سيديات PS1</h3>
-    <p>ألعاب بلايستيشن 1 الكلاسيكية ستكون متوفرة ضمن هذا القسم<br>Crash | Tekken | Resident Evil | Winning Eleven</p>
-    <p class="countdown">⏳ COMING SOON ⏳</p>
-  </div>
-</section>
-
-<section id="xbox-discs">
-  <h2 class="section-title">سيديات <span>Xbox One/SX</span></h2>
-  <div class="section-line"></div>
-  <div class="coming-soon-block">
-    <span class="big-icon">🟢</span>
-    <h3>سيديات Xbox</h3>
-    <p>ألعاب Xbox One و Xbox Series X/S الأصلية ستكون متوفرة هنا</p>
-    <p class="countdown">⏳ COMING SOON ⏳</p>
-  </div>
-</section>
-
-<section id="wii-discs">
-  <h2 class="section-title">سيديات <span>Wii</span></h2>
-  <div class="section-line"></div>
-  <div class="coming-soon-block">
-    <span class="big-icon">🎯</span>
-    <h3>سيديات Nintendo Wii</h3>
-    <p>ألعاب Wii العائلية والكلاسيكية ستكون ضمن هذا القسم</p>
-    <p class="countdown">⏳ COMING SOON ⏳</p>
-  </div>
-</section>
-
-<section id="umd-discs">
-  <h2 class="section-title">سيديات <span>UMD</span></h2>
-  <div class="section-line"></div>
-  <div class="coming-soon-block">
-    <span class="big-icon">💽</span>
-    <h3>ألعاب PSP UMD</h3>
-    <p>سيديات UMD الأصلية الخاصة بجهاز PSP ستكون متوفرة هنا</p>
-    <p class="countdown">⏳ COMING SOON ⏳</p>
-  </div>
-</section>
-
-<section id="playstation-devices">
-  <h2 class="section-title">أجهزة <span>PlayStation</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">أجهزة PlayStation المتوفرة في المتجر</p>
-  <div class="acc-grid">
-    <div class="acc-card"><span class="acc-icon">🎮</span><div class="acc-name">PlayStation 5</div><div class="acc-sub">Slim Digital | مع DualSense</div><div class="acc-price">499 JOD</div><button class="add-btn" onclick="addToCart({name:'PlayStation 5 Slim', price:499, icon:'🎮', img:'Photo/Ps5.jpeg', kind:'device'})">🛒 أضف للسلة</button></div>
-    <div class="acc-card"><span class="acc-icon">🎮</span><div class="acc-name">PlayStation 4 PRO</div><div class="acc-sub">1TB | 4K HDR</div><div class="acc-price">285 JOD</div><button class="add-btn" onclick="addToCart({name:'PlayStation 4 Pro 1TB', price:285, icon:'🎮', img:'Photo/Ps4.jpeg', kind:'device'})">🛒 أضف للسلة</button></div>
-    <div class="acc-card"><span class="acc-icon">💿</span><div class="acc-name">PlayStation 2 Slim</div><div class="acc-sub">جهاز كلاسيكي + يد DualShock 2</div><div class="acc-price">75 JOD</div><button class="add-btn" onclick="addToCart({name:'PlayStation 2 Slim', price:75, icon:'💿', img:'Photo/Ps2.jpeg', kind:'device'})">🛒 أضف للسلة</button></div>
-  </div>
-</section>
-
-<section id="xbox-devices">
-  <h2 class="section-title">أجهزة <span>Xbox</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">أجهزة Xbox المتوفرة</p>
-  <div class="acc-grid">
-    <div class="acc-card"><span class="acc-icon">🟢</span><div class="acc-name">Xbox One</div><div class="acc-sub">500GB | يد لاسلكية أصلية</div><div class="acc-price">185 JOD</div><button class="add-btn" onclick="addToCart({name:'Xbox One 500GB', price:185, icon:'🟢', img:'Photo/Xbox360.jpeg', kind:'device'})">🛒 أضف للسلة</button></div>
-    <div class="acc-card"><span class="acc-icon">⚪</span><div class="acc-name">Xbox Series S</div><div class="acc-sub">512GB SSD | Digital</div><div class="acc-price">325 JOD</div><button class="add-btn" onclick="addToCart({name:'Xbox Series S 512GB', price:325, icon:'⚪', kind:'device'})">🛒 أضف للسلة</button></div>
-  </div>
-</section>
-
-<section id="nintendo-devices">
-  <h2 class="section-title">أجهزة <span>نينتندو</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">أجهزة Nintendo المتوفرة</p>
-  <div class="acc-grid">
-    <div class="acc-card"><span class="acc-icon">🔴</span><div class="acc-name">Nintendo Wii</div><div class="acc-sub">جهاز كلاسيكي بريموت لاسلكي</div><div class="acc-price">95 JOD</div><button class="add-btn" onclick="addToCart({name:'Nintendo Wii', price:95, icon:'🎯', kind:'device'})">🛒 أضف للسلة</button></div>
-  </div>
-</section>
-
-<section id="wii-devices">
-  <h2 class="section-title">أجهزة <span>Wii</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">أجهزة Wii وملحقاتها</p>
-  <div class="acc-grid">
-    <div class="acc-card"><span class="acc-icon">🎯</span><div class="acc-name">Nintendo Wii</div><div class="acc-sub">Wii Remote | Motion | Retro</div><div class="acc-price">95 JOD</div><button class="add-btn" onclick="addToCart({name:'Nintendo Wii', price:95, icon:'🎯', kind:'device'})">🛒 أضف للسلة</button></div>
-  </div>
-</section>
-
-<section id="vr-devices">
-  <h2 class="section-title">أجهزة <span>VR</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">نظارات الواقع الافتراضي</p>
-  <div class="acc-grid">
-    <div class="acc-card"><span class="acc-badge badge-new">NEW</span><span class="acc-icon">🥽</span><div class="acc-name">PS VR2</div><div class="acc-sub">نظارة الواقع الافتراضي</div><div class="acc-price">395 JOD</div><button class="add-btn" onclick="addToCart({name:'PlayStation VR2', price:395, icon:'🥽', kind:'accessory'})">🛒 أضف للسلة</button></div>
-  </div>
-</section>
-
-<section id="steering-devices">
-  <h2 class="section-title">أجهزة <span>ستيرنج</span></h2>
-  <div class="section-line"></div>
-  <div class="coming-soon-block">
-    <span class="big-icon">🏎️</span>
-    <h3>ستيرنجات القيادة</h3>
-    <p>ستيرنجات ألعاب السباق للبلايستيشن والإكس بوكس ستكون متوفرة هنا</p>
-    <p class="countdown">⏳ COMING SOON ⏳</p>
-  </div>
-</section>
-
-<section id="ps-xbox-accessories">
-  <h2 class="section-title">إكسسوارات <span>PS / Xbox</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">إكسسوارات PlayStation و Xbox</p>
-  <div class="acc-grid">
-    <div class="acc-card"><span class="acc-icon">🎮</span><div class="acc-name">DualSense PS5</div><div class="acc-sub">يد تحكم لاسلكية أصلية</div><div class="acc-price">52 JOD</div><button class="add-btn" onclick="addToCart({name:'DualSense PS5 Controller', price:52, icon:'🎮', kind:'accessory'})">🛒 أضف للسلة</button></div>
-    <div class="acc-card"><span class="acc-icon">🎮</span><div class="acc-name">Xbox Wireless Pad</div><div class="acc-sub">يد تحكم Xbox أصلية</div><div class="acc-price">48 JOD</div><button class="add-btn" onclick="addToCart({name:'Xbox Wireless Controller', price:48, icon:'🎮', kind:'accessory'})">🛒 أضف للسلة</button></div>
-    <div class="acc-card"><span class="acc-icon">🎧</span><div class="acc-name">Pulse 3D Headset</div><div class="acc-sub">سماعة لاسلكية للـ PS5</div><div class="acc-price">68 JOD</div><button class="add-btn" onclick="addToCart({name:'Pulse 3D Wireless Headset', price:68, icon:'🎧', kind:'accessory'})">🛒 أضف للسلة</button></div>
-  </div>
-</section>
-
-<section id="repair-service">
-  <h2 class="section-title">خدمة <span>صيانة</span></h2>
-  <div class="section-line"></div>
-  <div class="acc-grid">
-    <div class="acc-card"><span class="acc-icon">🛠️</span><div class="acc-name">صيانة PlayStation</div><div class="acc-sub">فحص وتصليح أجهزة وأيدي</div><div class="acc-price">حسب الفحص</div></div>
-    <div class="acc-card"><span class="acc-icon">🔧</span><div class="acc-name">صيانة Xbox</div><div class="acc-sub">تصليح أجهزة Xbox وملحقاتها</div><div class="acc-price">حسب الفحص</div></div>
-    <div class="acc-card"><span class="acc-icon">🧰</span><div class="acc-name">تنظيف وصيانة عامة</div><div class="acc-sub">تنظيف داخلي وتبديل معجون حراري</div><div class="acc-price">حسب الفحص</div></div>
-  </div>
-</section>
-
-<!-- ════════════════ ACCESSORIES ════════════════ -->
-<section id="accessories">
-  <h2 class="section-title"><span>إكسسوارات</span> وملحقات</h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">ملحقات أصلية لتعزيز تجربة اللعب</p>
-  <div class="section-search">
-    <div class="section-search-top">
-      <span class="section-search-icon">🔍</span>
-      <input type="text" placeholder="ابحث عن إكسسوارات..." class="search-input" data-target=".acc-grid">
-      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
-    </div>
-  </div>
-  <div class="acc-grid">
-
-    <div class="acc-card"><span class="acc-badge badge-hot">HOT</span>
-      <span class="acc-icon">🎮</span>
-      <div class="acc-name">DualSense PS5</div>
-      <div class="acc-sub">يد تحكم لاسلكية أصلية</div>
-      <div class="color-dots"><span class="color-dot active" style="background:#fff;"></span><span class="color-dot" style="background:#000;"></span><span class="color-dot" style="background:#cc0033;"></span></div>
-      <div class="acc-price">52 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'DualSense PS5 Controller', price:52, icon:'🎮', kind:'accessory'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="acc-card"><span class="acc-badge badge-new">NEW</span>
-      <span class="acc-icon">🎮</span>
-      <div class="acc-name">Xbox Wireless Pad</div>
-      <div class="acc-sub">يد تحكم Xbox أصلية</div>
-      <div class="color-dots"><span class="color-dot active" style="background:#000;"></span><span class="color-dot" style="background:#fff;"></span><span class="color-dot" style="background:#0c8;"></span></div>
-      <div class="acc-price">48 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'Xbox Wireless Controller', price:48, icon:'🎮', kind:'accessory'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="acc-card"><span class="acc-badge badge-hot">HOT</span>
-      <span class="acc-icon">🎧</span>
-      <div class="acc-name">Pulse 3D Headset</div>
-      <div class="acc-sub">سماعة لاسلكية للـ PS5</div>
-      <div class="acc-price">68 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'Pulse 3D Wireless Headset', price:68, icon:'🎧', kind:'accessory'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="acc-card">
-      <span class="acc-icon">🔌</span>
-      <div class="acc-name">Charging Dock</div>
-      <div class="acc-sub">قاعدة شحن لـ DualSense</div>
-      <div class="acc-price">22 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'DualSense Charging Dock', price:22, icon:'🔌', kind:'accessory'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="acc-card"><span class="acc-badge badge-new">NEW</span>
-      <span class="acc-icon">🥽</span>
-      <div class="acc-name">PS VR2</div>
-      <div class="acc-sub">نظارة الواقع الافتراضي</div>
-      <div class="acc-price">395 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'PlayStation VR2', price:395, icon:'🥽', kind:'accessory'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="acc-card">
-      <span class="acc-icon">⌨️</span>
-      <div class="acc-name">RGB Keyboard</div>
-      <div class="acc-sub">كيبورد ميكانيكي للألعاب</div>
-      <div class="acc-price">42 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'RGB Mechanical Keyboard', price:42, icon:'⌨️', kind:'accessory'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="acc-card">
-      <span class="acc-icon">🖱️</span>
-      <div class="acc-name">Gaming Mouse</div>
-      <div class="acc-sub">ماوس بدقة 16000 DPI</div>
-      <div class="acc-price">28 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'Gaming Mouse 16000 DPI', price:28, icon:'🖱️', kind:'accessory'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="acc-card">
-      <span class="acc-icon">📺</span>
-      <div class="acc-name">HDMI 2.1 Cable</div>
-      <div class="acc-sub">كابل 4K @ 120Hz</div>
-      <div class="acc-price">12 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'HDMI 2.1 Cable 8K', price:12, icon:'📺', kind:'accessory'})">🛒 أضف للسلة</button>
-    </div>
-
-  </div>
-</section>
-
-<!-- ════════════════ BEAUTY / CUSTOMIZATION ════════════════ -->
-<section id="beauty">
-  <h2 class="section-title">قسم <span>التجميل</span></h2>
-  <div class="section-line"></div>
-  <p class="section-subtitle">خصص جهازك بأسلوبك الخاص</p>
-  <div class="section-search">
-    <div class="section-search-top">
-      <span class="section-search-icon">🔍</span>
-      <input type="text" placeholder="ابحث عن تجميل..." class="search-input" data-target=".beauty-grid">
-      <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
-    </div>
-  </div>
-  <div class="beauty-grid">
-
-    <div class="beauty-card">
-      <span class="beauty-icon">🎨</span>
-      <div class="beauty-name">Custom Skin</div>
-      <div class="beauty-sub">ستيكر تخصيص للجهاز</div>
-      <div class="beauty-price">15 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'Custom PS5 Skin', price:15, icon:'🎨', kind:'beauty'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="beauty-card">
-      <span class="beauty-icon">💡</span>
-      <div class="beauty-name">LED Stand</div>
-      <div class="beauty-sub">قاعدة بإضاءة RGB</div>
-      <div class="beauty-price">35 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'RGB LED Stand', price:35, icon:'💡', kind:'beauty'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="beauty-card">
-      <span class="beauty-icon">🌬️</span>
-      <div class="beauty-name">Cooling Fan</div>
-      <div class="beauty-sub">مروحة تبريد إضافية</div>
-      <div class="beauty-price">25 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'External Cooling Fan', price:25, icon:'🌬️', kind:'beauty'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="beauty-card">
-      <span class="beauty-icon">✨</span>
-      <div class="beauty-name">Neon Stickers</div>
-      <div class="beauty-sub">ستيكرات نيون متوهجة</div>
-      <div class="beauty-price">8 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'Neon Glow Stickers Pack', price:8, icon:'✨', kind:'beauty'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="beauty-card">
-      <span class="beauty-icon">🎭</span>
-      <div class="beauty-name">Faceplate Pro</div>
-      <div class="beauty-sub">واجهة قابلة للتغيير</div>
-      <div class="beauty-price">45 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'Custom Faceplate Pro', price:45, icon:'🎭', kind:'beauty'})">🛒 أضف للسلة</button>
-    </div>
-
-    <div class="beauty-card">
-      <span class="beauty-icon">🪩</span>
-      <div class="beauty-name">RGB Light Strip</div>
-      <div class="beauty-sub">شريط إضاءة لخلف الشاشة</div>
-      <div class="beauty-price">18 JOD</div>
-      <button class="add-btn" onclick="addToCart({name:'RGB Light Strip 5m', price:18, icon:'🪩', kind:'beauty'})">🛒 أضف للسلة</button>
-    </div>
-
-  </div>
-</section>
+<!-- DYNAMIC SECTIONS — all categories + items from Firestore -->
+<div id="dynamic-sections"></div>
 
 <!-- FOOTER -->
 <footer>
@@ -3302,6 +2733,10 @@ body.in-page-mode .page-back-btn {
     </a>
   </div>
   <p class="footer-copy">© 2025 عثمان للألعاب — جميع الحقوق محفوظة</p>
+  <a href="admin.html" style="display:inline-block;margin-top:14px;font-size:.7rem;color:rgba(255,255,255,.18);text-decoration:none;letter-spacing:1px;transition:color .2s"
+     onmouseover="this.style.color='rgba(255,255,255,.55)'" onmouseout="this.style.color='rgba(255,255,255,.18)'">
+    ⚙ ADMIN
+  </a>
 </footer>
 
 <script>
@@ -3317,31 +2752,10 @@ function showComingSoon(section) {
   }, 3500);
 }
 
-// ═══ GAME CATALOG ═══
-const PS4_GAMES = [
-  { name: 'Grand Theft Auto V',        img: 'https://img.youtube.com/vi/QkkoHAzjnUs/hqdefault.jpg', price: 20, genre: 'OPEN WORLD', trailer: 'x11pikj', trailerProvider: 'dailymotion' },
-  { name: 'The Crew Motorfest',         img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM.jpeg',     price: 25, genre: 'RACING' },
-  { name: 'Gran Turismo 7',             img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (1).jpeg', price: 28, genre: 'RACING', condition: 'جديد' },
-  { name: 'Elden Ring',                 img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (2).jpeg', price: 32, genre: 'RPG / SOULSLIKE' },
-  { name: 'Minecraft',                  img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (3).jpeg', price: 22, genre: 'SANDBOX' },
-  { name: 'Street Fighter 6',           img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (4).jpeg', price: 30, genre: 'FIGHTING' },
-  { name: 'Saints Row',                 img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.04 PM (5).jpeg', price: 26, genre: 'OPEN WORLD' },
-  { name: 'Little Nightmares I & II',   img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.05 PM.jpeg',     price: 20, genre: 'HORROR' },
-  { name: 'Crash Bandicoot 4',          img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.05 PM (1).jpeg', price: 24, genre: 'PLATFORM' },
-  { name: 'Destiny 2',                  img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.06 PM.jpeg',     price: 18, genre: 'FPS / MMO' },
-  { name: 'Narcos: Rise of the Cartels',img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.07 PM.jpeg',     price: 19, genre: 'STRATEGY' },
-  { name: 'Death Stranding',            img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.07 PM (1).jpeg', price: 27, genre: 'ADVENTURE' },
-  { name: 'Crash N. Sane Trilogy',      img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.07 PM (2).jpeg', price: 23, genre: 'PLATFORM' }
-];
-const PS5_GAMES = [
-  { name: 'Lords of the Fallen',  img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.07 PM (3).jpeg', price: 35, genre: 'SOULSLIKE' },
-  { name: 'Ghostwire: Tokyo',     img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.08 PM.jpeg',     price: 33, genre: 'ACTION' },
-  { name: 'UFO Robot Goldrake',   img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.08 PM (1).jpeg', price: 30, genre: 'ANIME / ACTION' },
-  { name: 'Split Fiction',        img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.09 PM.jpeg',     price: 38, genre: 'CO-OP' },
-  { name: 'Lies of P',            img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.09 PM (1).jpeg', price: 36, genre: 'SOULSLIKE' },
-  { name: 'The Last of Us Part I',img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.09 PM (2).jpeg', price: 42, genre: 'ADVENTURE' },
-  { name: 'Black Myth: Wukong',   img: 'Photo/WhatsApp Image 2026-05-07 at 4.56.09 PM (3).jpeg', price: 45, genre: 'ACTION RPG' }
-];
+// ═══ GAME CATALOG — populated dynamically from Firestore ═══
+const PS4_GAMES = [];
+// Static fallback removed. Items are fetched from the Firestore "Items" collection.
+const PS5_GAMES = [];
 
 function renderGameGrid(targetId, games, platform) {
   const grid = document.getElementById(targetId);
@@ -3454,7 +2868,7 @@ function openGameDetails(game) {
       ${game.condition ? `<div class="game-detail-condition${game.condition === 'جديد' ? ' is-new' : ''}">${escapeHtml(game.condition)}</div>` : ''}
       <div class="game-detail-name">${escapeHtml(game.name)}</div>
       <div class="game-detail-genre">${escapeHtml(genreText)}</div>
-      <div class="game-detail-price">${escapeHtml(priceText)}</div>
+      <div class="game-detail-price">${game.priceLabel ? priceText : escapeHtml(priceText)}</div>
       <div class="game-detail-desc">${escapeHtml(descText)}</div>
       <div class="game-detail-actions">
         ${trailerAction}
@@ -3972,11 +3386,12 @@ let _transColorIdx = 0;
 
 function navigateToPage(pageId, push = true) {
   if (_pageTransitionLock) return;
-  if (pageId !== 'home' && !PAGE_IDS.includes(pageId)) pageId = 'home';
+  const isDynCat = pageId.startsWith('cat-');
+  if (pageId !== 'home' && !PAGE_IDS.includes(pageId) && !isDynCat) pageId = 'home';
 
   const overlay = document.getElementById('page-transition');
   const transLogo = overlay.querySelector('.trans-logo');
-  transLogo.textContent = PAGE_TITLES[pageId] || 'O.F.G';
+  transLogo.textContent = PAGE_TITLES[pageId] || (window._catPageTitles || {})[pageId] || 'O.F.G';
 
   // Pick next color from the 3-color cycle and apply via CSS variable
   const pick = TRANS_TITLE_COLORS[_transColorIdx % TRANS_TITLE_COLORS.length];
@@ -4041,7 +3456,7 @@ document.addEventListener('click', (e) => {
   if (!link) return;
   const href = link.getAttribute('href').slice(1);
   const target = href || 'home';
-  if (target === 'home' || PAGE_IDS.includes(target)) {
+  if (target === 'home' || PAGE_IDS.includes(target) || target.startsWith('cat-')) {
     e.preventDefault();
     navigateToPage(target);
   } else if (target === 'sections') {
@@ -4064,7 +3479,7 @@ window.addEventListener('popstate', (e) => {
 // Initial-load deep link
 (function initRouter(){
   const initial = location.hash.replace('#','') || 'home';
-  if (initial !== 'home' && PAGE_IDS.includes(initial)) {
+  if (initial !== 'home' && (PAGE_IDS.includes(initial) || initial.startsWith('cat-'))) {
     // skip transition for instant first-paint
     document.body.classList.add('in-page-mode');
     document.querySelectorAll('section').forEach(s => s.classList.toggle('page-active', s.id === initial));
@@ -4351,6 +3766,155 @@ const statObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.5 });
 const statsSection = document.querySelector('.stats-section');
 if (statsSection) statObserver.observe(statsSection);
+</script>
+
+<!-- ════ FIRESTORE DYNAMIC LOADER ════
+     Fetches Categories + Items from Firestore.
+     Builds sections-nav and all product sections dynamically.          -->
+<script type="module">
+import { db } from './firebase.js';
+import {
+  collection, getDocs, query, orderBy
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// Show skeleton while loading
+(function(){
+  const g = document.getElementById('sections-grid');
+  if (g) g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;opacity:.4;font-size:.95rem">⏳ جاري تحميل الأقسام...</div>';
+})();
+
+(async () => {
+  try {
+    const [catSnap, itemSnap] = await Promise.all([
+      getDocs(query(collection(db, 'Categories'), orderBy('createdAt', 'asc'))),
+      getDocs(query(collection(db, 'Items'),      orderBy('createdAt', 'desc')))
+    ]);
+
+    const categories = catSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (categories.length === 0) return;
+
+    // Register titles so the page-transition overlay can display them
+    window._catPageTitles = {};
+    categories.forEach(cat => { window._catPageTitles[`cat-${cat.id}`] = cat.name; });
+
+    const ICONS = {
+      PS5:'🚀', PS4:'⚡', PS3:'🏆', PS2:'💿', PS1:'💿',
+      Xbox:'🟢', Nintendo:'🔴', Wii:'🎯', UMD:'💽', VR:'🥽'
+    };
+
+    // ── Map Firestore items → renderGameGrid format
+    const allItems = itemSnap.docs.map(docSnap => {
+      const d = docSnap.data();
+      const hasDiscount = Number(d.discountPrice) > 0;
+      return {
+        id:          docSnap.id,
+        name:        d.name || '',
+        img:         d.imageUrl || '',
+        price:       hasDiscount ? Number(d.discountPrice) : Number(d.originalPrice),
+        priceLabel:  hasDiscount
+          ? `<s style="opacity:.7;font-size:.78em;text-decoration:line-through;text-decoration-color:#ff2d55;color:rgba(255,255,255,.6)">${d.originalPrice}</s><span style="font-size:.55em;opacity:.5;margin:0 4px">▶</span>${d.discountPrice}`
+          : '',
+        genre:       d.genre || '',
+        condition:   d.condition || 'مستعمل',
+        trailer:     d.videoTrailerUrl || '',
+        description: d.description || '',
+        platform:    d.platform || '',
+        categoryID:  d.categoryID || ''
+      };
+    });
+
+    // ── Build top navbar links
+    const navLinks = document.getElementById('nav-links');
+    if (navLinks) {
+      const homeItem = navLinks.querySelector('li:first-child');
+      navLinks.innerHTML = '';
+      if (homeItem) navLinks.appendChild(homeItem);
+      categories.forEach((cat, i) => {
+        const li = document.createElement('li');
+        const a  = document.createElement('a');
+        a.href  = `#cat-${cat.id}`;
+        a.textContent = cat.name;
+        a.style.animationDelay = `-${(i + 1) * 1.1}s`;
+        li.appendChild(a);
+        navLinks.appendChild(li);
+      });
+    }
+
+    // ── Build sections-nav
+    const navGrid = document.getElementById('sections-grid');
+    if (navGrid) {
+      navGrid.innerHTML = categories.map(cat => {
+        const iconHtml = cat.imageUrl
+          ? `<img src="${cat.imageUrl}" class="section-nav-icon" style="width:64px;height:64px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 12px">`
+          : `<span class="section-nav-icon">${ICONS[cat.platform] || '📦'}</span>`;
+        return `<a href="#cat-${cat.id}" class="section-nav-card">
+          ${iconHtml}
+          <div class="section-nav-name">${cat.name}</div>
+          <div class="section-nav-sub">${cat.platform || ''}</div>
+        </a>`;
+      }).join('');
+
+      // Animate nav cards in
+      navGrid.querySelectorAll('.section-nav-card').forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), i * 60);
+      });
+    }
+
+    // ── Build one <section> per category
+    const container = document.getElementById('dynamic-sections');
+    if (!container) return;
+
+    container.innerHTML = categories.map(cat => {
+      const gridId = `cat-grid-${cat.id}`;
+      return `
+      <section id="cat-${cat.id}">
+        <h2 class="section-title">${cat.name} <span>${cat.platform || ''}</span></h2>
+        <div class="section-line"></div>
+        <div class="section-search">
+          <div class="section-search-top">
+            <span class="section-search-icon">🔍</span>
+            <input type="text" placeholder="ابحث في ${cat.name}..." class="search-input" data-target="#${gridId}">
+            <input type="number" placeholder="أقصى سعر" class="price-max" min="0">
+          </div>
+        </div>
+        <div class="image-grid" id="${gridId}"></div>
+      </section>`;
+    }).join('');
+
+    // ── Render items per category
+    categories.forEach(cat => {
+      const catItems = allItems.filter(i => i.categoryID === cat.id);
+      if (catItems.length > 0) {
+        renderGameGrid(`cat-grid-${cat.id}`, catItems, cat.platform || cat.name);
+      } else {
+        const grid = document.getElementById(`cat-grid-${cat.id}`);
+        if (grid) {
+          grid.style.display = 'block';
+          grid.innerHTML = `
+            <div class="coming-soon-block">
+              ${cat.imageUrl
+                ? `<img src="${cat.imageUrl}" style="width:90px;height:90px;object-fit:cover;border-radius:12px;display:block;margin:0 auto 20px;filter:drop-shadow(0 0 18px rgba(204,0,0,0.5))">`
+                : `<span class="big-icon">${ICONS[cat.platform] || '📦'}</span>`}
+              <h3>قسم ${cat.name} قادم قريباً</h3>
+              <p>سيتم إضافة منتجات هذا القسم قريباً بأسعار خاصة</p>
+              <p class="countdown">⏳ COMING SOON ⏳</p>
+            </div>`;
+        }
+      }
+    });
+
+    // Clear skeleton
+    const skeletonMsg = document.querySelector('#sections-grid div[style*="جاري تحميل"]');
+    if (skeletonMsg) skeletonMsg.remove();
+
+    typeof renderFavorites       === 'function' && renderFavorites();
+    typeof updateFavoriteButtons === 'function' && updateFavoriteButtons();
+    typeof updateFavoriteBadge   === 'function' && updateFavoriteBadge();
+
+  } catch (err) {
+    console.warn('[OFG] Firestore unavailable.', err.message);
+  }
+})();
 </script>
 </body>
 </html>
