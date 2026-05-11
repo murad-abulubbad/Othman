@@ -10,6 +10,7 @@ const CLD_PRESET = 'ofg_store'; // unsigned upload preset — create in Cloudina
 // ── STATE ──────────────────────────────────────────────
 let categories = [];
 let items      = [];
+let selectedItemIds = new Set();
 
 // ── HELPERS ────────────────────────────────────────────
 async function sha256(msg) {
@@ -31,6 +32,90 @@ function fmtDate(ts) {
 }
 
 function $ (id) { return document.getElementById(id); }
+
+function getCategoryItemCount(categoryId) {
+  return items.filter(item => item.categoryID === categoryId).length;
+}
+
+function renderDashboardStats() {
+  const statsRow = $('dashboard-stats');
+  if (!statsRow) return;
+
+  const categoryCards = categories.map(cat => {
+    const count = getCategoryItemCount(cat.id);
+    return `
+      <div class="stat-card stat-card-category">
+        <div class="s-num">${count}</div>
+        <div class="s-lbl">${cat.name}</div>
+      </div>
+    `;
+  }).join('');
+
+  statsRow.innerHTML = `
+    <div class="stat-card stat-card-total">
+      <div class="s-num">${items.length}</div>
+      <div class="s-lbl">إجمالي العناصر</div>
+    </div>
+    <div class="stat-card stat-card-total">
+      <div class="s-num">${categories.length}</div>
+      <div class="s-lbl">إجمالي التصنيفات</div>
+    </div>
+    ${categoryCards}
+  `;
+}
+
+function renderCategoriesTable() {
+  const sel = $('item-categoryID');
+  if (sel) {
+    sel.innerHTML = '<option value="">— اختر تصنيفاً —</option>' +
+      categories.map(c => {
+        const count = getCategoryItemCount(c.id);
+        return `<option value="${c.id}">${c.name} (${count})</option>`;
+      }).join('');
+  }
+
+  const tbody = $('cats-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = categories.length
+    ? categories.map(c => {
+        const count = getCategoryItemCount(c.id);
+        return `<tr>
+          <td>${c.name}</td>
+          <td><span class="badge badge-other">${count}</span></td>
+          <td>${c.imageUrl ? `<img src="${c.imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
+          <td>${fmtDate(c.createdAt)}</td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-edit btn-sm" data-cat-edit="${c.id}">✏️ تعديل</button>
+            <button class="btn btn-danger btn-sm" data-cat-del="${c.id}">🗑 حذف</button>
+          </td>
+        </tr>`;
+      }).join('')
+    : '<tr class="empty-row"><td colspan="5">لا توجد تصنيفات بعد</td></tr>';
+}
+
+function syncItemSelectionUI(pageItems = null) {
+  const bulkBtn = $('delete-selected-items');
+  if (bulkBtn) {
+    const count = selectedItemIds.size;
+    bulkBtn.disabled = count === 0;
+    bulkBtn.textContent = count ? `حذف المحدد (${count})` : 'حذف المحدد';
+  }
+
+  const selectAll = $('select-all-items');
+  if (selectAll) {
+    const visibleIds = pageItems
+      ? pageItems.map(item => item.id)
+      : [...document.querySelectorAll('[data-item-select]')].map(cb => cb.dataset.itemSelect);
+    const selectedVisible = visibleIds.filter(id => selectedItemIds.has(id)).length;
+    selectAll.checked = visibleIds.length > 0 && selectedVisible === visibleIds.length;
+    selectAll.indeterminate = selectedVisible > 0 && selectedVisible < visibleIds.length;
+  }
+
+  document.querySelectorAll('[data-item-select]').forEach(cb => {
+    cb.checked = selectedItemIds.has(cb.dataset.itemSelect);
+  });
+}
 
 // ── AUTH ───────────────────────────────────────────────
 async function login() {
@@ -88,32 +173,8 @@ async function loadCategories() {
       query(collection(db, 'Categories'), orderBy('createdAt', 'desc'))
     );
     categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    $('stat-cats').textContent = categories.length;
-
-    // Populate the item-form dropdown (show platform next to name)
-    const sel = $('item-categoryID');
-    sel.innerHTML = '<option value="">— اختر تصنيفاً —</option>' +
-      categories.map(c =>
-        `<option value="${c.id}" data-platform="${c.platform||''}">${c.name}${c.platform?' ('+c.platform+')':''}</option>`
-      ).join('');
-
-    // Render cats table
-    $('cats-tbody').innerHTML = categories.length
-      ? categories.map(c => {
-          const pl = (c.platform||'').toLowerCase();
-          const bc = ['ps4','ps5'].includes(pl) ? `badge-${pl}` : 'badge-other';
-          return `<tr>
-            <td>${c.name}</td>
-            <td><span class="badge ${bc}">${c.platform||'—'}</span></td>
-            <td>${c.imageUrl ? `<img src="${c.imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
-            <td>${fmtDate(c.createdAt)}</td>
-            <td style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn btn-edit btn-sm" data-cat-edit="${c.id}">✏️ تعديل</button>
-              <button class="btn btn-danger btn-sm" data-cat-del="${c.id}">🗑 حذف</button>
-            </td>
-          </tr>`;
-        }).join('')
-      : '<tr class="empty-row"><td colspan="4">لا توجد تصنيفات بعد</td></tr>';
+    renderCategoriesTable();
+    renderDashboardStats();
   } catch (e) {
     toast('خطأ في تحميل التصنيفات: ' + e.message, true);
   }
@@ -123,7 +184,6 @@ async function addCategory() {
   const inp  = $('cat-name');
   const name = inp.value.trim();
   if (!name) return;
-  const platform  = $('cat-platform').value;
   const fileInput = $('cat-image-file');
   const saveBtn   = $('cat-save-btn');
   let   imageUrl  = '';
@@ -134,7 +194,7 @@ async function addCategory() {
     } catch (e) { toast('خطأ في رفع الصورة: ' + e.message, true); saveBtn.textContent = 'حفظ'; return; }
   }
   try {
-    await addDoc(collection(db, 'Categories'), { name, platform, imageUrl, createdAt: serverTimestamp() });
+    await addDoc(collection(db, 'Categories'), { name, imageUrl, createdAt: serverTimestamp() });
     $('cat-add-modal').style.display = 'none';
     toast('✅ تم إضافة التصنيف');
     loadCategories();
@@ -184,7 +244,8 @@ function renderItemsTable() {
         const qty = Number(it.quantity ?? 0);
         const qtyBadge = qty <= 0 ? '<span class="badge badge-danger">نفذ</span>' : qty < 5 ? '<span class="badge badge-warn">'+qty+'</span>' : '<span class="badge badge-ok">'+qty+'</span>';
         return `
-        <tr>
+        <tr class="${selectedItemIds.has(it.id) ? 'row-selected' : ''}">
+          <td class="td-select"><input type="checkbox" class="row-select" data-item-select="${it.id}" ${selectedItemIds.has(it.id) ? 'checked' : ''}></td>
           <td><img class="item-img" src="${it.imageUrl||''}" alt="${it.name}"
                onerror="this.style.opacity='.25'"></td>
           <td>${it.name}</td>
@@ -198,11 +259,12 @@ function renderItemsTable() {
           </td>
         </tr>`;
       }).join('')
-    : `<tr class="empty-row"><td colspan="7">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
+    : `<tr class="empty-row"><td colspan="8">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
 
   $('pg-info').textContent = `صفحة ${itemsPage} من ${totalPages} (${filtered.length} عنصر)`;
   $('pg-prev').disabled = itemsPage <= 1;
   $('pg-next').disabled = itemsPage >= totalPages;
+  syncItemSelectionUI(pageItems);
 }
 
 async function loadItems() {
@@ -211,14 +273,27 @@ async function loadItems() {
       query(collection(db, 'Items'), orderBy('createdAt', 'desc'))
     );
     items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    $('stat-total').textContent = items.length;
-    $('stat-ps4').textContent   = items.filter(i => i.platform === 'PS4').length;
-    $('stat-ps5').textContent   = items.filter(i => i.platform === 'PS5').length;
+    selectedItemIds = new Set([...selectedItemIds].filter(id => items.some(item => item.id === id)));
 
     renderItemsTable();
+    renderCategoriesTable();
+    renderDashboardStats();
   } catch (e) {
     toast('خطأ في تحميل العناصر: ' + e.message, true);
+  }
+}
+
+async function deleteSelectedItems() {
+  const ids = [...selectedItemIds];
+  if (!ids.length) return;
+  if (!confirm(`هل أنت متأكد من حذف ${ids.length} عنصر${ids.length === 1 ? '' : 'ات'}؟`)) return;
+  try {
+    await Promise.all(ids.map(id => deleteDoc(doc(db, 'Items', id))));
+    selectedItemIds.clear();
+    toast(`🗑 تم حذف ${ids.length} عنصر${ids.length === 1 ? '' : 'ات'}`);
+    loadItems();
+  } catch (err) {
+    toast('خطأ: ' + err.message, true);
   }
 }
 
@@ -396,6 +471,7 @@ document.addEventListener('click', async (e) => {
   if (delItemBtn) {
     if (!confirm('هل أنت متأكد من حذف هذا العنصر؟')) return;
     try {
+      selectedItemIds.delete(delItemBtn.dataset.itemDel);
       await deleteDoc(doc(db, 'Items', delItemBtn.dataset.itemDel));
       toast('🗑 تم حذف العنصر');
       loadItems();
@@ -422,9 +498,18 @@ $('cat-cancel-btn').addEventListener('click', () => { $('cat-add-modal').style.d
 $('cat-save-btn').addEventListener('click', addCategory);
 $('cat-edit-cancel-btn').addEventListener('click', closeCatEdit);
 $('cat-edit-save-btn').addEventListener('click', saveCatEdit);
+$('delete-selected-items')?.addEventListener('click', deleteSelectedItems);
+$('select-all-items')?.addEventListener('change', e => {
+  const checked = e.target.checked;
+  const visibleIds = [...document.querySelectorAll('[data-item-select]')].map(cb => cb.dataset.itemSelect);
+  visibleIds.forEach(id => {
+    if (checked) selectedItemIds.add(id);
+    else selectedItemIds.delete(id);
+  });
+  renderItemsTable();
+});
 $('cat-add-btn').addEventListener('click', () => {
   $('cat-name').value = '';
-  $('cat-platform').value = 'PS4';
   $('cat-image-file').value = '';
   $('cat-img-fname').textContent = 'اختر صورة';
   $('cat-add-preview').style.display = 'none';
@@ -451,7 +536,6 @@ $('cat-edit-image-file').addEventListener('change', e => {
 function openCatEdit(cat) {
   $('cat-edit-id').value            = cat.id;
   $('cat-edit-name').value          = cat.name || '';
-  $('cat-edit-platform').value      = cat.platform || 'PS4';
   $('cat-edit-image-file').value    = '';
   $('cat-edit-fname').textContent   = '';
   const prev = $('cat-edit-preview');
@@ -465,7 +549,6 @@ async function saveCatEdit() {
   const id   = $('cat-edit-id').value;
   const name = $('cat-edit-name').value.trim();
   if (!name) return;
-  const platform  = $('cat-edit-platform').value;
   const fileInput = $('cat-edit-image-file');
   const saveBtn   = $('cat-edit-save-btn');
   let   imageUrl  = categories.find(c => c.id === id)?.imageUrl || '';
@@ -476,18 +559,19 @@ async function saveCatEdit() {
     } catch (e) { toast('خطأ في رفع الصورة: ' + e.message, true); saveBtn.textContent = 'حفظ التعديل'; return; }
   }
   try {
-    await updateDoc(doc(db, 'Categories', id), { name, platform, imageUrl });
+    await updateDoc(doc(db, 'Categories', id), { name, imageUrl });
     toast('✅ تم تعديل التصنيف');
     closeCatEdit();
     loadCategories();
   } catch (e) { toast('خطأ: ' + e.message, true); }
   saveBtn.textContent = 'حفظ التعديل';
 };
-// Auto-fill platform when a category is selected
-$('item-categoryID').addEventListener('change', () => {
-  const opt = $('item-categoryID').selectedOptions[0];
-  const pl  = opt?.dataset?.platform;
-  if (pl) $('item-platform').value = pl;
+document.addEventListener('change', e => {
+  const checkbox = e.target.closest('[data-item-select]');
+  if (!checkbox) return;
+  if (checkbox.checked) selectedItemIds.add(checkbox.dataset.itemSelect);
+  else selectedItemIds.delete(checkbox.dataset.itemSelect);
+  syncItemSelectionUI();
 });
 
 // Close modal on backdrop click

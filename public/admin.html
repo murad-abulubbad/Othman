@@ -49,28 +49,28 @@
   <div class="admin-main">
 
     <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card"><div class="s-num" id="stat-total">—</div><div class="s-lbl">إجمالي العناصر</div></div>
-      <div class="stat-card"><div class="s-num" id="stat-ps4">—</div><div class="s-lbl">ألعاب PS4</div></div>
-      <div class="stat-card"><div class="s-num" id="stat-ps5">—</div><div class="s-lbl">ألعاب PS5</div></div>
-      <div class="stat-card"><div class="s-num" id="stat-cats">—</div><div class="s-lbl">التصنيفات</div></div>
-    </div>
+    <div class="stats-row" id="dashboard-stats"></div>
 
     <!-- Items Section -->
     <div class="section-box">
       <div class="section-box-head">
         <h3>📦 عناصر المتجر</h3>
-        <button class="btn btn-primary btn-sm" onclick="openItemModal()">+ إضافة عنصر</button>
+        <div class="section-actions">
+          <button class="btn btn-danger btn-sm" id="delete-selected-items" disabled>حذف المحدد</button>
+          <button class="btn btn-primary btn-sm" onclick="openItemModal()">+ إضافة عنصر</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
+              <th class="td-select-head"><input type="checkbox" id="select-all-items" aria-label="تحديد جميع العناصر"></th>
               <th>صورة</th><th>الاسم</th>
               <th>السعر</th><th>الخصم</th>
               <th>الحالة</th><th>الكمية</th><th>إجراءات</th>
             </tr>
             <tr class="filter-row">
+              <th></th>
               <th></th>
               <th><input class="filter-input" data-filter="name" type="text" placeholder="🔍 بحث..."></th>
               <th><input class="filter-input" data-filter="originalPrice" type="text" placeholder="🔍"></th>
@@ -87,7 +87,7 @@
             </tr>
           </thead>
           <tbody id="items-tbody">
-            <tr class="empty-row"><td colspan="7">جاري التحميل...</td></tr>
+            <tr class="empty-row"><td colspan="8">جاري التحميل...</td></tr>
           </tbody>
         </table>
       </div>
@@ -108,9 +108,9 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>الاسم</th><th>المنصة</th><th>الصورة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead>
+          <thead><tr><th>الاسم</th><th>عدد العناصر</th><th>الصورة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead>
           <tbody id="cats-tbody">
-            <tr class="empty-row"><td colspan="3">جاري التحميل...</td></tr>
+            <tr class="empty-row"><td colspan="5">جاري التحميل...</td></tr>
           </tbody>
         </table>
       </div>
@@ -126,14 +126,6 @@
     <div style="margin-bottom:12px">
       <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">الاسم *</label>
       <input id="cat-name" class="bare" style="width:100%;box-sizing:border-box" placeholder="سيديات PS4...">
-    </div>
-    <div style="margin-bottom:12px">
-      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">المنصة</label>
-      <select id="cat-platform" class="bare" style="width:100%">
-        <option value="PS4">PS4</option><option value="PS5">PS5</option>
-        <option value="PS3">PS3</option><option value="Xbox">Xbox</option>
-        <option value="Nintendo">Nintendo</option><option value="Other">أخرى</option>
-      </select>
     </div>
     <div style="margin-bottom:18px">
       <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">صورة (اختياري)</label>
@@ -160,14 +152,6 @@
     <div style="margin-bottom:12px">
       <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">الاسم</label>
       <input id="cat-edit-name" class="bare" style="width:100%;box-sizing:border-box" placeholder="اسم التصنيف">
-    </div>
-    <div style="margin-bottom:12px">
-      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">المنصة</label>
-      <select id="cat-edit-platform" class="bare" style="width:100%">
-        <option value="PS4">PS4</option><option value="PS5">PS5</option>
-        <option value="PS3">PS3</option><option value="Xbox">Xbox</option>
-        <option value="Nintendo">Nintendo</option><option value="Other">أخرى</option>
-      </select>
     </div>
     <div style="margin-bottom:18px">
       <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">صورة جديدة (اختياري)</label>

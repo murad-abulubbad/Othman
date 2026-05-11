@@ -13,50 +13,52 @@ async function loadFirestoreData() {
     const categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     console.log('Categories loaded:', categories.length);
 
-    // Build nav cards in #sections-grid
-    const sectionsGrid = document.getElementById('sections-grid');
-    if (sectionsGrid) {
-      if (categories.length === 0) {
-        sectionsGrid.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px;">لا توجد أقسام حالياً. أضف أقسام من لوحة الإدارة.<br><small>افتح Console (F12) للمزيد من المعلومات</small></div>';
-        console.log('No categories found in Firestore');
-      } else {
-        sectionsGrid.innerHTML = categories.map(cat => {
-          const iconHtml = cat.imageUrl
-            ? `<img class="section-nav-icon" src="${cat.imageUrl}" alt="${cat.name}" onerror="this.outerHTML='<span class=\\'section-nav-icon\\'>🎮</span>'">`
-            : `<span class="section-nav-icon">🎮</span>`;
-          return `
-            <a href="#cat-${cat.id}" class="section-nav-card">
-              ${iconHtml}
-              <div class="section-nav-name">${cat.name}</div>
-              <div class="section-nav-sub">${cat.platform || ''}</div>
-            </a>
-          `;
-        }).join('');
-        // Reveal cards (stagger). CSS keeps them at opacity:0 until .visible is added.
-        requestAnimationFrame(() => {
-          sectionsGrid.querySelectorAll('.section-nav-card').forEach((el, i) => {
-            el.style.transitionDelay = ((i % 6) * 0.08) + 's';
-            setTimeout(() => el.classList.add('visible'), 30);
-          });
-        });
-        console.log('Section cards rendered:', categories.length);
-      }
-    } else {
-      console.error('sections-grid element not found');
-    }
-
     // Fetch Items (ordered by createdAt desc)
     const itemsQuery = query(collection(db, 'Items'), orderBy('createdAt', 'desc'));
     const itemsSnapshot = await getDocs(itemsQuery);
     const items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     console.log('Items loaded:', items.length);
 
+    const renderSectionCards = () => {
+      const sectionsGrid = document.getElementById('sections-grid');
+      if (sectionsGrid) {
+        if (categories.length === 0) {
+          sectionsGrid.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px;">لا توجد أقسام حالياً. أضف أقسام من لوحة الإدارة.<br><small>افتح Console (F12) للمزيد من المعلومات</small></div>';
+          console.log('No categories found in Firestore');
+        } else {
+          sectionsGrid.innerHTML = categories.map(cat => {
+            const categoryItems = items.filter(item => item.categoryID === cat.id);
+            const iconHtml = cat.imageUrl
+              ? `<img class="section-nav-icon" src="${cat.imageUrl}" alt="${cat.name}" onerror="this.outerHTML='<span class=\'section-nav-icon\'>🎮</span>'">`
+              : `<span class="section-nav-icon">🎮</span>`;
+            return `
+              <a href="#cat-${cat.id}" class="section-nav-card">
+                ${iconHtml}
+                <div class="section-nav-name">${cat.name}</div>
+                <div class="section-nav-sub">${categoryItems.length} عنصر</div>
+              </a>
+            `;
+          }).join('');
+          requestAnimationFrame(() => {
+            sectionsGrid.querySelectorAll('.section-nav-card').forEach((el, i) => {
+              el.style.transitionDelay = ((i % 6) * 0.08) + 's';
+              setTimeout(() => el.classList.add('visible'), 30);
+            });
+          });
+          console.log('Section cards rendered:', categories.length);
+        }
+      } else {
+        console.error('sections-grid element not found');
+      }
+    };
+
+    renderSectionCards();
+
     // Build dynamic sections in #dynamic-sections
     const dynamicSections = document.getElementById('dynamic-sections');
     if (dynamicSections) {
       dynamicSections.innerHTML = categories.map(cat => {
         const categoryItems = items.filter(item => item.categoryID === cat.id);
-        const platformLabel = cat.platform && cat.platform !== 'Other' ? cat.platform : '';
         const body = categoryItems.length > 0
           ? `<div class="image-grid" id="grid-cat-${cat.id}"></div>`
           : `
@@ -70,7 +72,7 @@ async function loadFirestoreData() {
 
         return `
           <section id="cat-${cat.id}" class="dynamic-category-section">
-            <h2 class="section-title visible">${cat.name} ${platformLabel ? `<span>${platformLabel}</span>` : ''}</h2>
+            <h2 class="section-title visible">${cat.name} <span>${categoryItems.length} عنصر</span></h2>
             <div class="section-line visible"></div>
             ${body}
           </section>
