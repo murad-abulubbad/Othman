@@ -21,12 +21,19 @@ async function loadFirestoreData() {
         console.log('No categories found in Firestore');
       } else {
         sectionsGrid.innerHTML = categories.map(cat => `
-          <a href="#cat-${cat.id}" class="section-card">
-            <div class="section-card-icon">🎮</div>
-            <div class="section-card-title">${cat.name}</div>
-            <div class="section-card-platform">${cat.platform || ''}</div>
+          <a href="#cat-${cat.id}" class="section-nav-card">
+            <span class="section-nav-icon">🎮</span>
+            <div class="section-nav-name">${cat.name}</div>
+            <div class="section-nav-sub">${cat.platform || ''}</div>
           </a>
         `).join('');
+        // Reveal cards (stagger). CSS keeps them at opacity:0 until .visible is added.
+        requestAnimationFrame(() => {
+          sectionsGrid.querySelectorAll('.section-nav-card').forEach((el, i) => {
+            el.style.transitionDelay = ((i % 6) * 0.08) + 's';
+            setTimeout(() => el.classList.add('visible'), 30);
+          });
+        });
         console.log('Section cards rendered:', categories.length);
       }
     } else {
