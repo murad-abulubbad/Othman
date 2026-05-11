@@ -82,17 +82,43 @@ async function loadFirestoreData() {
         const categoryItems = items.filter(item => item.categoryID === cat.id);
         if (categoryItems.length === 0) return;
 
-        const formattedItems = categoryItems.map(item => ({
-          name: item.name,
-          img: item.imageUrl,
-          price: item.discountPrice || item.originalPrice,
-          priceLabel: item.discountPrice && item.originalPrice
-            ? `<span style="text-decoration:line-through;opacity:0.6;font-size:0.8em">${item.originalPrice}</span> ${item.discountPrice}`
-            : '',
-          genre: item.genre,
-          condition: item.condition || 'مستعمل',
-          trailer: item.videoTrailerUrl
-        }));
+        const formattedItems = categoryItems.map(item => {
+          // Debug logging
+          console.log('Item:', item.name, 'Raw prices:', item.originalPrice, item.discountPrice);
+          // Ensure prices are numbers and formatted correctly
+          let originalPrice = parseFloat(item.originalPrice) || 0;
+          let discountPrice = parseFloat(item.discountPrice) || 0;
+          console.log('Parsed prices:', originalPrice, discountPrice);
+          // Cap prices at reasonable max (10000 JOD) to catch data errors
+          const MAX_PRICE = 10000;
+          if (originalPrice > MAX_PRICE || originalPrice < 0) originalPrice = 0;
+          if (discountPrice > MAX_PRICE || discountPrice < 0) discountPrice = 0;
+          console.log('After validation:', originalPrice, discountPrice);
+          // Use discount price if valid and less than original, otherwise use original
+          const finalPrice = (discountPrice > 0 && discountPrice < originalPrice) ? discountPrice : originalPrice;
+          // Format price label: show strikethrough original + discount only if discount is valid and less
+          let priceLabel;
+          if (finalPrice > 0 && finalPrice <= MAX_PRICE) {
+            priceLabel = (discountPrice > 0 && discountPrice < originalPrice)
+              ? `<span style="text-decoration:line-through;opacity:0.6;font-size:0.8em">${originalPrice.toFixed(2)}</span> ${discountPrice.toFixed(2)}`
+              : originalPrice.toFixed(2);
+          } else {
+            priceLabel = 'حسب الطلب';
+          }
+          const result = {
+            name: item.name,
+            img: item.imageUrl,
+            price: finalPrice,
+            priceLabel: priceLabel,
+            genre: item.genre,
+            condition: item.condition || 'مستعمل',
+            trailer: item.videoTrailerUrl,
+            originalPrice: originalPrice,
+            discountPrice: discountPrice
+          };
+          console.log('Formatted item:', result.name, 'Final priceLabel:', result.priceLabel);
+          return result;
+        });
 
         if (typeof renderGameGrid === 'function') {
           // Pass the category name (instead of platform) so the small badge on each

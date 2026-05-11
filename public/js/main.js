@@ -488,6 +488,21 @@ function removeFromCart(index) {
   saveCart(); updateCartUI();
 }
 
+function increaseQty(index) {
+  cart[index].qty = (cart[index].qty || 1) + 1;
+  saveCart(); updateCartUI();
+}
+
+function decreaseQty(index) {
+  const currentQty = cart[index].qty || 1;
+  if (currentQty <= 1) {
+    cart.splice(index, 1); // Remove if qty becomes 0
+  } else {
+    cart[index].qty = currentQty - 1;
+  }
+  saveCart(); updateCartUI();
+}
+
 function showToast(name) {
   document.getElementById('toast-msg').textContent = `تمت إضافة "${name}"`;
   const t = document.getElementById('toast');
@@ -522,12 +537,16 @@ function updateCartUI() {
         <div class="cart-item">
           ${visual}
           <div class="cart-item-info">
-            <div class="cart-item-name">${platformBadge}${item.name}${item.qty > 1 ? ` ×${item.qty}` : ''}</div>
+            <div class="cart-item-name">${platformBadge}${item.name}</div>
             ${sectionBadge}
             ${conditionBadge}
             <div class="cart-item-price">${item.priceLabel || `${(item.price * (item.qty||1)).toFixed(2)} JOD`}</div>
           </div>
-          <button class="cart-item-remove" onclick="removeFromCart(${i})">✕</button>
+          <div class="cart-item-actions">
+            <button class="cart-qty-btn" onclick="decreaseQty(${i})">−</button>
+            <span class="cart-qty-num">${item.qty || 1}</span>
+            <button class="cart-qty-btn" onclick="increaseQty(${i})">+</button>
+          </div>
         </div>`;
     }).join('');
     document.getElementById('cart-count').textContent = count;
@@ -573,11 +592,21 @@ function sendCartToWhatsApp() {
     const platform = item.platform ? `\n   ${e.game} النوع: ${item.platform}` : '';
     const section = item.section || item.platform || 'غير محدد';
     const condition = item.condition ? `\n   ${e.check} الحالة: ${item.condition}` : '';
-    const priceText = item.priceLabel || `${lineTotal.toFixed(2)} JOD`;
+    // Format price: show original with strikethrough + discount, or just original
+    let priceText;
+    if (item.priceLabel && item.originalPrice && item.discountPrice) {
+      // Has discount: show original with ~strikethrough~ + discount price
+      priceText = `~${item.originalPrice}~ ${item.discountPrice} JOD`;
+    } else if (item.priceLabel && item.originalPrice) {
+      // Has priceLabel but extract just the numbers
+      const cleanPrice = item.originalPrice || lineTotal.toFixed(2);
+      priceText = `${cleanPrice} JOD`;
+    } else {
+      // No discount, just show the calculated price
+      priceText = `${lineTotal.toFixed(2)} JOD`;
+    }
     return `#${index + 1}
-   ${e.product} المنتج: ${item.name}${platform}
-   ${e.game} القسم: ${section}
-   ${condition}
+   ${e.product} المنتج: ${item.name}${platform}${condition}
    ${e.qty} الكمية: ${qty}
    ${e.price} السعر: ${priceText}`;
   }).join('\n────────────────\n');
@@ -592,7 +621,7 @@ ${orderLines}
 ────────────────
 
 ${e.box} عدد القطع: ${count}
-${e.money} المجموع الكلي: ${hasPriceRequest ? `${total.toFixed(2)} JOD + منتجات سعرها عند الطلب` : `${total.toFixed(2)} JOD`}
+${e.money} المجموع الكلي: ${total.toFixed(2)} JOD
 
 ${e.check} يرجى تأكيد توفر الطلب
 ${e.truck} وطريقة الاستلام أو التوصيل

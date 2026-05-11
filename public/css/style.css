@@ -272,6 +272,13 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
 .cart-item-info { flex: 1; }
 .cart-item-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 3px; }
 .cart-item-price { font-family: 'Orbitron', monospace; color: var(--red-bright); font-size: 0.85rem; }
+.cart-item-img {
+  width: 50px; height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(204,0,0,0.3);
+}
 .cart-item-remove {
   background: transparent; border: 1px solid rgba(255,255,255,0.15);
   color: rgba(255,255,255,0.5); border-radius: 50%;
@@ -279,6 +286,83 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
   transition: all 0.2s;
 }
 .cart-item-remove:hover { background: rgba(204,0,0,0.3); border-color: var(--red); color: white; }
+
+/* Cart quantity controls */
+.cart-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.2);
+  padding: 4px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.cart-qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.cart-qty-btn:hover { background: var(--red-bright); }
+.cart-qty-btn:active { transform: scale(0.95); }
+.cart-qty-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.9rem;
+  color: white;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Mobile responsive cart items */
+@media (max-width: 480px) {
+  .cart-item {
+    padding: 8px 10px;
+    gap: 10px;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  .cart-item-img {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px;
+    flex-shrink: 0;
+  }
+  .cart-item-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .cart-item-name {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cart-item-price {
+    font-size: 0.8rem;
+  }
+  .cart-item-actions {
+    padding: 3px 6px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .cart-qty-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 0.85rem;
+  }
+  .cart-qty-num {
+    font-size: 0.8rem;
+    min-width: 16px;
+  }
+}
 .cart-footer {
   border-top: 1px solid rgba(204,0,0,0.2);
   padding: 20px 25px;
@@ -624,6 +708,35 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
   background: rgba(255,45,85,0.4);
   transform: scale(1.1);
 }
+
+/* Mobile responsive favorite items */
+@media (max-width: 480px) {
+  .favorite-item {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+  .favorite-item-img {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px;
+    flex-shrink: 0;
+  }
+  .favorite-item-name {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .favorite-item-price {
+    font-size: 0.8rem;
+  }
+  .favorite-item-remove {
+    width: 26px;
+    height: 26px;
+    font-size: 0.85rem;
+  }
+}
+
 .favorite-sidebar-empty {
   text-align: center; padding: 40px 20px;
   color: rgba(255,255,255,0.4);
@@ -1676,6 +1789,25 @@ img.console-float {
     padding: 24px 20px 26px;
   }
 }
+@media (max-width: 480px) {
+  .game-detail-cover {
+    min-height: 180px !important;
+    max-height: 200px;
+  }
+  .game-detail-name {
+    font-size: 1.3rem;
+  }
+  .game-detail-price {
+    font-size: 1.1rem;
+    padding: 6px 14px;
+  }
+  .game-detail-actions .image-card-add,
+  .game-detail-actions .image-card-trailer {
+    min-width: 120px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+}
 /* Brief click feedback (auto-removed after 350ms by JS) — keeps button enabled */
 .image-card-add.just-added {
   animation: justAddedPulse 0.35s ease;
@@ -1690,19 +1822,6 @@ img.console-float {
 .section-subtitle {
   text-align: center; color: rgba(255,255,255,0.5);
   font-size: 0.95rem; margin-bottom: 45px; margin-top: -30px;
-}
-
-/* CART ITEM IMAGE */
-.cart-item-img {
-  width: 60px; height: 60px;
-  border-radius: 8px;
-  object-fit: cover;
-  mix-blend-mode: screen;
-  filter: brightness(1.1) contrast(1.05);
-  background: #000;
-  flex-shrink: 0;
-  border: 1px solid rgba(204,0,0,0.4);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 /* PS2 / PS3 / PS4 / Xbox FEATURE PAGE — split image + text */
@@ -2229,6 +2348,7 @@ body.in-page-mode .page-back-btn {
   nav { padding: 0 15px; }
   .nav-links { display: none; }
   section { padding: 60px 20px; }
+  .dynamic-category-section { margin-bottom: 40px; }
   #home {
     justify-content: flex-start;
     padding: 72px 14px 0;
@@ -2369,6 +2489,23 @@ body {
   background-size: 100% 100% !important;
   background-repeat: no-repeat !important;
   min-height: 100vh;
+}
+
+/* Mobile: reduce section spacing even more on small screens */
+@media (max-width: 480px) {
+  section { padding: 20px 12px !important; }
+  .dynamic-category-section { margin-bottom: 15px !important; }
+  .section-title { font-size: 1.3rem; margin-bottom: 6px; }
+  .section-line { margin-bottom: 12px; height: 2px; }
+  .stats-section { padding: 15px 12px !important; }
+  .stats-grid { gap: 20px; }
+  .stat-number { font-size: 1.5rem; }
+  .image-grid { gap: 10px; }
+  .image-card { border-radius: 10px; }
+  .sections-grid { gap: 12px; }
+  .nav-card { padding: 15px 12px; }
+  .nav-card-icon { font-size: 2rem; }
+  .nav-card-title { font-size: 0.9rem; }
 }
 
 /* Ensure html also has fallback background */

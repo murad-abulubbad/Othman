@@ -153,7 +153,7 @@ async function deleteCategory(id) {
 
 // ── ITEMS ──────────────────────────────────────────────
 const ITEMS_PER_PAGE = 10;
-let itemsFilters = { name:'', platform:'', originalPrice:'', discountPrice:'', condition:'', quantity:'', genre:'' };
+let itemsFilters = { name:'', platform:'', originalPrice:'', discountPrice:'', condition:'', quantity:'' };
 let itemsPage = 1;
 
 function getFilteredItems() {
@@ -164,7 +164,6 @@ function getFilteredItems() {
     if (itemsFilters.discountPrice && !String(it.discountPrice ?? '').includes(itemsFilters.discountPrice)) return false;
     if (itemsFilters.condition && (it.condition||'') !== itemsFilters.condition) return false;
     if (itemsFilters.quantity && !String(it.quantity ?? '').includes(itemsFilters.quantity)) return false;
-    if (itemsFilters.genre && !String(it.genre||'').toLowerCase().includes(itemsFilters.genre.toLowerCase())) return false;
     return true;
   });
 }
@@ -193,14 +192,13 @@ function renderItemsTable() {
           <td>${hasDiscount ? it.discountPrice + ' JOD' : '—'}</td>
           <td>${it.condition||'—'}</td>
           <td>${qtyBadge}</td>
-          <td style="opacity:.7">${it.genre||'—'}</td>
           <td class="td-actions">
             <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>
             <button class="btn btn-danger btn-sm" data-item-del="${it.id}">🗑 حذف</button>
           </td>
         </tr>`;
       }).join('')
-    : `<tr class="empty-row"><td colspan="8">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
+    : `<tr class="empty-row"><td colspan="7">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
 
   $('pg-info').textContent = `صفحة ${itemsPage} من ${totalPages} (${filtered.length} عنصر)`;
   $('pg-prev').disabled = itemsPage <= 1;
@@ -323,8 +321,13 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
 
   const name          = $('item-name').value.trim();
   const originalPrice = parseFloat($('item-originalPrice').value) || 0;
+  const discountPrice = parseFloat($('item-discountPrice').value) || 0;
   if (!name || originalPrice <= 0) {
     errEl.textContent = 'الرجاء تعبئة الاسم والسعر الأصلي';
+    return;
+  }
+  if (discountPrice > originalPrice) {
+    errEl.textContent = '❌ سعر الخصم لا يمكن أن يكون أكبر من السعر الأصلي';
     return;
   }
   saveBtn.disabled = true;
@@ -358,7 +361,7 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
     condition:       $('item-condition').value,
     quantity:        parseInt($('item-quantity').value) || 0,
     originalPrice,
-    discountPrice:   parseFloat($('item-discountPrice').value) || 0,
+    discountPrice,
     description:     $('item-description').value.trim(),
     videoTrailerUrl: $('item-videoTrailerUrl').value.trim(),
   };
