@@ -76,6 +76,10 @@ tr:hover td{background:rgba(255,255,255,.025)}
 .badge-ps4{background:rgba(0,102,230,.22);color:var(--bb);border:1px solid rgba(42,140,255,.35)}
 .badge-ps5{background:rgba(230,0,41,.18);color:var(--rb);border:1px solid rgba(255,45,85,.3)}
 .badge-other{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+/* Quantity badges */
+.badge-ok{background:rgba(0,200,100,.18);color:#4ade80;border:1px solid rgba(74,222,128,.35)}
+.badge-warn{background:rgba(255,170,0,.18);color:#fbbf24;border:1px solid rgba(251,191,36,.35)}
+.badge-danger{background:rgba(230,0,41,.22);color:var(--rb);border:1px solid rgba(255,45,85,.4)}
 .td-actions{display:flex;gap:6px;flex-wrap:wrap}
 .empty-row td{text-align:center;padding:24px;opacity:.4}
 
@@ -115,3 +119,24 @@ tr:hover td{background:rgba(255,255,255,.025)}
 .upload-fname{font-size:.75rem;opacity:.42;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
 .progress-bar{height:4px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;display:none;margin-top:6px}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--b),var(--bb));width:0%;transition:width .25s}
+
+/* ── FORM LAYOUT ────────────────────── */
+.form-row{display:flex;gap:14px;margin-bottom:6px}
+.form-row .field{flex:1;min-width:0}
+.form-row.three-col .field{flex:1 1 30%}
+@media (max-width: 600px){ .form-row{flex-direction:column} }
+
+/* ── COLUMN FILTERS ─────────────────── */
+.filter-row th{padding:6px 8px !important;background:rgba(255,255,255,.03)}
+.filter-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:7px;color:var(--w);padding:6px 10px;font-family:inherit;font-size:.78rem;
+  outline:none;transition:border .2s}
+.filter-input:focus{border-color:var(--bb)}
+.filter-input::placeholder{color:rgba(255,255,255,.35)}
+select.filter-input option{background:var(--dk2);color:var(--w)}
+
+/* ── PAGINATION ─────────────────────── */
+.pagination{display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:14px 0 4px;flex-wrap:wrap}
+.pagination .pg-info{font-size:.85rem;opacity:.75;min-width:80px;text-align:center}
+.pagination .btn:disabled{opacity:.35;cursor:not-allowed}

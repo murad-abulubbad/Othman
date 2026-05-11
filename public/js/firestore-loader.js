@@ -95,7 +95,9 @@ async function loadFirestoreData() {
         }));
 
         if (typeof renderGameGrid === 'function') {
-          renderGameGrid(`grid-cat-${cat.id}`, formattedItems, cat.platform);
+          // Pass the category name (instead of platform) so the small badge on each
+          // product card shows the category it belongs to.
+          renderGameGrid(`grid-cat-${cat.id}`, formattedItems, cat.name);
           // Reveal cards after render
           requestAnimationFrame(() => {
             document.querySelectorAll(`#grid-cat-${cat.id} .image-card`).forEach((el, i) => {

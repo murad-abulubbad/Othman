@@ -152,6 +152,61 @@ async function deleteCategory(id) {
 }
 
 // ── ITEMS ──────────────────────────────────────────────
+const ITEMS_PER_PAGE = 10;
+let itemsFilters = { name:'', platform:'', originalPrice:'', discountPrice:'', condition:'', quantity:'', genre:'' };
+let itemsPage = 1;
+
+function getFilteredItems() {
+  return items.filter(it => {
+    if (itemsFilters.name && !String(it.name||'').toLowerCase().includes(itemsFilters.name.toLowerCase())) return false;
+    if (itemsFilters.platform && (it.platform||'') !== itemsFilters.platform) return false;
+    if (itemsFilters.originalPrice && !String(it.originalPrice ?? '').includes(itemsFilters.originalPrice)) return false;
+    if (itemsFilters.discountPrice && !String(it.discountPrice ?? '').includes(itemsFilters.discountPrice)) return false;
+    if (itemsFilters.condition && (it.condition||'') !== itemsFilters.condition) return false;
+    if (itemsFilters.quantity && !String(it.quantity ?? '').includes(itemsFilters.quantity)) return false;
+    if (itemsFilters.genre && !String(it.genre||'').toLowerCase().includes(itemsFilters.genre.toLowerCase())) return false;
+    return true;
+  });
+}
+
+function renderItemsTable() {
+  const filtered = getFilteredItems();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  if (itemsPage > totalPages) itemsPage = totalPages;
+  const start = (itemsPage - 1) * ITEMS_PER_PAGE;
+  const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+  $('items-tbody').innerHTML = pageItems.length
+    ? pageItems.map(it => {
+        const hasDiscount = Number(it.discountPrice) > 0;
+        const priceHtml = hasDiscount
+          ? `<s style="opacity:.45">${it.originalPrice}</s> <strong style="color:var(--rb)">${it.discountPrice}</strong>`
+          : `${it.originalPrice ?? '—'}`;
+        const qty = Number(it.quantity ?? 0);
+        const qtyBadge = qty <= 0 ? '<span class="badge badge-danger">نفذ</span>' : qty < 5 ? '<span class="badge badge-warn">'+qty+'</span>' : '<span class="badge badge-ok">'+qty+'</span>';
+        return `
+        <tr>
+          <td><img class="item-img" src="${it.imageUrl||''}" alt="${it.name}"
+               onerror="this.style.opacity='.25'"></td>
+          <td>${it.name}</td>
+          <td>${priceHtml}</td>
+          <td>${hasDiscount ? it.discountPrice + ' JOD' : '—'}</td>
+          <td>${it.condition||'—'}</td>
+          <td>${qtyBadge}</td>
+          <td style="opacity:.7">${it.genre||'—'}</td>
+          <td class="td-actions">
+            <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>
+            <button class="btn btn-danger btn-sm" data-item-del="${it.id}">🗑 حذف</button>
+          </td>
+        </tr>`;
+      }).join('')
+    : `<tr class="empty-row"><td colspan="8">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
+
+  $('pg-info').textContent = `صفحة ${itemsPage} من ${totalPages} (${filtered.length} عنصر)`;
+  $('pg-prev').disabled = itemsPage <= 1;
+  $('pg-next').disabled = itemsPage >= totalPages;
+}
+
 async function loadItems() {
   try {
     const snap = await getDocs(
@@ -163,36 +218,25 @@ async function loadItems() {
     $('stat-ps4').textContent   = items.filter(i => i.platform === 'PS4').length;
     $('stat-ps5').textContent   = items.filter(i => i.platform === 'PS5').length;
 
-    $('items-tbody').innerHTML = items.length
-      ? items.map(it => {
-          const platform = (it.platform || '').toLowerCase();
-          const badgeCls = ['ps4','ps5'].includes(platform)
-            ? `badge-${platform}` : 'badge-other';
-          const hasDiscount = Number(it.discountPrice) > 0;
-          const priceHtml = hasDiscount
-            ? `<s style="opacity:.45">${it.originalPrice}</s> <strong style="color:var(--rb)">${it.discountPrice}</strong>`
-            : `${it.originalPrice ?? '—'}`;
-          return `
-          <tr>
-            <td><img class="item-img" src="${it.imageUrl||''}" alt="${it.name}"
-                 onerror="this.style.opacity='.25'"></td>
-            <td>${it.name}</td>
-            <td><span class="badge ${badgeCls}">${it.platform||'—'}</span></td>
-            <td>${priceHtml}</td>
-            <td>${hasDiscount ? it.discountPrice + ' JOD' : '—'}</td>
-            <td>${it.condition||'—'}</td>
-            <td style="opacity:.7">${it.genre||'—'}</td>
-            <td class="td-actions">
-              <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>
-              <button class="btn btn-danger btn-sm" data-item-del="${it.id}">🗑 حذف</button>
-            </td>
-          </tr>`;
-        }).join('')
-      : '<tr class="empty-row"><td colspan="8">لا توجد عناصر بعد — أضف أول عنصر!</td></tr>';
+    renderItemsTable();
   } catch (e) {
     toast('خطأ في تحميل العناصر: ' + e.message, true);
   }
 }
+
+// Wire up filters and pagination once
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.filter-input').forEach(input => {
+    const evt = input.tagName === 'SELECT' ? 'change' : 'input';
+    input.addEventListener(evt, () => {
+      itemsFilters[input.dataset.filter] = input.value.trim();
+      itemsPage = 1;
+      renderItemsTable();
+    });
+  });
+  $('pg-prev')?.addEventListener('click', () => { if (itemsPage > 1) { itemsPage--; renderItemsTable(); } });
+  $('pg-next')?.addEventListener('click', () => { itemsPage++; renderItemsTable(); });
+});
 
 // ── ITEM MODAL ─────────────────────────────────────────
 function openItemModal(item = null) {
@@ -210,6 +254,7 @@ function openItemModal(item = null) {
   $('item-categoryID').value      = item?.categoryID     || '';
   $('item-genre').value           = item?.genre          || '';
   $('item-condition').value       = item?.condition      || 'مستعمل';
+  $('item-quantity').value        = item?.quantity       ?? 1;
   $('item-originalPrice').value   = item?.originalPrice  ?? '';
   $('item-discountPrice').value   = item?.discountPrice  ?? 0;
   $('item-description').value     = item?.description    || '';
@@ -311,6 +356,7 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
     categoryID:      $('item-categoryID').value,
     genre:           $('item-genre').value.trim(),
     condition:       $('item-condition').value,
+    quantity:        parseInt($('item-quantity').value) || 0,
     originalPrice,
     discountPrice:   parseFloat($('item-discountPrice').value) || 0,
     description:     $('item-description').value.trim(),
