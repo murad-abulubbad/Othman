@@ -27,4 +27,4 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // تصدير الأدوات التي سنحتاجها في الكود الآخر
-export { app, db, collection, query, where, getDocs, addDoc, serverTimestamp, deleteDoc, doc, updateDoc };
+export { app, db, collection, query, where, getDocs, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, orderBy };

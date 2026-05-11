@@ -3,15 +3,15 @@ import {
   collection, getDocs, addDoc, updateDoc, deleteDoc,
   doc, query, orderBy, where, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-// ΓöÇΓöÇ CLOUDINARY ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── CLOUDINARY ─────────────────────────────────────────
 const CLD_CLOUD  = 'dpo1udlqv';
-const CLD_PRESET = 'ofg_store'; // unsigned upload preset ΓÇö create in Cloudinary dashboard
+const CLD_PRESET = 'ofg_store'; // unsigned upload preset — create in Cloudinary dashboard
 
-// ΓöÇΓöÇ STATE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── STATE ──────────────────────────────────────────────
 let categories = [];
 let items      = [];
 
-// ΓöÇΓöÇ HELPERS ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── HELPERS ────────────────────────────────────────────
 async function sha256(msg) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -26,23 +26,23 @@ function toast(msg, isErr = false) {
 }
 
 function fmtDate(ts) {
-  if (!ts?.toDate) return 'ΓÇö';
+  if (!ts?.toDate) return '—';
   return ts.toDate().toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' });
 }
 
 function $ (id) { return document.getElementById(id); }
 
-// ΓöÇΓöÇ AUTH ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── AUTH ───────────────────────────────────────────────
 async function login() {
   const u    = $('admin-user').value.trim();
   const p    = $('admin-pass').value;
   const errEl = $('login-err');
   errEl.textContent = '';
 
-  if (!u || !p) { errEl.textContent = '╪º┘ä╪▒╪¼╪º╪í ╪Ñ╪»╪«╪º┘ä ╪¿┘è╪º┘å╪º╪¬ ╪º┘ä╪»╪«┘ê┘ä'; return; }
+  if (!u || !p) { errEl.textContent = 'الرجاء إدخال بيانات الدخول'; return; }
 
   const btn = $('login-btn');
-  btn.disabled = true; btn.textContent = '╪¼╪º╪▒┘è ╪º┘ä╪¬╪¡┘é┘é...';
+  btn.disabled = true; btn.textContent = 'جاري التحقق...';
 
   try {
     const hash = await sha256(p);
@@ -61,12 +61,12 @@ async function login() {
       $('dashboard').style.display     = 'block';
       init();
     } else {
-      errEl.textContent = '╪º╪│┘à ╪º┘ä┘à╪│╪¬╪«╪»┘à ╪ú┘ê ┘â┘ä┘à╪⌐ ╪º┘ä┘à╪▒┘ê╪▒ ╪║┘è╪▒ ╪╡╪¡┘è╪¡╪⌐';
+      errEl.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
     }
   } catch (e) {
-    errEl.textContent = '╪«╪╖╪ú ┘ü┘è ╪º┘ä╪º╪¬╪╡╪º┘ä: ' + e.message;
+    errEl.textContent = 'خطأ في الاتصال: ' + e.message;
   }
-  btn.disabled = false; btn.textContent = '╪¬╪│╪¼┘è┘ä ╪º┘ä╪»╪«┘ê┘ä';
+  btn.disabled = false; btn.textContent = 'تسجيل الدخول';
 }
 
 function logout() {
@@ -76,12 +76,12 @@ function logout() {
   $('admin-pass').value = '';
 }
 
-// ΓöÇΓöÇ INIT ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── INIT ───────────────────────────────────────────────
 async function init() {
   await Promise.all([ loadCategories(), loadItems() ]);
 }
 
-// ΓöÇΓöÇ CATEGORIES ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── CATEGORIES ─────────────────────────────────────────
 async function loadCategories() {
   try {
     const snap = await getDocs(
@@ -92,7 +92,7 @@ async function loadCategories() {
 
     // Populate the item-form dropdown (show platform next to name)
     const sel = $('item-categoryID');
-    sel.innerHTML = '<option value="">ΓÇö ╪º╪«╪¬╪▒ ╪¬╪╡┘å┘è┘ü╪º┘ï ΓÇö</option>' +
+    sel.innerHTML = '<option value="">— اختر تصنيفاً —</option>' +
       categories.map(c =>
         `<option value="${c.id}" data-platform="${c.platform||''}">${c.name}${c.platform?' ('+c.platform+')':''}</option>`
       ).join('');
@@ -104,18 +104,18 @@ async function loadCategories() {
           const bc = ['ps4','ps5'].includes(pl) ? `badge-${pl}` : 'badge-other';
           return `<tr>
             <td>${c.name}</td>
-            <td><span class="badge ${bc}">${c.platform||'ΓÇö'}</span></td>
-            <td>${c.imageUrl ? `<img src="${c.imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : 'ΓÇö'}</td>
+            <td><span class="badge ${bc}">${c.platform||'—'}</span></td>
+            <td>${c.imageUrl ? `<img src="${c.imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
             <td>${fmtDate(c.createdAt)}</td>
             <td style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn btn-edit btn-sm" data-cat-edit="${c.id}">Γ£Å∩╕Å ╪¬╪╣╪»┘è┘ä</button>
-              <button class="btn btn-danger btn-sm" data-cat-del="${c.id}">≡ƒùæ ╪¡╪░┘ü</button>
+              <button class="btn btn-edit btn-sm" data-cat-edit="${c.id}">✏️ تعديل</button>
+              <button class="btn btn-danger btn-sm" data-cat-del="${c.id}">🗑 حذف</button>
             </td>
           </tr>`;
         }).join('')
-      : '<tr class="empty-row"><td colspan="4">┘ä╪º ╪¬┘ê╪¼╪» ╪¬╪╡┘å┘è┘ü╪º╪¬ ╪¿╪╣╪»</td></tr>';
+      : '<tr class="empty-row"><td colspan="4">لا توجد تصنيفات بعد</td></tr>';
   } catch (e) {
-    toast('╪«╪╖╪ú ┘ü┘è ╪¬╪¡┘à┘è┘ä ╪º┘ä╪¬╪╡┘å┘è┘ü╪º╪¬: ' + e.message, true);
+    toast('خطأ في تحميل التصنيفات: ' + e.message, true);
   }
 }
 
@@ -129,29 +129,29 @@ async function addCategory() {
   let   imageUrl  = '';
   if (fileInput.files.length > 0) {
     try {
-      saveBtn.textContent = 'Γ¼å ╪▒┘ü╪╣...';
+      saveBtn.textContent = '⬆ رفع...';
       imageUrl = await uploadCatImage(fileInput.files[0]);
-    } catch (e) { toast('╪«╪╖╪ú ┘ü┘è ╪▒┘ü╪╣ ╪º┘ä╪╡┘ê╪▒╪⌐: ' + e.message, true); saveBtn.textContent = '╪¡┘ü╪╕'; return; }
+    } catch (e) { toast('خطأ في رفع الصورة: ' + e.message, true); saveBtn.textContent = 'حفظ'; return; }
   }
   try {
     await addDoc(collection(db, 'Categories'), { name, platform, imageUrl, createdAt: serverTimestamp() });
     $('cat-add-modal').style.display = 'none';
-    toast('Γ£à ╪¬┘à ╪Ñ╪╢╪º┘ü╪⌐ ╪º┘ä╪¬╪╡┘å┘è┘ü');
+    toast('✅ تم إضافة التصنيف');
     loadCategories();
-  } catch (e) { toast('╪«╪╖╪ú: ' + e.message, true); }
-  saveBtn.textContent = '╪¡┘ü╪╕';
+  } catch (e) { toast('خطأ: ' + e.message, true); }
+  saveBtn.textContent = 'حفظ';
 }
 
 async function deleteCategory(id) {
-  if (!confirm('╪¡╪░┘ü ┘ç╪░╪º ╪º┘ä╪¬╪╡┘å┘è┘ü╪ƒ')) return;
+  if (!confirm('حذف هذا التصنيف؟')) return;
   try {
     await deleteDoc(doc(db, 'Categories', id));
-    toast('≡ƒùæ ╪¬┘à ╪¡╪░┘ü ╪º┘ä╪¬╪╡┘å┘è┘ü');
+    toast('🗑 تم حذف التصنيف');
     loadCategories();
-  } catch (e) { toast('╪«╪╖╪ú: ' + e.message, true); }
+  } catch (e) { toast('خطأ: ' + e.message, true); }
 }
 
-// ΓöÇΓöÇ ITEMS ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── ITEMS ──────────────────────────────────────────────
 async function loadItems() {
   try {
     const snap = await getDocs(
@@ -171,45 +171,45 @@ async function loadItems() {
           const hasDiscount = Number(it.discountPrice) > 0;
           const priceHtml = hasDiscount
             ? `<s style="opacity:.45">${it.originalPrice}</s> <strong style="color:var(--rb)">${it.discountPrice}</strong>`
-            : `${it.originalPrice ?? 'ΓÇö'}`;
+            : `${it.originalPrice ?? '—'}`;
           return `
           <tr>
             <td><img class="item-img" src="${it.imageUrl||''}" alt="${it.name}"
                  onerror="this.style.opacity='.25'"></td>
             <td>${it.name}</td>
-            <td><span class="badge ${badgeCls}">${it.platform||'ΓÇö'}</span></td>
+            <td><span class="badge ${badgeCls}">${it.platform||'—'}</span></td>
             <td>${priceHtml}</td>
-            <td>${hasDiscount ? it.discountPrice + ' JOD' : 'ΓÇö'}</td>
-            <td>${it.condition||'ΓÇö'}</td>
-            <td style="opacity:.7">${it.genre||'ΓÇö'}</td>
+            <td>${hasDiscount ? it.discountPrice + ' JOD' : '—'}</td>
+            <td>${it.condition||'—'}</td>
+            <td style="opacity:.7">${it.genre||'—'}</td>
             <td class="td-actions">
-              <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">Γ£Å ╪¬╪╣╪»┘è┘ä</button>
-              <button class="btn btn-danger btn-sm" data-item-del="${it.id}">≡ƒùæ ╪¡╪░┘ü</button>
+              <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>
+              <button class="btn btn-danger btn-sm" data-item-del="${it.id}">🗑 حذف</button>
             </td>
           </tr>`;
         }).join('')
-      : '<tr class="empty-row"><td colspan="8">┘ä╪º ╪¬┘ê╪¼╪» ╪╣┘å╪º╪╡╪▒ ╪¿╪╣╪» ΓÇö ╪ú╪╢┘ü ╪ú┘ê┘ä ╪╣┘å╪╡╪▒!</td></tr>';
+      : '<tr class="empty-row"><td colspan="8">لا توجد عناصر بعد — أضف أول عنصر!</td></tr>';
   } catch (e) {
-    toast('╪«╪╖╪ú ┘ü┘è ╪¬╪¡┘à┘è┘ä ╪º┘ä╪╣┘å╪º╪╡╪▒: ' + e.message, true);
+    toast('خطأ في تحميل العناصر: ' + e.message, true);
   }
 }
 
-// ΓöÇΓöÇ ITEM MODAL ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── ITEM MODAL ─────────────────────────────────────────
 function openItemModal(item = null) {
-  $('item-modal-title').textContent = item ? '╪¬╪╣╪»┘è┘ä ╪º┘ä╪╣┘å╪╡╪▒' : '╪Ñ╪╢╪º┘ü╪⌐ ╪╣┘å╪╡╪▒ ╪¼╪»┘è╪»';
+  $('item-modal-title').textContent = item ? 'تعديل العنصر' : 'إضافة عنصر جديد';
   $('item-id').value              = item?.id             || '';
   $('item-name').value            = item?.name           || '';
   $('item-imageUrl').value        = item?.imageUrl       || '';
   const pw = $('img-preview-wrap');
   pw.innerHTML = item?.imageUrl
     ? `<img src="${item.imageUrl}" alt="preview">`
-    : '<div class="img-preview-ph">≡ƒû╝<br>╪º╪╢╪║╪╖ ┘ç┘å╪º ┘ä╪º╪«╪¬┘è╪º╪▒ ╪╡┘ê╪▒╪⌐ ┘à┘å ╪¼┘ç╪º╪▓┘â</div>';
+    : '<div class="img-preview-ph">🖼<br>اضغط هنا لاختيار صورة من جهازك</div>';
   $('upload-fname').textContent   = '';
   $('item-image-file').value      = '';
   $('item-platform').value        = item?.platform       || 'PS4';
   $('item-categoryID').value      = item?.categoryID     || '';
   $('item-genre').value           = item?.genre          || '';
-  $('item-condition').value       = item?.condition      || '┘à╪│╪¬╪╣┘à┘ä';
+  $('item-condition').value       = item?.condition      || 'مستعمل';
   $('item-originalPrice').value   = item?.originalPrice  ?? '';
   $('item-discountPrice').value   = item?.discountPrice  ?? 0;
   $('item-description').value     = item?.description    || '';
@@ -222,7 +222,7 @@ window.openItemModal  = openItemModal;
 function closeItemModal() { $('item-modal').classList.remove('open'); }
 window.closeItemModal = closeItemModal;
 
-// ΓöÇΓöÇ IMAGE UPLOAD (Cloudinary) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── IMAGE UPLOAD (Cloudinary) ─────────────────────────────────
 function uploadToCloudinary(file, folder) {
   return new Promise((resolve, reject) => {
     const form = new FormData();
@@ -279,7 +279,7 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
   const name          = $('item-name').value.trim();
   const originalPrice = parseFloat($('item-originalPrice').value) || 0;
   if (!name || originalPrice <= 0) {
-    errEl.textContent = '╪º┘ä╪▒╪¼╪º╪í ╪¬╪╣╪¿╪ª╪⌐ ╪º┘ä╪º╪│┘à ┘ê╪º┘ä╪│╪╣╪▒ ╪º┘ä╪ú╪╡┘ä┘è';
+    errEl.textContent = 'الرجاء تعبئة الاسم والسعر الأصلي';
     return;
   }
   saveBtn.disabled = true;
@@ -289,18 +289,18 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
   const fileInput = $('item-image-file');
   if (fileInput.files.length > 0) {
     try {
-      saveBtn.textContent = 'Γ¼å ╪¼╪º╪▒┘è ╪▒┘ü╪╣ ╪º┘ä╪╡┘ê╪▒╪⌐...';
+      saveBtn.textContent = '⬆ جاري رفع الصورة...';
       imageUrl = await uploadImage(fileInput.files[0]);
       $('item-imageUrl').value = imageUrl;
     } catch (uploadErr) {
-      errEl.textContent = '╪«╪╖╪ú ┘ü┘è ╪▒┘ü╪╣ ╪º┘ä╪╡┘ê╪▒╪⌐: ' + uploadErr.message;
-      saveBtn.disabled = false; saveBtn.textContent = '≡ƒÆ╛ ╪¡┘ü╪╕';
+      errEl.textContent = 'خطأ في رفع الصورة: ' + uploadErr.message;
+      saveBtn.disabled = false; saveBtn.textContent = '💾 حفظ';
       return;
     }
   }
   if (!imageUrl) {
-    errEl.textContent = '╪º┘ä╪▒╪¼╪º╪í ╪º╪«╪¬┘è╪º╪▒ ╪╡┘ê╪▒╪⌐ ┘ä┘ä┘à┘å╪¬╪¼';
-    saveBtn.disabled = false; saveBtn.textContent = '≡ƒÆ╛ ╪¡┘ü╪╕';
+    errEl.textContent = 'الرجاء اختيار صورة للمنتج';
+    saveBtn.disabled = false; saveBtn.textContent = '💾 حفظ';
     return;
   }
 
@@ -316,24 +316,24 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
     description:     $('item-description').value.trim(),
     videoTrailerUrl: $('item-videoTrailerUrl').value.trim(),
   };
-  saveBtn.textContent = '╪¼╪º╪▒┘è ╪º┘ä╪¡┘ü╪╕...';
+  saveBtn.textContent = 'جاري الحفظ...';
   try {
     if (id) {
       await updateDoc(doc(db, 'Items', id), data);
-      toast('Γ£à ╪¬┘à ╪¬╪¡╪»┘è╪½ ╪º┘ä╪╣┘å╪╡╪▒ ╪¿┘å╪¼╪º╪¡');
+      toast('✅ تم تحديث العنصر بنجاح');
     } else {
       await addDoc(collection(db, 'Items'), { ...data, createdAt: serverTimestamp() });
-      toast('Γ£à ╪¬┘à ╪Ñ╪╢╪º┘ü╪⌐ ╪º┘ä╪╣┘å╪╡╪▒ ╪¿┘å╪¼╪º╪¡');
+      toast('✅ تم إضافة العنصر بنجاح');
     }
     closeItemModal();
     loadItems();
   } catch (err) {
-    errEl.textContent = '╪«╪╖╪ú ┘ü┘è ╪º┘ä╪¡┘ü╪╕: ' + err.message;
+    errEl.textContent = 'خطأ في الحفظ: ' + err.message;
   }
-  saveBtn.disabled = false; saveBtn.textContent = '≡ƒÆ╛ ╪¡┘ü╪╕';
+  saveBtn.disabled = false; saveBtn.textContent = '💾 حفظ';
 });
 
-// ΓöÇΓöÇ EVENT DELEGATION ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── EVENT DELEGATION ───────────────────────────────────
 document.addEventListener('click', async (e) => {
   // Edit item
   const editBtn = e.target.closest('[data-item-edit]');
@@ -345,12 +345,12 @@ document.addEventListener('click', async (e) => {
   // Delete item
   const delItemBtn = e.target.closest('[data-item-del]');
   if (delItemBtn) {
-    if (!confirm('┘ç┘ä ╪ú┘å╪¬ ┘à╪¬╪ú┘â╪» ┘à┘å ╪¡╪░┘ü ┘ç╪░╪º ╪º┘ä╪╣┘å╪╡╪▒╪ƒ')) return;
+    if (!confirm('هل أنت متأكد من حذف هذا العنصر؟')) return;
     try {
       await deleteDoc(doc(db, 'Items', delItemBtn.dataset.itemDel));
-      toast('≡ƒùæ ╪¬┘à ╪¡╪░┘ü ╪º┘ä╪╣┘å╪╡╪▒');
+      toast('🗑 تم حذف العنصر');
       loadItems();
-    } catch (err) { toast('╪«╪╖╪ú: ' + err.message, true); }
+    } catch (err) { toast('خطأ: ' + err.message, true); }
     return;
   }
   // Edit category
@@ -365,7 +365,7 @@ document.addEventListener('click', async (e) => {
   if (delCatBtn) { deleteCategory(delCatBtn.dataset.catDel); }
 });
 
-// ΓöÇΓöÇ WIRE STATIC BUTTONS ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── WIRE STATIC BUTTONS ────────────────────────────────
 $('login-btn').addEventListener('click', login);
 $('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 $('logout-btn').addEventListener('click', logout);
@@ -377,7 +377,7 @@ $('cat-add-btn').addEventListener('click', () => {
   $('cat-name').value = '';
   $('cat-platform').value = 'PS4';
   $('cat-image-file').value = '';
-  $('cat-img-fname').textContent = '╪º╪«╪¬╪▒ ╪╡┘ê╪▒╪⌐';
+  $('cat-img-fname').textContent = 'اختر صورة';
   $('cat-add-preview').style.display = 'none';
   $('cat-add-modal').style.display = 'flex';
 });
@@ -422,17 +422,17 @@ async function saveCatEdit() {
   let   imageUrl  = categories.find(c => c.id === id)?.imageUrl || '';
   if (fileInput.files.length > 0) {
     try {
-      saveBtn.textContent = 'Γ¼å ╪▒┘ü╪╣...';
+      saveBtn.textContent = '⬆ رفع...';
       imageUrl = await uploadCatImage(fileInput.files[0]);
-    } catch (e) { toast('╪«╪╖╪ú ┘ü┘è ╪▒┘ü╪╣ ╪º┘ä╪╡┘ê╪▒╪⌐: ' + e.message, true); saveBtn.textContent = '╪¡┘ü╪╕ ╪º┘ä╪¬╪╣╪»┘è┘ä'; return; }
+    } catch (e) { toast('خطأ في رفع الصورة: ' + e.message, true); saveBtn.textContent = 'حفظ التعديل'; return; }
   }
   try {
     await updateDoc(doc(db, 'Categories', id), { name, platform, imageUrl });
-    toast('Γ£à ╪¬┘à ╪¬╪╣╪»┘è┘ä ╪º┘ä╪¬╪╡┘å┘è┘ü');
+    toast('✅ تم تعديل التصنيف');
     closeCatEdit();
     loadCategories();
-  } catch (e) { toast('╪«╪╖╪ú: ' + e.message, true); }
-  saveBtn.textContent = '╪¡┘ü╪╕ ╪º┘ä╪¬╪╣╪»┘è┘ä';
+  } catch (e) { toast('خطأ: ' + e.message, true); }
+  saveBtn.textContent = 'حفظ التعديل';
 };
 // Auto-fill platform when a category is selected
 $('item-categoryID').addEventListener('change', () => {
@@ -446,7 +446,7 @@ $('item-modal').addEventListener('click', e => {
   if (e.target === $('item-modal')) closeItemModal();
 });
 
-// ΓöÇΓöÇ AUTO-RESTORE SESSION ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── AUTO-RESTORE SESSION ───────────────────────────────
 if (sessionStorage.getItem('ofg-admin') === '1') {
   $('login-overlay').style.display = 'none';
   $('dashboard').style.display     = 'block';

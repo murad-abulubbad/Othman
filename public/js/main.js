@@ -866,8 +866,8 @@ function _resetTiltedCard(card) {
    }
  }, { passive: true });
 
- Reset when the cursor leaves the document entirely (otherwise the card
- would stay frozen in its tilted state)
+ // Reset when the cursor leaves the document entirely (otherwise the card
+ // would stay frozen in its tilted state)
  document.addEventListener('mouseleave', () => {
    _resetTiltedCard(_tiltedCard);
    _tiltedCard = null;
@@ -966,15 +966,6 @@ setTimeout(() => {
 }, 5000);
 updateCartUI();
 
-// ═══ CURSOR ═══
-const cursor = document.getElementById('cursor');
-const cursorDot = document.getElementById('cursor-dot');
-document.addEventListener('mousemove', (e) => {
-  cursor.style.left = (e.clientX - 11) + 'px';
-  cursor.style.top = (e.clientY - 11) + 'px';
-  cursorDot.style.left = (e.clientX - 3) + 'px';
-  cursorDot.style.top = (e.clientY - 3) + 'px';
-});
 
 // ═══ PARTICLES ═══
 function startParticles() {
