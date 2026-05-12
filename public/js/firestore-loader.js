@@ -35,7 +35,6 @@ async function loadFirestoreData() {
               <a href="#cat-${cat.id}" class="section-nav-card">
                 ${iconHtml}
                 <div class="section-nav-name">${cat.name}</div>
-                <div class="section-nav-sub">${categoryItems.length} عنصر</div>
               </a>
             `;
           }).join('');
@@ -72,7 +71,7 @@ async function loadFirestoreData() {
 
         return `
           <section id="cat-${cat.id}" class="dynamic-category-section">
-            <h2 class="section-title visible">${cat.name} <span>${categoryItems.length} عنصر</span></h2>
+            <h2 class="section-title visible">${cat.name}</h2>
             <div class="section-line visible"></div>
             ${body}
           </section>
@@ -102,8 +101,8 @@ async function loadFirestoreData() {
           let priceLabel;
           if (finalPrice > 0 && finalPrice <= MAX_PRICE) {
             priceLabel = (discountPrice > 0 && discountPrice < originalPrice)
-              ? `<span style="text-decoration:line-through;opacity:0.6;font-size:0.8em">${originalPrice.toFixed(2)}</span> ${discountPrice.toFixed(2)}`
-              : originalPrice.toFixed(2);
+              ? `<span class="price-old">${originalPrice.toFixed(2)}</span><span class="price-new">${discountPrice.toFixed(2)}</span>`
+              : `<span class="price-new">${originalPrice.toFixed(2)}</span>`;
           } else {
             priceLabel = 'حسب الطلب';
           }
@@ -116,7 +115,8 @@ async function loadFirestoreData() {
             condition: item.condition || 'مستعمل',
             trailer: item.videoTrailerUrl,
             originalPrice: originalPrice,
-            discountPrice: discountPrice
+            discountPrice: discountPrice,
+            description: item.description || ''
           };
           console.log('Formatted item:', result.name, 'Final priceLabel:', result.priceLabel);
           return result;

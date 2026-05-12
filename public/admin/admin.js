@@ -325,7 +325,6 @@ function openItemModal(item = null) {
   $('item-image-file').value      = '';
   $('item-platform').value        = item?.platform       || 'PS4';
   $('item-categoryID').value      = item?.categoryID     || '';
-  $('item-genre').value           = item?.genre          || '';
   $('item-condition').value       = item?.condition      || 'مستعمل';
   $('item-quantity').value        = item?.quantity       ?? 1;
   $('item-originalPrice').value   = item?.originalPrice  ?? '';
@@ -432,7 +431,6 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
     imageUrl,
     platform:        $('item-platform').value,
     categoryID:      $('item-categoryID').value,
-    genre:           $('item-genre').value.trim(),
     condition:       $('item-condition').value,
     quantity:        parseInt($('item-quantity').value) || 0,
     originalPrice,

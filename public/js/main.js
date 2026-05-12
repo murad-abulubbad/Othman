@@ -94,7 +94,7 @@ function openGameDetails(game) {
   const rawLabel = game.platform || game.category || game.section || '';
   const detailLabel = (rawLabel === 'Other' || rawLabel === 'أخرى') ? '' : rawLabel;
   const genreText = game.genre || game.sub || game.specs || game.kindLabel || 'Othman For Gaming';
-  const descText = game.desc || game.description || game.sub || 'تفاصيل المنتج قابلة للتعديل، ويمكنك إضافة وصف خاص لكل منتج باستخدام data-desc على نفس الكرت.';
+  const descText = game.desc || game.description || '';
   const iconText = game.icon || '🎮';
   const coverHtml = game.img
     ? `<img src="${escapeHtml(game.img)}" alt="${escapeHtml(game.name)}" onerror="this.closest('.game-detail-cover').classList.add('no-image');this.outerHTML='<span class=&quot;game-detail-cover-icon&quot;>${escapeHtml(iconText)}</span>'"/>`
@@ -128,7 +128,7 @@ function openGameDetails(game) {
       <div class="game-detail-name">${escapeHtml(game.name)}</div>
       <div class="game-detail-genre">${escapeHtml(genreText)}</div>
       <div class="game-detail-price">${game.priceLabel ? priceText : escapeHtml(priceText)}</div>
-      <div class="game-detail-desc">${escapeHtml(descText)}</div>
+      ${descText ? `<div class="game-detail-desc">${escapeHtml(descText)}</div>` : ''}
       <div class="game-detail-actions">
         ${trailerAction}
         ${addAction}
@@ -389,9 +389,27 @@ document.addEventListener('click', (event) => {
   if (details) openGameDetails(details);
 });
 
+function extractYouTubeId(url) {
+  if (!url) return '';
+  // Handle youtu.be short links
+  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+  if (shortMatch) return shortMatch[1];
+  // Handle youtube.com/watch?v= links
+  const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+  if (watchMatch) return watchMatch[1];
+  // Handle youtube.com/embed/ links
+  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/);
+  if (embedMatch) return embedMatch[1];
+  // If it's already just an ID (11 characters, no slashes)
+  if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
+  return url;
+}
+
 function openTrailerFromEncoded(encodedTrailer) {
   const trailer = JSON.parse(decodeURIComponent(encodedTrailer));
-  openTrailer(trailer.id, trailer.title, trailer.provider);
+  // Extract YouTube ID from various URL formats
+  const cleanId = extractYouTubeId(trailer.id);
+  openTrailer(cleanId, trailer.title, trailer.provider);
 }
 
 function openTrailer(videoId, title, provider = 'youtube') {
@@ -412,14 +430,32 @@ function openTrailer(videoId, title, provider = 'youtube') {
     ? `https://www.dailymotion.com/embed/video/${videoId}?${params.toString()}`
     : `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
   document.getElementById('trailer-title').textContent = title;
+  const youtubeWatchUrl = `https://www.youtube.com/watch?v=${videoId}`;
   frameWrap.innerHTML = `
-    <iframe src="${src}" title="${title}" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; picture-in-picture; web-share" allowfullscreen></iframe>
-    <div class="trailer-embed-fallback">
-      <strong>جاري تشغيل التريلر داخل الموقع</strong>
-      <span>إذا ظهر خطأ من المشغل، نبدل مصدر الفيديو بمصدر Embed آخر بدون تحميل الفيديو على الموقع.</span>
+    <iframe src="${src}" title="${title}" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; picture-in-picture; web-share" allowfullscreen onerror="this.nextElementSibling.style.display='flex'"></iframe>
+    <div class="trailer-error-fallback" id="trailer-error">
+      <strong>⚠️ لم يتم تشغيل الفيديو</strong>
+      <span>قد يكون الفيديو محظور من التشغيل داخل الموقع أو غير متاح</span>
+      <a href="${youtubeWatchUrl}" target="_blank" rel="noopener" class="trailer-external-btn">▶ فتح في يوتيوب</a>
     </div>`;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+  
+  // Auto-show fallback after 4 seconds if iframe fails to load
+  setTimeout(() => {
+    const iframe = frameWrap.querySelector('iframe');
+    const fallback = document.getElementById('trailer-error');
+    if (iframe && fallback) {
+      // Check if iframe is accessible (cross-origin safe check)
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!iframeDoc) fallback.style.display = 'flex';
+      } catch (e) {
+        // Cross-origin restriction means it loaded (good)
+        // If we can't access it after 4s, likely blocked
+      }
+    }
+  }, 4000);
 }
 
 function closeTrailer(event) {
@@ -780,14 +816,19 @@ window.addEventListener('popstate', (e) => {
 // ════════════════ PRICE COUNTER ANIMATION ════════════════
 function animatePrice(el) {
   if (!el || el.dataset.animating === '1') return;
-  if (!el.dataset.targetPrice) {
-    const txt = (el.textContent || '').trim().replace(/[^\d.]/g, '');
-    if (!txt) return;
-    el.dataset.targetPrice = txt;
+  // If the element contains a dual-price layout (.price-old + .price-new),
+  // animate ONLY the .price-new child so we don't destroy the strikethrough span.
+  const newPriceEl = el.querySelector('.price-new');
+  const targetEl = newPriceEl || el;
+  if (!targetEl.dataset.targetPrice) {
+    const raw = (targetEl.textContent || '').trim();
+    const match = raw.match(/\d+(?:\.\d+)?/);
+    if (!match) return;
+    targetEl.dataset.targetPrice = match[0];
   }
-  const target = parseFloat(el.dataset.targetPrice);
+  const target = parseFloat(targetEl.dataset.targetPrice);
   if (isNaN(target)) return;
-  const hasJOD = (el.textContent || '').includes('JOD');
+  const hasJOD = !newPriceEl && (el.textContent || '').includes('JOD');
   el.dataset.animating = '1';
   const duration = 1100;
   const start = performance.now();
@@ -795,7 +836,7 @@ function animatePrice(el) {
     const t = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - t, 3);
     const v = eased * target;
-    el.textContent = (target % 1 === 0 ? Math.round(v) : v.toFixed(2)) + (hasJOD ? ' JOD' : '');
+    targetEl.textContent = (target % 1 === 0 ? Math.round(v) : v.toFixed(2)) + (hasJOD ? ' JOD' : '');
     if (t < 1) requestAnimationFrame(tick);
     else el.dataset.animating = '0';
   }

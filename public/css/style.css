@@ -1031,8 +1031,49 @@ footer {
 .footer-logo-text span:nth-of-type(3) { color: #1E6FE6; text-shadow: 0 0 12px rgba(30,111,230,0.7); }
 .footer-sub { font-family: 'Orbitron', monospace; font-size: 0.6rem; letter-spacing: 3px; color: rgba(204,0,0,0.5); margin-bottom: 15px; }
 .hero-socials { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
-.hero-contact-links { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 18px 0 0; animation: fadeUp 1s 1.05s both; }
-.hero-contact-links .social-link { padding: 9px 16px; font-size: 0.78rem; backdrop-filter: blur(10px); }
+.hero-social-icons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 18px 0 0; animation: fadeUp 1s 1.05s both; }
+.hero-social-icons .social-icon {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+.hero-social-icons .social-icon svg {
+  display: block;
+  flex-shrink: 0;
+}
+.hero-social-icons .social-icon:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+}
+.hero-social-icons .social-icon.fb { background: linear-gradient(135deg, #1877f2, #0d5cb6); border-color: rgba(24,119,242,0.5); }
+.hero-social-icons .social-icon.fb:hover { box-shadow: 0 12px 30px rgba(24,119,242,0.4); }
+.hero-social-icons .social-icon.ig { background: linear-gradient(135deg, #e4405f, #833ab4, #f09433); border-color: rgba(228,64,95,0.4); }
+.hero-social-icons .social-icon.ig:hover { box-shadow: 0 12px 30px rgba(228,64,95,0.4); }
+.hero-social-icons .social-icon.wa { background: linear-gradient(135deg, #25d366, #128c7e); border-color: rgba(37,211,102,0.5); }
+.hero-social-icons .social-icon.wa:hover { box-shadow: 0 12px 30px rgba(37,211,102,0.4); }
+.hero-social-icons .social-icon.map { background: linear-gradient(135deg, #ea4335, #c5221f); border-color: rgba(234,67,53,0.5); }
+.hero-social-icons .social-icon.map:hover { box-shadow: 0 12px 30px rgba(234,67,53,0.4); }
+
+/* Footer social icons - same style as hero */
+.footer-social-icons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 15px 0; }
+.footer-social-icons .social-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05)); border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(10px); transition: all 0.3s ease; text-decoration: none; }
+.footer-social-icons .social-icon svg { display: block; flex-shrink: 0; }
+.footer-social-icons .social-icon:hover { transform: translateY(-4px) scale(1.08); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+.footer-social-icons .social-icon.fb { background: linear-gradient(135deg, #1877f2, #0d5cb6); border-color: rgba(24,119,242,0.5); }
+.footer-social-icons .social-icon.fb:hover { box-shadow: 0 12px 30px rgba(24,119,242,0.4); }
+.footer-social-icons .social-icon.ig { background: linear-gradient(135deg, #e4405f, #833ab4, #f09433); border-color: rgba(228,64,95,0.4); }
+.footer-social-icons .social-icon.ig:hover { box-shadow: 0 12px 30px rgba(228,64,95,0.4); }
+.footer-social-icons .social-icon.wa { background: linear-gradient(135deg, #25d366, #128c7e); border-color: rgba(37,211,102,0.5); }
+.footer-social-icons .social-icon.wa:hover { box-shadow: 0 12px 30px rgba(37,211,102,0.4); }
+.footer-social-icons .social-icon.map { background: linear-gradient(135deg, #ea4335, #c5221f); border-color: rgba(234,67,53,0.5); }
+.footer-social-icons .social-icon.map:hover { box-shadow: 0 12px 30px rgba(234,67,53,0.4); }
 .social-offer-bait {
   width: min(520px, calc(100vw - 36px));
   margin: 18px auto 0;
@@ -1437,21 +1478,116 @@ img.console-float {
 .image-card.is-ps5 .image-card-genre { color: #ff7070; }
 .image-card-bottom {
   margin-top: auto;
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
 .image-card-price {
   font-family: 'Orbitron', monospace;
-  font-size: 1.15rem; font-weight: 900;
+  font-weight: 900;
   color: #6699ff;
   direction: ltr;
   unicode-bidi: embed;
+  width: 100%;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 85, 204, 0.18), rgba(0, 0, 0, 0.35));
+  border: 1px solid rgba(102, 153, 255, 0.25);
+  box-shadow: inset 0 0 18px rgba(0, 85, 204, 0.15);
+  overflow: visible;
 }
-.image-card.is-ps5 .image-card-price { color: var(--red-bright); text-shadow: 0 0 10px rgba(204,0,0,0.5); }
+.image-card.is-ps5 .image-card-price {
+  color: var(--red-bright);
+  background: linear-gradient(135deg, rgba(204, 0, 0, 0.18), rgba(0, 0, 0, 0.35));
+  border-color: rgba(255, 80, 80, 0.3);
+  box-shadow: inset 0 0 18px rgba(204, 0, 0, 0.18);
+}
 .image-card-price::after { content: ''; }
 .image-card-price.image-card-price-text::after { content: ''; }
+/* Single-price (no discount) fallback when raw text is rendered. */
 .image-card-price-text {
-  font-size: 0.82rem;
+  font-size: 1.25rem;
   letter-spacing: 0;
+}
+
+/* ════════════════ DUAL PRICE (old + discounted) ════════════════ */
+.price-old,
+.price-new {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  display: block;
+  direction: ltr;
+  unicode-bidi: embed;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+.price-old {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 80, 80, 0.95);
+  text-decoration-thickness: 2.5px;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.price-new {
+  color: #00ff9d;
+  text-shadow: 0 0 12px rgba(0, 255, 157, 0.6), 0 0 2px rgba(0, 255, 157, 0.95);
+  letter-spacing: 0.5px;
+}
+.image-card.is-ps5 .price-new {
+  color: #ff5577;
+  text-shadow: 0 0 12px rgba(255, 60, 90, 0.6), 0 0 2px rgba(255, 60, 90, 0.95);
+}
+
+/* Card: dedicated vertical stack — old on top, new below, centered. */
+.image-card-price.image-card-price-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.image-card-price.image-card-price-text .price-old {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+.image-card-price.image-card-price-text .price-new {
+  font-size: 1.35rem;
+}
+
+/* Action row sits below the price block and gets its own space. */
+.image-card-bottom .image-card-actions {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+/* Popup/modal: leave the existing inline layout untouched. */
+.game-detail-price .price-old {
+  font-size: 1.05rem;
+  display: inline-block;
+  margin-inline-end: 8px;
+  vertical-align: middle;
+}
+.game-detail-price .price-new {
+  font-size: 1.55rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@media (max-width: 560px) {
+  .image-card-price { padding: 8px 10px; border-radius: 10px; }
+  .image-card-price.image-card-price-text .price-old { font-size: 0.85rem; }
+  .image-card-price.image-card-price-text .price-new { font-size: 1.15rem; }
+  .image-card-price-text { font-size: 1.1rem; }
 }
 .image-card-add {
   background: linear-gradient(135deg, var(--blue), #003a99);
@@ -1587,6 +1723,48 @@ img.console-float {
 .trailer-embed-fallback span {
   color: rgba(255,255,255,0.65);
   font-size: 0.9rem;
+}
+
+/* Trailer error fallback with external link */
+.trailer-error-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(0,0,0,0.9);
+  text-align: center;
+  padding: 20px;
+  z-index: 10;
+}
+.trailer-error-fallback strong {
+  font-size: 1.1rem;
+  color: #ff6b6b;
+}
+.trailer-error-fallback span {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  max-width: 280px;
+}
+.trailer-external-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+.trailer-external-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255,0,0,0.4);
 }
 .game-detail-modal {
   position: fixed;
@@ -2411,19 +2589,15 @@ body.in-page-mode .page-back-btn {
     font-size: 0.56rem;
     letter-spacing: 2px;
   }
-  #home .hero-contact-links {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    width: min(100%, 430px);
+  #home .hero-social-icons {
+    gap: 10px;
     margin-top: 20px;
   }
-  #home .hero-contact-links .social-link {
-    justify-content: center;
-    padding: 11px 6px;
-    font-size: 0.78rem;
-    border-radius: 20px;
+  .hero-social-icons .social-icon {
+    width: 40px; height: 40px;
   }
+  .footer-social-icons { gap: 10px; }
+  .footer-social-icons .social-icon { width: 40px; height: 40px; }
   .hero-socials { flex-direction: column; align-items: center; }
   .stats-grid { gap: 30px; }
   .console-float.pad-ps, .console-float.pad-xbox, .console-float.pad-wii { display: none; }
