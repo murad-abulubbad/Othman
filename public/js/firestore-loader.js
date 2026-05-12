@@ -58,8 +58,21 @@ async function loadFirestoreData() {
     if (dynamicSections) {
       dynamicSections.innerHTML = categories.map(cat => {
         const categoryItems = items.filter(item => item.categoryID === cat.id);
-        const body = categoryItems.length > 0
-          ? `<div class="image-grid" id="grid-cat-${cat.id}"></div>`
+        const hasItems = categoryItems.length > 0;
+        const body = hasItems
+          ? `
+            <div class="cat-filter-bar" id="filter-cat-${cat.id}">
+              <div class="cat-filter-row">
+                <input type="text" class="cat-filter-search" placeholder="🔍 بحث في ${cat.name}..." data-cat="${cat.id}">
+                <div class="cat-filter-price">
+                  <span>السعر:</span>
+                  <input type="number" class="cat-filter-number" min="0" max="1000" placeholder="الكل" data-cat="${cat.id}">
+                  <span>دينار</span>
+                </div>
+              </div>
+            </div>
+            <div class="image-grid" id="grid-cat-${cat.id}"></div>
+          `
           : `
             <div class="coming-soon-block">
               <span class="big-icon">🏆</span>
@@ -133,6 +146,11 @@ async function loadFirestoreData() {
               setTimeout(() => el.classList.add('visible'), 30);
             });
           });
+          // Store items for filtering
+          window._catItems = window._catItems || {};
+          window._catItems[cat.id] = formattedItems;
+          // Setup filter for this category
+          setupCategoryFilter(cat.id, cat.name, formattedItems);
         } else {
           console.error('renderGameGrid function not found. Make sure main.js is loaded before firestore-loader.js');
         }
@@ -156,6 +174,52 @@ async function loadFirestoreData() {
       sectionsGrid.innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 20px;">فشل تحميل البيانات. يرجى تحديث الصفحة.</div>';
     }
   }
+}
+
+// Setup category filter (search + price)
+function setupCategoryFilter(catId, catName, items) {
+  const searchInput = document.querySelector(`.cat-filter-search[data-cat="${catId}"]`);
+  const priceNumber = document.querySelector(`.cat-filter-number[data-cat="${catId}"]`);
+  
+  if (!searchInput || !priceNumber) return;
+  
+  // Fixed max price 1000
+  const MAX_PRICE = 1000;
+  
+  const applyFilter = () => {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const priceVal = priceNumber.value.trim();
+    // Empty means no price limit (show all)
+    const maxPriceFilter = priceVal === '' ? Infinity : (parseInt(priceVal) || MAX_PRICE);
+    
+    const filtered = items.filter(item => {
+      const matchesSearch = !searchTerm || item.name.toLowerCase().includes(searchTerm);
+      const matchesPrice = maxPriceFilter === Infinity || item.price <= maxPriceFilter;
+      return matchesSearch && matchesPrice;
+    });
+    
+    // Re-render grid
+    if (typeof renderGameGrid === 'function') {
+      renderGameGrid(`grid-cat-${catId}`, filtered, catName);
+      requestAnimationFrame(() => {
+        document.querySelectorAll(`#grid-cat-${catId} .image-card`).forEach((el, i) => {
+          el.style.transitionDelay = ((i % 6) * 0.08) + 's';
+          setTimeout(() => el.classList.add('visible'), 30);
+        });
+      });
+    }
+    
+    // Show "no results" message if empty
+    const grid = document.getElementById(`grid-cat-${catId}`);
+    if (filtered.length === 0 && grid) {
+      grid.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px; font-size: 0.9rem; grid-column: 1/-1;">لا توجد منتجات مطابقة للبحث</div>';
+    }
+  };
+  
+  searchInput.addEventListener('input', applyFilter);
+  priceNumber.addEventListener('input', applyFilter);
+  // Also trigger on change for mobile number picker
+  priceNumber.addEventListener('change', applyFilter);
 }
 
 // Load data when DOM is ready
