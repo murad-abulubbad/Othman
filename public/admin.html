@@ -228,19 +228,42 @@
       </div>
 
       <div class="field">
-        <label>صورة المنتج *</label>
-        <div class="img-preview" id="img-preview-wrap" onclick="document.getElementById('item-image-file').click()">
-          <div class="img-preview-ph">🖼<br>اضغط هنا لاختيار صورة من جهازك</div>
+        <label>صور المنتج <small style="opacity:.6">(صورة رئيسية + صور إضافية اختياري)</small></label>
+
+        <!-- Images Gallery Container -->
+        <div class="images-gallery" id="images-gallery">
+          <!-- Main Image (always first) -->
+          <div class="gallery-item main-image" id="main-image-item" onclick="document.getElementById('item-image-file').click()">
+            <div class="gallery-placeholder">
+              <span class="gallery-icon">🖼</span>
+              <span class="gallery-text">الصورة الرئيسية<br>اضغط لإضافة</span>
+            </div>
+            <img id="main-image-preview" src="" alt="main" style="display:none">
+            <span class="gallery-badge main">رئيسية</span>
+          </div>
+
+          <!-- Additional Images Container -->
+          <div class="additional-images" id="additional-images">
+            <!-- Add more button -->
+            <div class="gallery-item add-more" onclick="document.getElementById('item-image-file').click()">
+              <span class="gallery-icon">+</span>
+              <span class="gallery-text">إضافة صور</span>
+            </div>
+          </div>
         </div>
+
         <div class="upload-row">
-          <input type="file" id="item-image-file" accept="image/*" style="display:none">
-          <button type="button" class="btn btn-edit btn-sm" onclick="document.getElementById('item-image-file').click()">📁 اختيار صورة</button>
+          <input type="file" id="item-image-file" accept="image/*" multiple style="display:none">
+          <button type="button" class="btn btn-edit btn-sm" onclick="document.getElementById('item-image-file').click()">📁 اختيار صور</button>
           <span class="upload-fname" id="upload-fname"></span>
         </div>
         <div class="progress-bar" id="upload-progress-bar">
           <div class="progress-fill" id="upload-progress-fill"></div>
         </div>
+
+        <!-- Hidden inputs for image URLs -->
         <input type="hidden" id="item-imageUrl">
+        <input type="hidden" id="item-images">
       </div>
 
       <div class="field">

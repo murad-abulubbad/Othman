@@ -312,15 +312,65 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── ITEM MODAL ─────────────────────────────────────────
+// Global array to hold current images during editing
+let currentItemImages = [];
+
+function renderImagesGallery() {
+  const mainPreview = $('main-image-preview');
+  const mainItem = $('main-image-item');
+  const additionalContainer = $('additional-images');
+  const addMoreBtn = additionalContainer.querySelector('.add-more');
+
+  // Update main image
+  if (currentItemImages.length > 0) {
+    mainPreview.src = currentItemImages[0];
+    mainPreview.style.display = 'block';
+    mainItem.querySelector('.gallery-placeholder').style.display = 'none';
+  } else {
+    mainPreview.src = '';
+    mainPreview.style.display = 'none';
+    mainItem.querySelector('.gallery-placeholder').style.display = 'flex';
+  }
+
+  // Remove existing additional images (keep add-more button)
+  additionalContainer.querySelectorAll('.gallery-item:not(.add-more)').forEach(el => el.remove());
+
+  // Add additional images
+  for (let i = 1; i < currentItemImages.length; i++) {
+    const imgDiv = document.createElement('div');
+    imgDiv.className = 'gallery-item';
+    imgDiv.innerHTML = `
+      <img src="${currentItemImages[i]}" alt="additional">
+      <button type="button" class="gallery-remove" onclick="removeImage(${i})" title="حذف">×</button>
+    `;
+    additionalContainer.insertBefore(imgDiv, addMoreBtn);
+  }
+
+  // Update hidden inputs
+  $('item-imageUrl').value = currentItemImages[0] || '';
+  $('item-images').value = JSON.stringify(currentItemImages.slice(1));
+}
+
+function removeImage(index) {
+  currentItemImages.splice(index, 1);
+  renderImagesGallery();
+}
+window.removeImage = removeImage;
+
 function openItemModal(item = null) {
   $('item-modal-title').textContent = item ? 'تعديل العنصر' : 'إضافة عنصر جديد';
   $('item-id').value              = item?.id             || '';
   $('item-name').value            = item?.name           || '';
-  $('item-imageUrl').value        = item?.imageUrl       || '';
-  const pw = $('img-preview-wrap');
-  pw.innerHTML = item?.imageUrl
-    ? `<img src="${item.imageUrl}" alt="preview">`
-    : '<div class="img-preview-ph">🖼<br>اضغط هنا لاختيار صورة من جهازك</div>';
+
+  // Handle images - support both old (imageUrl) and new (images array) formats
+  currentItemImages = [];
+  if (item?.images && Array.isArray(item.images) && item.images.length > 0) {
+    currentItemImages = [...item.images];
+  } else if (item?.imageUrl) {
+    currentItemImages = [item.imageUrl];
+  }
+  renderImagesGallery();
+
   $('upload-fname').textContent   = '';
   $('item-image-file').value      = '';
   $('item-platform').value        = item?.platform       || 'PS4';
@@ -375,15 +425,25 @@ function uploadToCloudinary(file, folder) {
 function uploadCatImage(file)  { return uploadToCloudinary(file, 'ofg/categories'); }
 function uploadImage(file)     { return uploadToCloudinary(file, 'ofg/items'); }
 
-$('item-image-file').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  $('upload-fname').textContent = file.name;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    $('img-preview-wrap').innerHTML = `<img src="${ev.target.result}" alt="preview">`;
-  };
-  reader.readAsDataURL(file);
+$('item-image-file').addEventListener('change', async e => {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+
+  $('upload-fname').textContent = files.length === 1 ? files[0].name : `${files.length} صور مختارة`;
+
+  // Upload all selected files
+  for (const file of files) {
+    try {
+      const imageUrl = await uploadImage(file);
+      currentItemImages.push(imageUrl);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      toast(`فشل رفع: ${file.name}`, true);
+    }
+  }
+
+  renderImagesGallery();
+  $('item-image-file').value = ''; // Reset for next selection
 });
 
 document.getElementById('item-form').addEventListener('submit', async (e) => {
@@ -406,29 +466,18 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
   }
   saveBtn.disabled = true;
 
-  // Upload image from device if a new file was chosen
-  let imageUrl = $('item-imageUrl').value;
-  const fileInput = $('item-image-file');
-  if (fileInput.files.length > 0) {
-    try {
-      saveBtn.textContent = '⬆ جاري رفع الصورة...';
-      imageUrl = await uploadImage(fileInput.files[0]);
-      $('item-imageUrl').value = imageUrl;
-    } catch (uploadErr) {
-      errEl.textContent = 'خطأ في رفع الصورة: ' + uploadErr.message;
-      saveBtn.disabled = false; saveBtn.textContent = '💾 حفظ';
-      return;
-    }
-  }
-  if (!imageUrl) {
-    errEl.textContent = 'الرجاء اختيار صورة للمنتج';
+  // Check if at least one image exists
+  if (currentItemImages.length === 0) {
+    errEl.textContent = 'الرجاء إضافة صورة واحدة على الأقل للمنتج';
     saveBtn.disabled = false; saveBtn.textContent = '💾 حفظ';
     return;
   }
 
+  // Prepare data with images array (first image is main, rest are additional)
   const data = {
     name,
-    imageUrl,
+    imageUrl: currentItemImages[0], // Keep for backward compatibility
+    images: currentItemImages, // New array format
     platform:        $('item-platform').value,
     categoryID:      $('item-categoryID').value,
     condition:       $('item-condition').value,

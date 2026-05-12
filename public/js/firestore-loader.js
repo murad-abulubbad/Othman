@@ -119,9 +119,20 @@ async function loadFirestoreData() {
           } else {
             priceLabel = 'حسب الطلب';
           }
+          // Support both old (imageUrl) and new (images array) formats
+          let mainImage = item.imageUrl;
+          let imagesArray = [];
+          if (item.images && Array.isArray(item.images) && item.images.length > 0) {
+            mainImage = item.images[0];
+            imagesArray = item.images;
+          } else if (item.imageUrl) {
+            imagesArray = [item.imageUrl];
+          }
+
           const result = {
             name: item.name,
-            img: item.imageUrl,
+            img: mainImage,
+            images: imagesArray,
             price: finalPrice,
             priceLabel: priceLabel,
             genre: item.genre,

@@ -15,6 +15,9 @@ const PS4_GAMES = [];
 // Static fallback removed. Items are fetched from the Firestore "Items" collection.
 const PS5_GAMES = [];
 
+// Global store for item images to avoid encoding issues
+window._itemImagesMap = window._itemImagesMap || {};
+
 function renderGameGrid(targetId, games, platform) {
   const grid = document.getElementById(targetId);
   if (!grid) return;
@@ -22,7 +25,26 @@ function renderGameGrid(targetId, games, platform) {
   grid.innerHTML = games.map(g => {
     const condition = g.condition || 'مستعمل';
     const conditionClass = condition === 'جديد' ? ' is-new' : '';
-    const detailData = encodeURIComponent(JSON.stringify({...g, platform, condition})).replace(/'/g, '%27');
+    // Store images in global map
+    const itemKey = g.name + '_' + (g.img || '').slice(-20);
+    const imagesArray = g.images || [g.img];
+    window._itemImagesMap[itemKey] = imagesArray;
+    // Build detail data without images array (too large for encoding)
+    const detailObj = {
+      name: g.name,
+      img: g.img,
+      _imgKey: itemKey, // Reference to images in global map
+      price: g.price,
+      priceLabel: g.priceLabel,
+      genre: g.genre,
+      condition: condition,
+      trailer: g.trailer,
+      originalPrice: g.originalPrice,
+      discountPrice: g.discountPrice,
+      description: g.description,
+      platform: platform
+    };
+    const detailData = encodeURIComponent(JSON.stringify(detailObj)).replace(/'/g, '%27');
     const cartData = encodeURIComponent(JSON.stringify({name:g.name, price:g.price, priceLabel:g.priceLabel || '', img:g.img, icon:'💿', kind:'game', platform, condition})).replace(/'/g, '%27');
     const trailerData = encodeURIComponent(JSON.stringify({id:g.trailer, title:g.name, provider:g.trailerProvider || 'youtube'})).replace(/'/g, '%27');
     const trailerButton = g.trailer
@@ -51,7 +73,7 @@ function renderGameGrid(targetId, games, platform) {
         <div class="image-card-bottom">
           ${priceHtml}
           <div class="image-card-actions">
-            <button class="favorite-btn" onclick="toggleFavorite(this, '${encodeURIComponent(JSON.stringify({...g, platform, condition})).replace(/'/g, '%27')}'); event.stopPropagation();">❤</button>
+            <button class="favorite-btn" onclick="toggleFavorite(this, '${encodeURIComponent(JSON.stringify(detailObj)).replace(/'/g, '%27')}'); event.stopPropagation();">❤</button>
             ${trailerButton}
             ${addButton}
           </div>
@@ -86,7 +108,22 @@ function parsePriceValue(priceText) {
   return match ? parseFloat(match[0]) : 0;
 }
 
+// Global for current detail view images
+let currentDetailImages = [];
+let currentDetailImageIndex = 0;
+
+function showDetailImage(index) {
+  if (!currentDetailImages.length) return;
+  currentDetailImageIndex = index;
+  const mainImg = document.getElementById('detail-main-image');
+  const thumbs = document.querySelectorAll('.detail-thumb');
+  if (mainImg) mainImg.src = currentDetailImages[index];
+  thumbs.forEach((t, i) => t.classList.toggle('active', i === index));
+}
+window.showDetailImage = showDetailImage;
+
 function openGameDetails(game) {
+  console.log('openGameDetails called with:', game);
   const modal = document.getElementById('game-detail-modal');
   const box = document.getElementById('game-detail-box');
   const hasNumericPrice = Number(game.price || 0) > 0;
@@ -96,14 +133,49 @@ function openGameDetails(game) {
   const genreText = game.genre || game.sub || game.specs || game.kindLabel || 'Othman For Gaming';
   const descText = game.desc || game.description || '';
   const iconText = game.icon || '🎮';
-  const coverHtml = game.img
-    ? `<img src="${escapeHtml(game.img)}" alt="${escapeHtml(game.name)}" onerror="this.closest('.game-detail-cover').classList.add('no-image');this.outerHTML='<span class=&quot;game-detail-cover-icon&quot;>${escapeHtml(iconText)}</span>'"/>`
-    : `<span class="game-detail-cover-icon">${escapeHtml(iconText)}</span>`;
+
+  // Get images from global map or fallback to single image
+  let images = game.images;
+  if (!images && game._imgKey && window._itemImagesMap && window._itemImagesMap[game._imgKey]) {
+    images = window._itemImagesMap[game._imgKey];
+    console.log('Loaded images from global map:', images);
+  }
+  if (typeof images === 'string') {
+    try { images = JSON.parse(images); } catch(e) { images = null; }
+  }
+  currentDetailImages = Array.isArray(images) && images.length > 0 ? images : (game.img ? [game.img] : []);
+  currentDetailImageIndex = 0;
+  console.log('Final images array:', currentDetailImages, 'Length:', currentDetailImages.length);
+
+  // Build gallery HTML if multiple images exist
+  let galleryHtml = '';
+  if (currentDetailImages.length > 1) {
+    const thumbsHtml = currentDetailImages.map((img, i) => `
+      <img src="${escapeHtml(img)}" class="detail-thumb${i === 0 ? ' active' : ''}" onclick="showDetailImage(${i})" alt=""/>
+    `).join('');
+    galleryHtml = `
+      <div class="detail-gallery">
+        <div class="detail-gallery-main">
+          <img id="detail-main-image" src="${escapeHtml(currentDetailImages[0])}" alt="${escapeHtml(game.name)}"
+               onerror="this.closest('.game-detail-cover').classList.add('no-image');this.outerHTML='<span class=&quot;game-detail-cover-icon&quot;>${escapeHtml(iconText)}</span>'"/>
+        </div>
+        <div class="detail-gallery-thumbs">${thumbsHtml}</div>
+      </div>
+    `;
+    console.log('Gallery HTML built with', currentDetailImages.length, 'images');
+  } else {
+    // Single image (original behavior)
+    galleryHtml = game.img
+      ? `<img src="${escapeHtml(game.img)}" alt="${escapeHtml(game.name)}" onerror="this.closest('.game-detail-cover').classList.add('no-image');this.outerHTML='<span class=&quot;game-detail-cover-icon&quot;>${escapeHtml(iconText)}</span>'"/>`
+      : `<span class="game-detail-cover-icon">${escapeHtml(iconText)}</span>`;
+    console.log('Single image mode');
+  }
+
   const cartData = encodeURIComponent(JSON.stringify({
     name: game.name,
     price: hasNumericPrice ? Number(game.price || 0) : parsePriceValue(priceText),
     priceLabel: game.priceLabel || (!hasNumericPrice && priceText ? priceText : ''),
-    img: game.img,
+    img: currentDetailImages[0] || game.img,
     icon: iconText,
     kind: game.kind || 'item',
     platform: game.platform || null,
@@ -118,9 +190,9 @@ function openGameDetails(game) {
     : '';
   box.innerHTML = `
     <button class="game-detail-close" onclick="closeGameDetails()">×</button>
-    <div class="game-detail-cover${game.img ? '' : ' no-image'}">
+    <div class="game-detail-cover${game.img ? '' : ' no-image'}${currentDetailImages.length > 1 ? ' has-gallery' : ''}">
       ${detailLabel ? `<span class="game-detail-platform">${escapeHtml(detailLabel)}</span>` : ''}
-      ${coverHtml}
+      ${galleryHtml}
     </div>
     <div class="game-detail-content">
       ${detailLabel ? `<div class="game-detail-kicker">${escapeHtml(detailLabel)}</div>` : ''}
