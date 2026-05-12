@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="css/style.css?v=10">
+<link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
 
@@ -42,11 +42,6 @@
     <div class="trans-logo">O.F.G</div>
   </div>
 </div>
-
-<!-- BACK TO HOME BUTTON (visible only in page mode) -->
-<button class="page-back-btn" onclick="navigateToPage('home')">
-  <span style="font-size:1.1rem">←</span> العودة للرئيسية
-</button>
 
 <!-- TOAST -->
 <div id="toast"><span class="toast-icon">🛒</span><span id="toast-msg">تمت الإضافة للسلة!</span></div>
@@ -351,6 +346,13 @@
 <!-- DYNAMIC SECTIONS — all categories + items from Firestore -->
 <div id="dynamic-sections"></div>
 
+<!-- BACK TO HOME BUTTON (visible only in page mode, now at bottom) -->
+<div style="text-align: center; padding: 20px 0 40px;">
+  <button class="page-back-btn bottom" onclick="navigateToPage('home')">
+    <span style="font-size:1.1rem">←</span> العودة للرئيسية
+  </button>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">
@@ -386,6 +388,6 @@
 <!-- ════ FIRESTORE DYNAMIC LOADER ════
      Fetches Categories + Items from Firestore.
      Builds sections-nav and all product sections dynamically.          -->
-<script type="module" src="js/firestore-loader.js?v=11" defer></script>
+<script type="module" src="js/firestore-loader.js?v=13" defer></script>
 </body>
 </html>

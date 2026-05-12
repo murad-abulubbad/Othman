@@ -1060,10 +1060,10 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
 @media (max-width: 768px) {
   .cat-filter-bar { padding: 12px 14px; margin: 0 12px 15px; }
   .cat-filter-row { gap: 10px; flex-wrap: nowrap; }
-  .cat-filter-search { width: 180px; flex: 0 0 auto; order: 1; padding: 10px 14px; font-size: 0.85rem; }
+  .cat-filter-search { flex: 1; min-width: 0; order: 1; padding: 10px 14px; font-size: 0.85rem; }
   .cat-filter-price { order: 2; width: auto; gap: 6px; flex-shrink: 0; }
   .cat-filter-price span { font-size: 0.8rem; }
-  .cat-filter-number { width: 90px; font-size: 1rem; padding: 10px; }
+  .cat-filter-number { width: 85px; font-size: 1rem; padding: 10px; }
 }
 
 .section-nav-card {
@@ -2237,6 +2237,20 @@ body.in-page-mode .page-back-btn {
   background: linear-gradient(135deg, var(--red), var(--red-bright));
   transform: translateX(-4px) scale(1.05);
   box-shadow: 0 0 35px rgba(255,45,85,0.8);
+}
+/* Bottom variant (fixed at bottom left) */
+.page-back-btn.bottom {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: auto;
+  top: auto;
+  display: none;
+  z-index: 9990;
+  margin: 0;
+}
+body.in-page-mode .page-back-btn.bottom {
+  display: inline-flex;
 }
 
 /* PAGE TRANSITION OVERLAY — 3 VERTICAL bars: Nintendo (red) | Xbox (green) | PlayStation (blue) */
