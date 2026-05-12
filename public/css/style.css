@@ -2139,6 +2139,28 @@ img.console-float {
     min-height: 180px !important;
     max-height: 200px;
   }
+  .game-detail-cover.has-gallery {
+    min-height: 350px !important;
+    max-height: none !important;
+    padding-bottom: 90px;
+  }
+  .detail-gallery-main {
+    min-height: 260px;
+    padding: 15px;
+  }
+  .detail-gallery-main img {
+    max-height: 240px;
+  }
+  .detail-gallery-thumbs {
+    padding: 12px 15px;
+    gap: 10px;
+    justify-content: flex-start;
+  }
+  .detail-thumb {
+    width: 65px;
+    height: 65px;
+    border-radius: 8px;
+  }
   .game-detail-name {
     font-size: 1.3rem;
   }
@@ -2394,7 +2416,7 @@ body.in-page-mode .page-back-btn.bottom {
 /* Console logos centered on each colored bar — natural colors, strong shadow for depth */
 #page-transition .trans-bar-logo {
   position: relative;
-  width: clamp(140px, 22vw, 280px);
+  width: clamp(180px, 28vw, 340px);
   height: auto;
   max-height: 55vh;
   object-fit: contain;
@@ -2437,7 +2459,7 @@ body.in-page-mode .page-back-btn.bottom {
   transition-delay: 0s;
 }
 @media (max-width: 700px) {
-  #page-transition .trans-bar-logo { width: clamp(80px, 22vw, 180px); }
+  #page-transition .trans-bar-logo { width: clamp(100px, 30vw, 220px); }
 }
 
 #page-transition .trans-content {
