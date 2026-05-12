@@ -2,18 +2,42 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Othman For Gaming
-</title>
-<link rel="icon" type="image/jpeg" href="images/logo.jpg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a1a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="application-name" content="Othman For Gaming">
+<meta name="apple-mobile-web-app-title" content="Othman For Gaming">
+<meta name="description" content="عثمان للألعاب - وجهتك الأولى لألعاب الفيديو والاكسسوارات والمنتجات الرقمية">
+<title>Othman For Gaming</title>
+
+<!-- Favicons -->
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+<link rel="shortcut icon" href="/assets/icons/favicon.ico">
+
+<!-- Apple Touch Icons -->
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/apple-touch-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon-180x180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/assets/icons/apple-touch-icon-167x167.png">
+
+<!-- Android/Chrome Icons -->
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/icons/icon-512x512.png">
+
+<!-- Web App Manifest -->
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="css/style.css?v=14">
+<link rel="stylesheet" href="css/style.css?v=16">
 </head>
 <body>
 
@@ -388,6 +412,15 @@
 <!-- ════ FIRESTORE DYNAMIC LOADER ════
      Fetches Categories + Items from Firestore.
      Builds sections-nav and all product sections dynamically.          -->
-<script type="module" src="js/firestore-loader.js?v=13" defer></script>
+<script type="module" src="js/firestore-loader.js?v=14" defer></script>
+
+<!-- Service Worker Registration for PWA -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then((reg) => console.log('SW registered:', reg))
+    .catch((err) => console.log('SW registration failed:', err));
+}
+</script>
 </body>
 </html>
