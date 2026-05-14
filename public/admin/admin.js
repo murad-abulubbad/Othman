@@ -74,6 +74,14 @@ function renderCategoriesTable() {
       }).join('');
   }
 
+  const filterSel = $('filter-category');
+  if (filterSel) {
+    const currentVal = filterSel.value;
+    filterSel.innerHTML = '<option value="">كل التصنيفات</option>' +
+      categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    filterSel.value = currentVal;
+  }
+
   const tbody = $('cats-tbody');
   if (!tbody) return;
 
@@ -213,13 +221,14 @@ async function deleteCategory(id) {
 
 // ── ITEMS ──────────────────────────────────────────────
 const ITEMS_PER_PAGE = 10;
-let itemsFilters = { name:'', platform:'', originalPrice:'', discountPrice:'', condition:'', quantity:'' };
+let itemsFilters = { name:'', platform:'', categoryID:'', originalPrice:'', discountPrice:'', condition:'', quantity:'' };
 let itemsPage = 1;
 
 function getFilteredItems() {
   return items.filter(it => {
     if (itemsFilters.name && !String(it.name||'').toLowerCase().includes(itemsFilters.name.toLowerCase())) return false;
     if (itemsFilters.platform && (it.platform||'') !== itemsFilters.platform) return false;
+    if (itemsFilters.categoryID && (it.categoryID||'') !== itemsFilters.categoryID) return false;
     if (itemsFilters.originalPrice && !String(it.originalPrice ?? '').includes(itemsFilters.originalPrice)) return false;
     if (itemsFilters.discountPrice && !String(it.discountPrice ?? '').includes(itemsFilters.discountPrice)) return false;
     if (itemsFilters.condition && (it.condition||'') !== itemsFilters.condition) return false;
@@ -243,12 +252,15 @@ function renderItemsTable() {
           : `${it.originalPrice ?? '—'}`;
         const qty = Number(it.quantity ?? 0);
         const qtyBadge = qty <= 0 ? '<span class="badge badge-danger">نفذ</span>' : qty < 5 ? '<span class="badge badge-warn">'+qty+'</span>' : '<span class="badge badge-ok">'+qty+'</span>';
+        const category = categories.find(c => c.id === it.categoryID);
+        const categoryName = category ? category.name : '—';
         return `
         <tr class="${selectedItemIds.has(it.id) ? 'row-selected' : ''}">
           <td class="td-select"><input type="checkbox" class="row-select" data-item-select="${it.id}" ${selectedItemIds.has(it.id) ? 'checked' : ''}></td>
           <td><img class="item-img" src="${it.imageUrl||''}" alt="${it.name}"
                onerror="this.style.opacity='.25'"></td>
           <td>${it.name}</td>
+          <td>${categoryName}</td>
           <td>${priceHtml}</td>
           <td>${hasDiscount ? it.discountPrice + ' JOD' : '—'}</td>
           <td>${it.condition||'—'}</td>
@@ -259,7 +271,7 @@ function renderItemsTable() {
           </td>
         </tr>`;
       }).join('')
-    : `<tr class="empty-row"><td colspan="8">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
+    : `<tr class="empty-row"><td colspan="9">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
 
   $('pg-info').textContent = `صفحة ${itemsPage} من ${totalPages} (${filtered.length} عنصر)`;
   $('pg-prev').disabled = itemsPage <= 1;

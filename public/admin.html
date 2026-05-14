@@ -66,6 +66,7 @@
             <tr>
               <th class="td-select-head"><input type="checkbox" id="select-all-items" aria-label="تحديد جميع العناصر"></th>
               <th>صورة</th><th>الاسم</th>
+              <th>التصنيف</th>
               <th>السعر</th><th>الخصم</th>
               <th>الحالة</th><th>الكمية</th><th>إجراءات</th>
             </tr>
@@ -73,6 +74,11 @@
               <th></th>
               <th></th>
               <th><input class="filter-input" data-filter="name" type="text" placeholder="🔍 بحث..."></th>
+              <th>
+                <select class="filter-input" data-filter="categoryID" id="filter-category">
+                  <option value="">كل التصنيفات</option>
+                </select>
+              </th>
               <th><input class="filter-input" data-filter="originalPrice" type="text" placeholder="🔍"></th>
               <th><input class="filter-input" data-filter="discountPrice" type="text" placeholder="🔍"></th>
               <th>
