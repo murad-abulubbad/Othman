@@ -332,16 +332,19 @@ function renderImagesGallery() {
   const mainItem = $('main-image-item');
   const additionalContainer = $('additional-images');
   const addMoreBtn = additionalContainer.querySelector('.add-more');
+  const mainRemoveBtn = mainItem.querySelector('.main-remove');
 
   // Update main image
   if (currentItemImages.length > 0) {
     mainPreview.src = currentItemImages[0];
     mainPreview.style.display = 'block';
     mainItem.querySelector('.gallery-placeholder').style.display = 'none';
+    if (mainRemoveBtn) mainRemoveBtn.style.display = 'block';
   } else {
     mainPreview.src = '';
     mainPreview.style.display = 'none';
     mainItem.querySelector('.gallery-placeholder').style.display = 'flex';
+    if (mainRemoveBtn) mainRemoveBtn.style.display = 'none';
   }
 
   // Remove existing additional images (keep add-more button)
@@ -354,6 +357,7 @@ function renderImagesGallery() {
     imgDiv.innerHTML = `
       <img src="${currentItemImages[i]}" alt="additional">
       <button type="button" class="gallery-remove" onclick="removeImage(${i})" title="حذف">×</button>
+      <button type="button" class="gallery-set-main" onclick="setAsMain(${i})" title="تعيين كصورة رئيسية">★</button>
     `;
     additionalContainer.insertBefore(imgDiv, addMoreBtn);
   }
@@ -368,6 +372,24 @@ function removeImage(index) {
   renderImagesGallery();
 }
 window.removeImage = removeImage;
+
+function removeMainImage() {
+  if (currentItemImages.length > 0) {
+    currentItemImages.splice(0, 1);
+    renderImagesGallery();
+  }
+}
+window.removeMainImage = removeMainImage;
+
+function setAsMain(index) {
+  if (index > 0 && index < currentItemImages.length) {
+    // Move the selected image to the first position
+    const [selectedImage] = currentItemImages.splice(index, 1);
+    currentItemImages.unshift(selectedImage);
+    renderImagesGallery();
+  }
+}
+window.setAsMain = setAsMain;
 
 function openItemModal(item = null) {
   $('item-modal-title').textContent = item ? 'تعديل العنصر' : 'إضافة عنصر جديد';
