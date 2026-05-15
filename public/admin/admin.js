@@ -310,13 +310,13 @@ async function deleteCategory(id) {
 
 // ── ITEMS ──────────────────────────────────────────────
 const ITEMS_PER_PAGE = 10;
-let itemsFilters = { name:'', platform:'', categoryID:'', originalPrice:'', discountPrice:'', condition:'', quantity:'' };
+let itemsFilters = { name:'', categoryID:'', originalPrice:'', discountPrice:'', condition:'', quantity:'' };
 let itemsPage = 1;
 
 function getFilteredItems() {
   return items.filter(it => {
     if (itemsFilters.name && !String(it.name||'').toLowerCase().includes(itemsFilters.name.toLowerCase())) return false;
-    if (itemsFilters.platform && (it.platform||'') !== itemsFilters.platform) return false;
+    // platform field removed from storage; skip platform filtering
     if (itemsFilters.categoryID && (it.categoryID||'') !== itemsFilters.categoryID) return false;
     if (itemsFilters.originalPrice && !String(it.originalPrice ?? '').includes(itemsFilters.originalPrice)) return false;
     if (itemsFilters.discountPrice && !String(it.discountPrice ?? '').includes(itemsFilters.discountPrice)) return false;
@@ -371,7 +371,11 @@ function renderItemsTable() {
 async function loadItems() {
   try {
     const snap = await getDocs(collection(db, 'Items'));
-    items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    items = snap.docs.map(d => {
+      const raw = d.data();
+      const { platform, ...rest } = raw || {};
+      return { id: d.id, ...rest };
+    });
     selectedItemIds = new Set([...selectedItemIds].filter(id => items.some(item => item.id === id)));
 
     renderItemsTable();
@@ -494,7 +498,7 @@ function openItemModal(item = null) {
 
   $('upload-fname').textContent   = '';
   $('item-image-file').value      = '';
-  $('item-platform').value        = item?.platform       || 'PS4';
+  // platform field no longer used/stored
   $('item-categoryID').value      = item?.categoryID     || '';
   $('item-condition').value       = item?.condition      || 'مستعمل';
   $('item-quantity').value        = item?.quantity       ?? 1;
@@ -599,7 +603,6 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
     name,
     imageUrl: currentItemImages[0], // Keep for backward compatibility
     images: currentItemImages, // New array format
-    platform:        $('item-platform').value,
     categoryID:      $('item-categoryID').value,
     condition:       $('item-condition').value,
     quantity:        parseInt($('item-quantity').value) || 0,
