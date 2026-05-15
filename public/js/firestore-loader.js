@@ -7,14 +7,21 @@ import { db, collection, query, orderBy, getDocs } from '../firebase.js';
 async function loadFirestoreData() {
   console.log('Starting Firestore data load...');
   try {
-    // Fetch Categories (ordered by createdAt asc)
-    const categoriesQuery = query(collection(db, 'Categories'), orderBy('createdAt', 'asc'));
-    const categoriesSnapshot = await getDocs(categoriesQuery);
+    // Fetch Categories (respect admin-controlled order). Fallback to unordered if empty or fails.
+    let categoriesSnapshot;
+    try {
+      const categoriesQuery = query(collection(db, 'Categories'), orderBy('order', 'asc'));
+      categoriesSnapshot = await getDocs(categoriesQuery);
+      if (categoriesSnapshot.empty) throw new Error('ordered-empty');
+    } catch (err) {
+      console.warn('Ordered categories fetch failed or empty, falling back to unordered fetch', err.message || err);
+      categoriesSnapshot = await getDocs(collection(db, 'Categories'));
+    }
     const categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     console.log('Categories loaded:', categories.length);
 
-    // Fetch Items (ordered by createdAt desc)
-    const itemsQuery = query(collection(db, 'Items'), orderBy('createdAt', 'desc'));
+    // Fetch Items
+    const itemsQuery = collection(db, 'Items');
     const itemsSnapshot = await getDocs(itemsQuery);
     const items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     console.log('Items loaded:', items.length);

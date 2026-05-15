@@ -1,7 +1,7 @@
 import { app, db } from '../firebase.js';
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc,
-  doc, query, orderBy, where, serverTimestamp
+  doc, query, orderBy, where
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 // ── CLOUDINARY ─────────────────────────────────────────
 const CLD_CLOUD  = 'dpo1udlqv';
@@ -88,19 +88,58 @@ function renderCategoriesTable() {
   tbody.innerHTML = categories.length
     ? categories.map(c => {
         const count = getCategoryItemCount(c.id);
-        return `<tr>
+        return `<tr data-cat-id="${c.id}">
+          <td class="td-drag-handle" title="اسحب لإعادة الترتيب" style="cursor:grab">☰</td>
           <td>${c.name}</td>
           <td><span class="badge badge-other">${count}</span></td>
           <td>${c.imageUrl ? `<img src="${c.imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
-          <td>${fmtDate(c.createdAt)}</td>
-          <td style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn btn-edit btn-sm" data-cat-edit="${c.id}">✏️ تعديل</button>
-            <button class="btn btn-danger btn-sm" data-cat-del="${c.id}">🗑 حذف</button>
-          </td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-edit btn-sm" data-cat-edit="${c.id}">✏️ تعديل</button>
+              <button class="btn btn-danger btn-sm" data-cat-del="${c.id}">🗑 حذف</button>
+            </td>
         </tr>`;
       }).join('')
     : '<tr class="empty-row"><td colspan="5">لا توجد تصنيفات بعد</td></tr>';
+
+  // Enable drag & drop reordering for category rows
+  enableCategoryDragging();
 }
+
+function enableCategoryDragging() {
+  const tbody = $('cats-tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr[data-cat-id]'));
+  rows.forEach(row => {
+    row.draggable = true;
+    const id = row.dataset.catId;
+    row.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', id);
+      row.classList.add('dragging');
+    });
+    row.addEventListener('dragend', () => row.classList.remove('dragging'));
+    row.addEventListener('dragover', (e) => { e.preventDefault(); row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const draggedId = e.dataTransfer.getData('text/plain');
+      const dropId = row.dataset.catId;
+      if (!draggedId || draggedId === dropId) return;
+      const draggedIdx = categories.findIndex(c => c.id === draggedId);
+      const dropIdx = categories.findIndex(c => c.id === dropId);
+      if (draggedIdx === -1 || dropIdx === -1) return;
+      const [moved] = categories.splice(draggedIdx, 1);
+      categories.splice(dropIdx, 0, moved);
+      try {
+        await Promise.all(categories.map((c, i) => updateDoc(doc(db, 'Categories', c.id), { order: i + 1 })));
+        toast('✅ تم حفظ الترتيب الجديد');
+        await loadCategories();
+      } catch (err) { toast('خطأ في حفظ الترتيب: ' + err.message, true); }
+    });
+  });
+}
+
+
 
 function syncItemSelectionUI(pageItems = null) {
   const bulkBtn = $('delete-selected-items');
@@ -177,10 +216,38 @@ async function init() {
 // ── CATEGORIES ─────────────────────────────────────────
 async function loadCategories() {
   try {
-    const snap = await getDocs(
-      query(collection(db, 'Categories'), orderBy('createdAt', 'desc'))
-    );
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db, 'Categories'), orderBy('order', 'asc')));
+      // If query succeeded but returned nothing, fall back to unordered fetch
+      if (snap.empty) throw new Error('ordered-empty');
+    } catch (err) {
+      snap = await getDocs(collection(db, 'Categories'));
+    }
     categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Auto-populate or normalize `order` field if missing/invalid so admin actions work
+    try {
+      let needFix = false;
+      if (categories.length > 0) {
+        // missing number order?
+        for (const c of categories) { if (typeof c.order !== 'number') { needFix = true; break; } }
+        if (!needFix) {
+          const orders = categories.map(c => c.order);
+          const uniq = new Set(orders);
+          if (uniq.size !== categories.length) needFix = true;
+          const min = Math.min(...orders);
+          const max = Math.max(...orders);
+          if (min !== 1 || max !== categories.length) needFix = true;
+        }
+      }
+      if (needFix) {
+        await Promise.all(categories.map((c, i) => updateDoc(doc(db, 'Categories', c.id), { order: i + 1 })));
+        const fixedSnap = await getDocs(query(collection(db, 'Categories'), orderBy('order', 'asc')));
+        categories = fixedSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+    } catch (err) {
+      console.warn('Failed to normalize category order:', err.message || err);
+    }
     renderCategoriesTable();
     renderDashboardStats();
   } catch (e) {
@@ -202,12 +269,34 @@ async function addCategory() {
     } catch (e) { toast('خطأ في رفع الصورة: ' + e.message, true); saveBtn.textContent = 'حفظ'; return; }
   }
   try {
-    await addDoc(collection(db, 'Categories'), { name, imageUrl, createdAt: serverTimestamp() });
+      // Determine order: append to end
+      const maxOrder = categories.length ? Math.max(...categories.map(c => c.order || 0)) : 0;
+      const newOrder = maxOrder + 1;
+      await addDoc(collection(db, 'Categories'), { name, imageUrl, order: newOrder });
     $('cat-add-modal').style.display = 'none';
     toast('✅ تم إضافة التصنيف');
     loadCategories();
   } catch (e) { toast('خطأ: ' + e.message, true); }
   saveBtn.textContent = 'حفظ';
+
+  async function moveCategory(catId, direction) {
+    const idx = categories.findIndex(c => c.id === catId);
+    if (idx === -1) return;
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= categories.length) return;
+    const a = categories[idx];
+    const b = categories[targetIdx];
+    const aOrder = a.order ?? (idx + 1);
+    const bOrder = b.order ?? (targetIdx + 1);
+    try {
+      await Promise.all([
+        updateDoc(doc(db, 'Categories', a.id), { order: bOrder }),
+        updateDoc(doc(db, 'Categories', b.id), { order: aOrder })
+      ]);
+      await loadCategories();
+      toast('✅ تم تعديل ترتيب التصنيفات');
+    } catch (err) { toast('خطأ في تعديل الترتيب: ' + err.message, true); }
+  }
 }
 
 async function deleteCategory(id) {
@@ -281,9 +370,7 @@ function renderItemsTable() {
 
 async function loadItems() {
   try {
-    const snap = await getDocs(
-      query(collection(db, 'Items'), orderBy('createdAt', 'desc'))
-    );
+    const snap = await getDocs(collection(db, 'Items'));
     items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     selectedItemIds = new Set([...selectedItemIds].filter(id => items.some(item => item.id === id)));
 
@@ -527,7 +614,7 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
       await updateDoc(doc(db, 'Items', id), data);
       toast('✅ تم تحديث العنصر بنجاح');
     } else {
-      await addDoc(collection(db, 'Items'), { ...data, createdAt: serverTimestamp() });
+      await addDoc(collection(db, 'Items'), data);
       toast('✅ تم إضافة العنصر بنجاح');
     }
     closeItemModal();
