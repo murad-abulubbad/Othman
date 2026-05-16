@@ -131,9 +131,14 @@ function enableCategoryDragging() {
       const [moved] = categories.splice(draggedIdx, 1);
       categories.splice(dropIdx, 0, moved);
       try {
-        await Promise.all(categories.map((c, i) => updateDoc(doc(db, 'Categories', c.id), { order: i + 1 })));
+        await Promise.all(categories.map((c, i) => {
+          c.order = i + 1; // Update locally
+          return updateDoc(doc(db, 'Categories', c.id), { order: i + 1 });
+        }));
+        
+        // Re-render instead of reloading
+        renderCategoriesTable();
         toast('✅ تم حفظ الترتيب الجديد');
-        await loadCategories();
       } catch (err) { toast('خطأ في حفظ الترتيب: ' + err.message, true); }
     });
   });
@@ -269,42 +274,58 @@ async function addCategory() {
     } catch (e) { toast('خطأ في رفع الصورة: ' + e.message, true); saveBtn.textContent = 'حفظ'; return; }
   }
   try {
-      // Determine order: append to end
-      const maxOrder = categories.length ? Math.max(...categories.map(c => c.order || 0)) : 0;
-      const newOrder = maxOrder + 1;
-      await addDoc(collection(db, 'Categories'), { name, imageUrl, order: newOrder });
+    // Determine order: append to end
+    const maxOrder = categories.length ? Math.max(...categories.map(c => c.order || 0)) : 0;
+    const newOrder = maxOrder + 1;
+    const docRef = await addDoc(collection(db, 'Categories'), { name, imageUrl, order: newOrder });
+    
+    // Update local state without re-fetching
+    categories.push({ id: docRef.id, name, imageUrl, order: newOrder });
+    renderCategoriesTable();
+    renderDashboardStats();
+    
     $('cat-add-modal').style.display = 'none';
     toast('✅ تم إضافة التصنيف');
-    loadCategories();
   } catch (e) { toast('خطأ: ' + e.message, true); }
   saveBtn.textContent = 'حفظ';
+}
 
-  async function moveCategory(catId, direction) {
-    const idx = categories.findIndex(c => c.id === catId);
-    if (idx === -1) return;
-    const targetIdx = idx + direction;
-    if (targetIdx < 0 || targetIdx >= categories.length) return;
-    const a = categories[idx];
-    const b = categories[targetIdx];
-    const aOrder = a.order ?? (idx + 1);
-    const bOrder = b.order ?? (targetIdx + 1);
-    try {
-      await Promise.all([
-        updateDoc(doc(db, 'Categories', a.id), { order: bOrder }),
-        updateDoc(doc(db, 'Categories', b.id), { order: aOrder })
-      ]);
-      await loadCategories();
-      toast('✅ تم تعديل ترتيب التصنيفات');
-    } catch (err) { toast('خطأ في تعديل الترتيب: ' + err.message, true); }
-  }
+async function moveCategory(catId, direction) {
+  const idx = categories.findIndex(c => c.id === catId);
+  if (idx === -1) return;
+  const targetIdx = idx + direction;
+  if (targetIdx < 0 || targetIdx >= categories.length) return;
+  const a = categories[idx];
+  const b = categories[targetIdx];
+  const aOrder = a.order ?? (idx + 1);
+  const bOrder = b.order ?? (targetIdx + 1);
+  try {
+    await Promise.all([
+      updateDoc(doc(db, 'Categories', a.id), { order: bOrder }),
+      updateDoc(doc(db, 'Categories', b.id), { order: aOrder })
+    ]);
+    
+    // Update local state and re-render without re-fetching
+    a.order = bOrder;
+    b.order = aOrder;
+    categories.sort((x, y) => (x.order || 0) - (y.order || 0));
+    renderCategoriesTable();
+    
+    toast('✅ تم تعديل ترتيب التصنيفات');
+  } catch (err) { toast('خطأ في تعديل الترتيب: ' + err.message, true); }
 }
 
 async function deleteCategory(id) {
   if (!confirm('حذف هذا التصنيف؟')) return;
   try {
     await deleteDoc(doc(db, 'Categories', id));
+    
+    // Update local state without fetching
+    categories = categories.filter(c => c.id !== id);
+    renderCategoriesTable();
+    renderDashboardStats();
+    
     toast('🗑 تم حذف التصنيف');
-    loadCategories();
   } catch (e) { toast('خطأ: ' + e.message, true); }
 }
 
@@ -394,7 +415,12 @@ async function deleteSelectedItems() {
     await Promise.all(ids.map(id => deleteDoc(doc(db, 'Items', id))));
     selectedItemIds.clear();
     toast(`🗑 تم حذف ${ids.length} عنصر${ids.length === 1 ? '' : 'ات'}`);
-    loadItems();
+    
+    // Update local state without fetching all docs again to reduce reads
+    items = items.filter(it => !ids.includes(it.id));
+    renderItemsTable();
+    renderCategoriesTable();
+    renderDashboardStats();
   } catch (err) {
     toast('خطأ: ' + err.message, true);
   }
@@ -616,12 +642,23 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
     if (id) {
       await updateDoc(doc(db, 'Items', id), data);
       toast('✅ تم تحديث العنصر بنجاح');
+      
+      // Update local state to save reads
+      const idx = items.findIndex(i => i.id === id);
+      if (idx !== -1) items[idx] = { id, ...data };
     } else {
-      await addDoc(collection(db, 'Items'), data);
+      const docRef = await addDoc(collection(db, 'Items'), data);
       toast('✅ تم إضافة العنصر بنجاح');
+      
+      // Add to local state to save reads
+      items.push({ id: docRef.id, ...data });
     }
     closeItemModal();
-    loadItems();
+    
+    // Refresh UI without fetching all items again
+    renderItemsTable();
+    renderCategoriesTable();
+    renderDashboardStats();
   } catch (err) {
     errEl.textContent = 'خطأ في الحفظ: ' + err.message;
   }
@@ -642,10 +679,16 @@ document.addEventListener('click', async (e) => {
   if (delItemBtn) {
     if (!confirm('هل أنت متأكد من حذف هذا العنصر؟')) return;
     try {
-      selectedItemIds.delete(delItemBtn.dataset.itemDel);
-      await deleteDoc(doc(db, 'Items', delItemBtn.dataset.itemDel));
+      const delId = delItemBtn.dataset.itemDel;
+      selectedItemIds.delete(delId);
+      await deleteDoc(doc(db, 'Items', delId));
       toast('🗑 تم حذف العنصر');
-      loadItems();
+      
+      // Update local state to save reads
+      items = items.filter(it => it.id !== delId);
+      renderItemsTable();
+      renderCategoriesTable();
+      renderDashboardStats();
     } catch (err) { toast('خطأ: ' + err.message, true); }
     return;
   }
@@ -731,9 +774,17 @@ async function saveCatEdit() {
   }
   try {
     await updateDoc(doc(db, 'Categories', id), { name, imageUrl });
+    
+    // Update local state without fetching
+    const catIndex = categories.findIndex(c => c.id === id);
+    if (catIndex !== -1) {
+      categories[catIndex].name = name;
+      categories[catIndex].imageUrl = imageUrl;
+    }
+    renderCategoriesTable();
+    
     toast('✅ تم تعديل التصنيف');
     closeCatEdit();
-    loadCategories();
   } catch (e) { toast('خطأ: ' + e.message, true); }
   saveBtn.textContent = 'حفظ التعديل';
 };
