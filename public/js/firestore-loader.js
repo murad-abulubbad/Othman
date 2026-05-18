@@ -5,38 +5,26 @@ import { db, collection, query, orderBy, getDocs } from '../firebase.js';
 // Builds sections-nav and all product sections dynamically.
 
 // ── Cloudinary image optimizer ──
-// Mobile-optimized: smaller sizes + aggressive compression for 4G networks
-function optimizeCloudinaryUrl(url, width = 300, isMobile = true) {
+const _isMobile = window.innerWidth <= 768;
+function optimizeCloudinaryUrl(url, width = 300) {
   if (!url || typeof url !== 'string') return url;
-  // Only transform Cloudinary URLs
   if (!url.includes('res.cloudinary.com') || !url.includes('/image/upload/')) return url;
-  // Avoid double-transformation
   if (url.includes('/q_') || url.includes('/f_auto')) return url;
-  
-  // Mobile optimization: higher quality for better visibility
-  const quality = isMobile ? 'q_90' : 'q_auto'; // 90% quality - even clearer on mobile
-  const format = 'f_auto'; // WebP/AVIF automatic
-  const fit = 'c_fit'; // Fit within bounds without cropping
-  
-  return url.replace('/image/upload/', `/image/upload/${fit},w_${width},${quality},${format},dpr_auto/`);
+  // dpr_auto removed — causes 2x/3x image sizes on retina which slows loading
+  return url.replace('/image/upload/', `/image/upload/c_fit,w_${width},q_85,f_auto/`);
 }
 
 async function loadFirestoreData() {
   try {
-    // Fetch Categories (respect admin-controlled order). Fallback to unordered if empty or fails.
-    let categoriesSnapshot;
-    try {
-      const categoriesQuery = query(collection(db, 'Categories'), orderBy('order', 'asc'));
-      categoriesSnapshot = await getDocs(categoriesQuery);
-      if (categoriesSnapshot.empty) throw new Error('ordered-empty');
-    } catch (err) {
-      categoriesSnapshot = await getDocs(collection(db, 'Categories'));
-    }
-    const categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Fetch Categories + Items in parallel for maximum speed
+    const [categoriesSnapshot, itemsSnapshot] = await Promise.all([
+      getDocs(query(collection(db, 'Categories'), orderBy('order', 'asc'))).catch(() =>
+        getDocs(collection(db, 'Categories'))
+      ),
+      getDocs(collection(db, 'Items'))
+    ]);
 
-    // Fetch Items
-    const itemsQuery = collection(db, 'Items');
-    const itemsSnapshot = await getDocs(itemsQuery);
+    const categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     const renderSectionCards = () => {
@@ -99,16 +87,14 @@ async function loadFirestoreData() {
                     <div class="custom-select-dropdown">
                       <div class="custom-option" data-value="">الكل</div>
                       <div class="custom-option" data-value="ألعاب سيارات">🚗 سيارات</div>
-                      <div class="custom-option" data-value="أكشن">💥 أكشن</div>
-                      <div class="custom-option" data-value="مغامرات">🏔️ مغامرات</div>
+                      <div class="custom-option" data-value="أكشن مغامرات">💥 أكشن مغامرات</div>
                       <div class="custom-option" data-value="ألعاب طخاخة">🔫 طخاخة</div>
                       <div class="custom-option" data-value="ألعاب رعب">👻 رعب</div>
                       <div class="custom-option" data-value="ألعاب جماعية">👥 جماعية</div>
-                      <div class="custom-option" data-value="ألعاب سولو">🎮 سولو</div>
+                      <div class="custom-option" data-value="واقع افتراضي">🥽 واقع افتراضي</div>
                       <div class="custom-option" data-value="عالم مفتوح">🌍 عالم مفتوح</div>
                       <div class="custom-option" data-value="رياضة">⚽ رياضة</div>
                       <div class="custom-option" data-value="قتال">🥊 قتال</div>
-                      <div class="custom-option" data-value="ألغاز">🧩 ألغاز</div>
                     </div>
                   </div>
                 </div>
@@ -169,9 +155,8 @@ async function loadFirestoreData() {
             imagesArray = [item.imageUrl];
           }
 
-          // Optimize images for mobile: balanced thumbnails for grid, larger for details
-          const optimizedThumb = optimizeCloudinaryUrl(mainImage, 400); // Grid thumbnails - clearer on mobile
-          const optimizedFull = imagesArray.map(u => optimizeCloudinaryUrl(u, 900)); // Details view - high quality
+          const optimizedThumb = optimizeCloudinaryUrl(mainImage, 800);
+          const optimizedFull = imagesArray.map(u => optimizeCloudinaryUrl(u, 800));
 
           return {
             name: item.name,
@@ -202,8 +187,8 @@ async function loadFirestoreData() {
           // Store items for filtering
           window._catItems = window._catItems || {};
           window._catItems[cat.id] = formattedItems;
-          // Setup filter for this category
-          setupCategoryFilter(cat.id, cat.name, formattedItems, cat.color);
+          // Defer filter setup so it doesn't block initial render
+          setTimeout(() => setupCategoryFilter(cat.id, cat.name, formattedItems, cat.color), 0);
         }
       });
     }
@@ -233,21 +218,26 @@ function setupCategoryFilter(catId, catName, items, color) {
   let conditionVal = '';
   let genreVal = '';
 
-  // Update price display on slider move
-  if (priceSlider && priceValue) {
-    priceSlider.addEventListener('input', () => {
-      priceValue.textContent = `${priceSlider.value} دينار`;
-      applyFilter();
-    });
+  // Set slider max based on actual item prices (display only, don't filter)
+  if (priceSlider) {
+    const maxItemPrice = Math.max(...items.map(i => i.price || i.originalPrice || 0), 10);
+    const sliderMax = Math.ceil(maxItemPrice / 5) * 5;
+    priceSlider.max = sliderMax;
+    priceSlider.value = sliderMax;
+    if (priceValue) priceValue.textContent = `${sliderMax} دينار`;
   }
 
   const applyFilter = () => {
     const searchTerm = searchInput.value.toLowerCase().trim();
-    const maxPrice = priceSlider ? parseInt(priceSlider.value || 100) : 100;
+    const sliderVal = priceSlider ? parseInt(priceSlider.value) : 999999;
+    const sliderMax = priceSlider ? parseInt(priceSlider.max) : 999999;
+    // Only filter by price if slider is NOT at maximum (user moved it)
+    const filterByPrice = sliderVal < sliderMax;
+
     const filtered = items.filter(item => {
       const matchesSearch = !searchTerm || item.name.toLowerCase().includes(searchTerm);
-      const itemPrice = item.discountPrice || item.originalPrice || 0;
-      const matchesPrice = itemPrice <= maxPrice;
+      const itemPrice = item.price || item.originalPrice || 0;
+      const matchesPrice = !filterByPrice || itemPrice <= sliderVal;
       const matchesCondition = !conditionVal || (item.condition || 'مستعمل') === conditionVal;
       const matchesGenre = !genreVal || (item.genre || '') === genreVal;
       return matchesSearch && matchesPrice && matchesCondition && matchesGenre;
@@ -260,6 +250,14 @@ function setupCategoryFilter(catId, catName, items, color) {
       grid.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px; font-size: 0.9rem; grid-column: 1/-1;">لا توجد منتجات مطابقة للبحث</div>';
     }
   };
+
+  // Update price display on slider move
+  if (priceSlider && priceValue) {
+    priceSlider.addEventListener('input', () => {
+      priceValue.textContent = `${priceSlider.value} دينار`;
+      applyFilter();
+    });
+  }
 
   searchInput.addEventListener('input', applyFilter);
 
@@ -277,20 +275,8 @@ function setupCategoryFilter(catId, catName, items, color) {
       document.querySelectorAll('.custom-select-dropdown.open').forEach(d => {
         if (d !== dropdown) { d.classList.remove('open'); d.previousElementSibling?.classList.remove('active'); }
       });
-      const isOpen = dropdown.classList.contains('open');
       dropdown.classList.toggle('open');
       btn.classList.toggle('active');
-      if (!isOpen) {
-        const rect = btn.getBoundingClientRect();
-        const dropW = 170;
-        let left = rect.left;
-        // Keep inside viewport
-        if (left + dropW > window.innerWidth - 8) left = window.innerWidth - dropW - 8;
-        if (left < 8) left = 8;
-        dropdown.style.top = (rect.bottom + 6) + 'px';
-        dropdown.style.left = left + 'px';
-        dropdown.style.right = 'auto';
-      }
     });
 
     wrap.querySelectorAll('.custom-option').forEach(opt => {

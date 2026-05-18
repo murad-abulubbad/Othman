@@ -29,7 +29,9 @@ function fmtDate(ts) {
 function $ (id) { return document.getElementById(id); }
 
 function getCategoryItemCount(categoryId) {
-  return items.filter(item => item.categoryID === categoryId).length;
+  return items
+    .filter(item => item.categoryID === categoryId)
+    .reduce((sum, item) => sum + (parseInt(item.quantity) || 1), 0);
 }
 
 function renderDashboardStats() {
@@ -46,9 +48,10 @@ function renderDashboardStats() {
     `;
   }).join('');
 
+  const totalCounted = items.reduce((sum, item) => sum + (parseInt(item.quantity) || 1), 0);
   statsRow.innerHTML = `
     <div class="stat-card stat-card-total">
-      <div class="s-num">${items.length}</div>
+      <div class="s-num">${totalCounted}</div>
       <div class="s-lbl">إجمالي العناصر</div>
     </div>
     <div class="stat-card stat-card-total">

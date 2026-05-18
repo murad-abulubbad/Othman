@@ -56,6 +56,11 @@ input.bare:focus,select.bare:focus{border-color:var(--bb)}
   padding:20px 16px;text-align:center}
 .stat-card .s-num{font-size:2rem;font-weight:900;color:var(--bb);line-height:1}
 .stat-card .s-lbl{font-size:.76rem;opacity:.55;margin-top:6px}
+.stat-card-total{background:linear-gradient(135deg,rgba(42,140,255,.18),rgba(0,66,180,.12));
+  border:1px solid rgba(42,140,255,.35) !important;
+  box-shadow:0 0 18px rgba(42,140,255,.12)}
+.stat-card-total .s-num{font-size:2.4rem;color:#fff}
+.stat-card-total .s-lbl{color:var(--bb);opacity:.9;font-weight:700}
 
 /* ΓöÇΓöÇ SECTION BOX ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .section-box{background:var(--dk2);border:1px solid rgba(255,255,255,.08);

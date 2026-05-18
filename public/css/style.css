@@ -994,6 +994,9 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
 .cat-filter-bar {
   margin: 0 auto 24px;
   max-width: 1100px;
+  overflow: visible;
+  position: relative;
+  z-index: 50;
 }
 .cat-filter-row {
   display: flex;
@@ -1006,6 +1009,7 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
   padding: 10px 18px;
   box-shadow: 0 0 20px rgba(0,255,136,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
+  overflow: visible;
 }
 .cat-filter-search {
   flex: 1;
@@ -1114,6 +1118,7 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
 /* Custom dropdown */
 .custom-select-wrap {
   position: relative;
+  z-index: 100;
 }
 .custom-select-btn {
   padding: 9px 16px;
@@ -1140,7 +1145,9 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
 }
 .custom-select-dropdown {
   display: none;
-  position: fixed;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
   min-width: 160px;
   background: linear-gradient(135deg, rgba(10,10,35,0.99), rgba(5,5,20,0.99));
   border: 1px solid rgba(0,255,136,0.25);

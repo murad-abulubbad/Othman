@@ -78,7 +78,7 @@ function renderGameGrid(targetId, games, platform, color) {
         <div class="image-card-bottom">
           ${priceHtml}
           <div class="image-card-actions">
-            <button class="favorite-btn" onclick="toggleFavorite(this, '${encodeURIComponent(JSON.stringify(detailObj)).replace(/'/g, '%27')}'); event.stopPropagation();">❤</button>
+            <button class="favorite-btn${isFavorite({name:g.name, platform}) ? ' active' : ''}" onclick="toggleFavorite(this, '${encodeURIComponent(JSON.stringify(detailObj)).replace(/'/g, '%27')}'); event.stopPropagation();">❤</button>
             ${trailerButton}
             ${addButton}
           </div>
@@ -87,6 +87,13 @@ function renderGameGrid(targetId, games, platform, color) {
     </div>
   `;
   }).join('');
+  // Make all cards visible immediately after render
+  requestAnimationFrame(() => {
+    grid.querySelectorAll('.image-card').forEach((el, i) => {
+      el.style.transitionDelay = (i * 0.05) + 's';
+      el.classList.add('visible');
+    });
+  });
 }
 
 function addGameToCartFromEncoded(encodedItem, button) {
@@ -409,17 +416,53 @@ function renderFavorites() {
   }
   
   content.innerHTML = favorites.map(f => `
-    <div class="favorite-item">
+    <div class="favorite-item" style="cursor:pointer" onclick="goToFavoriteItem('${f.name.replace(/'/g, "\\'")}')">
       ${f.img ? `<img class="favorite-item-img" src="${f.img}" alt="${f.name}" onerror="this.style.display='none'"/>` : ''}
       <div class="favorite-item-info">
         <div class="favorite-item-name">${f.name}</div>
         ${f.price ? `<div class="favorite-item-price">${f.price} JOD</div>` : ''}
         ${f.platform ? `<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px;">${f.platform}</div>` : ''}
       </div>
-      <button class="favorite-item-remove" onclick="removeFavorite('${f.name.replace(/'/g, "\\'")}', '${f.platform || ''}')">✕</button>
+      <button class="favorite-item-remove" onclick="event.stopPropagation(); removeFavorite('${f.name.replace(/'/g, "\\'")}', '${f.platform || ''}')">✕</button>
     </div>
   `).join('');
 }
+
+function goToFavoriteItem(name) {
+  // Close sidebar
+  document.querySelector('.favorite-sidebar')?.classList.remove('active');
+
+  // Find which category section contains this item
+  let targetSection = null;
+  let targetCard = null;
+  document.querySelectorAll('section[id^="cat-"]').forEach(section => {
+    section.querySelectorAll('.image-card').forEach(card => {
+      const title = card.querySelector('.image-card-title');
+      if (title && title.textContent.trim() === name) {
+        targetSection = section;
+        targetCard = card;
+      }
+    });
+  });
+
+  if (!targetSection) return;
+
+  const sectionId = targetSection.id;
+
+  // Navigate to the section page, then scroll to card
+  navigateToPage(sectionId);
+
+  // After transition finishes, scroll to the card and highlight it
+  setTimeout(() => {
+    if (targetCard) {
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      targetCard.style.transition = 'box-shadow 0.3s';
+      targetCard.style.boxShadow = '0 0 35px rgba(0,255,136,0.8)';
+      setTimeout(() => targetCard.style.boxShadow = '', 1800);
+    }
+  }, 1400);
+}
+window.goToFavoriteItem = goToFavoriteItem;
 
 function toggleFavoriteSidebar() {
   document.querySelector('.favorite-sidebar').classList.toggle('active');
@@ -736,13 +779,14 @@ ${e.truck} وطريقة الاستلام أو التوصيل
 
 شكراً لكم ${e.heart}`;
 
-  const params = new URLSearchParams({
-    phone: '962775560404',
-    text: message.normalize('NFC'),
-    type: 'phone_number',
-    app_absent: '0'
-  });
-  window.open(`https://api.whatsapp.com/send?${params.toString()}`, '_blank', 'noopener');
+  const encoded = encodeURIComponent(message.normalize('NFC'));
+  const url = `https://wa.me/962775560404?text=${encoded}`;
+  // Use location.href on mobile to avoid popup blocker
+  if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    location.href = url;
+  } else {
+    window.open(url, '_blank', 'noopener');
+  }
 }
 
 // ════════════════ PAGE-AS-PAGE ROUTER ════════════════
