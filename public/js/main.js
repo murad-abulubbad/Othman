@@ -18,10 +18,12 @@ const PS5_GAMES = [];
 // Global store for item images to avoid encoding issues
 window._itemImagesMap = window._itemImagesMap || {};
 
-function renderGameGrid(targetId, games, platform) {
+function renderGameGrid(targetId, games, platform, color) {
   const grid = document.getElementById(targetId);
   if (!grid) return;
   const isPS5 = platform === 'PS5';
+  const platformColor = color || (isPS5 ? '#2A8CFF' : '#CC0000');
+  const platformStyle = platform ? `style="background:${platformColor};color:#fff;box-shadow:0 0 10px ${platformColor}80"` : '';
   grid.innerHTML = games.map(g => {
     const condition = g.condition || 'مستعمل';
     const conditionClass = condition === 'جديد' ? ' is-new' : '';
@@ -50,9 +52,12 @@ function renderGameGrid(targetId, games, platform) {
     const trailerButton = g.trailer
       ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${trailerData}'); event.stopPropagation();">▶ تريلر</button>`
       : '';
+    const hasDiscount = g.originalPrice && g.discountPrice && g.discountPrice < g.originalPrice;
     const priceHtml = g.priceLabel
       ? `<div class="image-card-price image-card-price-text">${g.priceLabel}</div>`
-      : `<div class="image-card-price">${g.price} <span style="font-size:.55em;opacity:.55">JOD</span></div>`;
+      : hasDiscount
+        ? `<div class="image-card-price"><span style="text-decoration:line-through;opacity:.6;font-size:.85em">${g.originalPrice}</span> <span style="color:#ff4444;font-weight:bold">${g.discountPrice}</span> <span style="font-size:.55em;opacity:.55">JOD</span></div>`
+        : `<div class="image-card-price">${g.price} <span style="font-size:.55em;opacity:.55">JOD</span></div>`;
     const addButton = g.price > 0 || g.priceLabel
       ? `<button class="image-card-add"
                     onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">
@@ -62,14 +67,14 @@ function renderGameGrid(targetId, games, platform) {
     return `
     <div class="image-card${isPS5 ? ' is-ps5' : ''}" onclick="openGameDetails(JSON.parse(decodeURIComponent('${detailData}')))">
       <div class="image-card-imgwrap">
-        ${(platform && platform !== 'Other' && platform !== 'أخرى') ? `<span class="image-card-platform">${platform}</span>` : ''}
+        ${(platform && platform !== 'Other' && platform !== 'أخرى') ? `<span class="image-card-platform" ${platformStyle}>${platform}</span>` : ''}
         <span class="product-condition-badge${conditionClass}">${condition}</span>
         <img class="image-card-img" src="${g.img}" alt="${g.name}" loading="lazy" decoding="async"
              onerror="this.style.objectFit='cover';this.src='images/logo.jpg'"/>
       </div>
       <div class="image-card-body">
         <div class="image-card-title">${g.name}</div>
-        <div class="image-card-genre">${g.genre}</div>
+        <div class="image-card-genre">${g.genre || ' '}</div>
         <div class="image-card-bottom">
           ${priceHtml}
           <div class="image-card-actions">
@@ -123,7 +128,6 @@ function showDetailImage(index) {
 window.showDetailImage = showDetailImage;
 
 function openGameDetails(game) {
-  console.log('openGameDetails called with:', game);
   const modal = document.getElementById('game-detail-modal');
   const box = document.getElementById('game-detail-box');
   const hasNumericPrice = Number(game.price || 0) > 0;
@@ -138,14 +142,12 @@ function openGameDetails(game) {
   let images = game.images;
   if (!images && game._imgKey && window._itemImagesMap && window._itemImagesMap[game._imgKey]) {
     images = window._itemImagesMap[game._imgKey];
-    console.log('Loaded images from global map:', images);
   }
   if (typeof images === 'string') {
     try { images = JSON.parse(images); } catch(e) { images = null; }
   }
   currentDetailImages = Array.isArray(images) && images.length > 0 ? images : (game.img ? [game.img] : []);
   currentDetailImageIndex = 0;
-  console.log('Final images array:', currentDetailImages, 'Length:', currentDetailImages.length);
 
   // Build gallery HTML if multiple images exist
   let galleryHtml = '';
@@ -162,13 +164,11 @@ function openGameDetails(game) {
         <div class="detail-gallery-thumbs">${thumbsHtml}</div>
       </div>
     `;
-    console.log('Gallery HTML built with', currentDetailImages.length, 'images');
   } else {
     // Single image (original behavior)
     galleryHtml = game.img
       ? `<img src="${escapeHtml(game.img)}" alt="${escapeHtml(game.name)}" onerror="this.closest('.game-detail-cover').classList.add('no-image');this.outerHTML='<span class=&quot;game-detail-cover-icon&quot;>${escapeHtml(iconText)}</span>'"/>`
       : `<span class="game-detail-cover-icon">${escapeHtml(iconText)}</span>`;
-    console.log('Single image mode');
   }
 
   const cartData = encodeURIComponent(JSON.stringify({
@@ -934,7 +934,7 @@ function generateBgSymbols() {
     { ch: '□', cls: 's-square' },
     { ch: '△', cls: 's-triangle' }
   ];
-  const total = window.innerWidth < 768 ? 8 : 15;
+  const total = window.innerWidth < 768 ? 4 : 12; // Reduced on mobile for performance
   for (let i = 0; i < total; i++) {
     const v = variants[Math.floor(Math.random() * variants.length)];
     const bright = Math.random() < 0.35;
@@ -959,10 +959,10 @@ generateBgSymbols();
 //        --mx/--my  → glare position (also reused by .section-nav-card spotlight)
 // Toggles .is-tilted to trigger the cubic-bezier CSS transitions.
 const TILT_SELECTOR = '.image-card, .device-showcase, .acc-card, .beauty-card';
-const TILT_MAX_DEG = 5;     // max rotation per axis in degrees
+const TILT_MAX_DEG = 4;     // max rotation per axis (slightly reduced)
 let _tiltedCard = null;
 let _lastMouseMove = 0;
-const _THROTTLE_MS = 16; // ~60fps
+const _THROTTLE_MS = 32; // ~30fps - better performance on mobile
 
 function _resetTiltedCard(card) {
   if (!card) return;
@@ -973,6 +973,10 @@ function _resetTiltedCard(card) {
   card.style.removeProperty('--my');
 }
 
+// Skip heavy tilt effects on touch devices (mobile) for better performance
+const _isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
+if (!_isTouchDevice) {
  document.addEventListener('mousemove', (e) => {
    const now = performance.now();
    if (now - _lastMouseMove < _THROTTLE_MS) return;
@@ -1007,28 +1011,33 @@ function _resetTiltedCard(card) {
      navCard.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
    }
  }, { passive: true });
+} // End of if (!_isTouchDevice)
 
- // Reset when the cursor leaves the document entirely (otherwise the card
- // would stay frozen in its tilted state)
- document.addEventListener('mouseleave', () => {
-   _resetTiltedCard(_tiltedCard);
-   _tiltedCard = null;
- });
+// Reset when the cursor leaves the document (desktop only)
+if (!_isTouchDevice) {
+  document.addEventListener('mouseleave', () => {
+    _resetTiltedCard(_tiltedCard);
+    _tiltedCard = null;
+  });
+}
 
 // ════════════════ BUTTON RIPPLE ════════════════
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.btn-red, .btn-blue, .add-btn, .image-card-add, .image-card-trailer, .cart-checkout-btn, .nav-cart-btn');
-  if (!btn) return;
-  const r = btn.getBoundingClientRect();
-  const ripple = document.createElement('span');
-  ripple.className = 'ripple';
-  const size = Math.max(r.width, r.height);
-  ripple.style.width = ripple.style.height = size + 'px';
-  ripple.style.left = (e.clientX - r.left - size / 2) + 'px';
-  ripple.style.top = (e.clientY - r.top - size / 2) + 'px';
-  btn.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 700);
-}, true);
+// Disabled on mobile for performance - keeps only on desktop
+if (!_isTouchDevice) {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-red, .btn-blue, .add-btn, .image-card-add, .image-card-trailer, .cart-checkout-btn, .nav-cart-btn');
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const size = Math.max(r.width, r.height);
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - r.left - size / 2) + 'px';
+    ripple.style.top = (e.clientY - r.top - size / 2) + 'px';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 700);
+  }, true);
+}
 
 // ════════════════ CART ADD EXPLOSION ════════════════
 function spawnCartExplosion(x, y) {
@@ -1053,11 +1062,13 @@ function spawnCartExplosion(x, y) {
   document.body.appendChild(wrap);
   setTimeout(() => wrap.remove(), 1200);
 }
-// Spawn explosion when add-to-cart buttons are clicked
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.add-btn, .image-card-add');
-  if (btn) spawnCartExplosion(e.clientX, e.clientY);
-}, false);
+// Spawn explosion when add-to-cart buttons are clicked (disabled on mobile for performance)
+if (!_isTouchDevice) {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.add-btn, .image-card-add');
+    if (btn) spawnCartExplosion(e.clientX, e.clientY);
+  }, false);
+}
 
 // ════════════════ INIT — RENDER GAMES ════════════════
 renderGameGrid('ps4-grid', PS4_GAMES, 'PS4');
@@ -1103,7 +1114,6 @@ setTimeout(() => {
   const loader = document.getElementById('loader');
   if (loader && !loader.classList.contains('hidden')) {
     loader.classList.add('hidden');
-    console.warn('Loader force-hidden due to timeout');
   }
 }, 5000);
 updateCartUI();
@@ -1159,10 +1169,20 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 // ═══ SCROLL ANIMATIONS ═══
+// Optimized for mobile: higher threshold, observe only image cards
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.section-title, .section-line, .device-card, .device-showcase, .image-card, .game-card, .ps3-card, .ps4-card, .ps5-card, .acc-card, .beauty-card, .section-nav-card').forEach((el, i) => {
+}, { 
+  threshold: _isTouchDevice ? 0.2 : 0.1, // Higher threshold on mobile
+  rootMargin: '50px' // Preload slightly before visible
+});
+
+// Observe fewer elements on mobile for better performance
+const elementsToObserve = _isTouchDevice 
+  ? '.section-title, .section-line, .image-card, .section-nav-card' // Mobile: fewer elements
+  : '.section-title, .section-line, .device-card, .device-showcase, .image-card, .game-card, .ps3-card, .ps4-card, .ps5-card, .acc-card, .beauty-card, .section-nav-card'; // Desktop: all
+
+document.querySelectorAll(elementsToObserve).forEach((el, i) => {
   el.style.transitionDelay = ((i % 6) * 0.08) + 's';
   observer.observe(el);
 });
@@ -1173,12 +1193,22 @@ const statObserver = new IntersectionObserver((entries) => {
     if (entry.isIntersecting) {
       entry.target.querySelectorAll('.stat-number').forEach(el => {
         const target = parseInt(el.dataset.target);
-        let count = 0; const step = Math.ceil(target / 80);
-        const timer = setInterval(() => {
-          count = Math.min(count + step, target);
-          el.textContent = count.toLocaleString('ar');
-          if (count >= target) clearInterval(timer);
-        }, 20);
+        const duration = 1000; // 1 second animation
+        const startTime = performance.now();
+        
+        function updateCount(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // Ease-out cubic
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = Math.round(eased * target);
+          el.textContent = current.toLocaleString('ar');
+          
+          if (progress < 1) {
+            requestAnimationFrame(updateCount);
+          }
+        }
+        requestAnimationFrame(updateCount);
       });
       statObserver.disconnect();
     }

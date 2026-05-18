@@ -259,6 +259,7 @@ async function loadCategories() {
 async function addCategory() {
   const inp  = $('cat-name');
   const name = inp.value.trim();
+  const color = $('cat-color')?.value || '#3b82f6';
   if (!name) return;
   const fileInput = $('cat-image-file');
   const saveBtn   = $('cat-save-btn');
@@ -273,10 +274,10 @@ async function addCategory() {
     // Determine order: append to end
     const maxOrder = categories.length ? Math.max(...categories.map(c => c.order || 0)) : 0;
     const newOrder = maxOrder + 1;
-    const docRef = await addDoc(collection(db, 'Categories'), { name, imageUrl, order: newOrder });
+    const docRef = await addDoc(collection(db, 'Categories'), { name, imageUrl, color, order: newOrder });
     
     // Update local state without re-fetching
-    categories.push({ id: docRef.id, name, imageUrl, order: newOrder });
+    categories.push({ id: docRef.id, name, imageUrl, color, order: newOrder });
     renderCategoriesTable();
     renderDashboardStats();
     
@@ -327,7 +328,7 @@ async function deleteCategory(id) {
 
 // ── ITEMS ──────────────────────────────────────────────
 const ITEMS_PER_PAGE = 10;
-let itemsFilters = { name:'', categoryID:'', originalPrice:'', discountPrice:'', condition:'', quantity:'' };
+let itemsFilters = { name:'', categoryID:'', originalPrice:'', discountPrice:'', condition:'', genre:'', quantity:'' };
 let itemsPage = 1;
 
 function getFilteredItems() {
@@ -338,6 +339,7 @@ function getFilteredItems() {
     if (itemsFilters.originalPrice && !String(it.originalPrice ?? '').includes(itemsFilters.originalPrice)) return false;
     if (itemsFilters.discountPrice && !String(it.discountPrice ?? '').includes(itemsFilters.discountPrice)) return false;
     if (itemsFilters.condition && (it.condition||'') !== itemsFilters.condition) return false;
+    if (itemsFilters.genre && (it.genre||'') !== itemsFilters.genre) return false;
     if (itemsFilters.quantity && !String(it.quantity ?? '').includes(itemsFilters.quantity)) return false;
     return true;
   });
@@ -370,6 +372,7 @@ function renderItemsTable() {
           <td>${priceHtml}</td>
           <td>${hasDiscount ? it.discountPrice + ' JOD' : '—'}</td>
           <td>${it.condition||'—'}</td>
+          <td>${it.genre || '—'}</td>
           <td>${qtyBadge}</td>
           <td class="td-actions">
             <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>
@@ -377,7 +380,7 @@ function renderItemsTable() {
           </td>
         </tr>`;
       }).join('')
-    : `<tr class="empty-row"><td colspan="9">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
+    : `<tr class="empty-row"><td colspan="10">${items.length === 0 ? 'لا توجد عناصر بعد — أضف أول عنصر!' : 'لا توجد نتائج مطابقة للفلتر'}</td></tr>`;
 
   $('pg-info').textContent = `صفحة ${itemsPage} من ${totalPages} (${filtered.length} عنصر)`;
   $('pg-prev').disabled = itemsPage <= 1;
@@ -523,6 +526,7 @@ function openItemModal(item = null) {
   // platform field no longer used/stored
   $('item-categoryID').value      = item?.categoryID     || '';
   $('item-condition').value       = item?.condition      || 'مستعمل';
+  $('item-genre').value           = item?.genre          || '';
   $('item-quantity').value        = item?.quantity       ?? 1;
   $('item-originalPrice').value   = item?.originalPrice  ?? '';
   $('item-discountPrice').value   = item?.discountPrice  ?? 0;
@@ -627,6 +631,7 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
     images: currentItemImages, // New array format
     categoryID:      $('item-categoryID').value,
     condition:       $('item-condition').value,
+    genre:           $('item-genre').value,
     quantity:        parseInt($('item-quantity').value) || 0,
     originalPrice,
     discountPrice,
@@ -720,6 +725,7 @@ $('select-all-items')?.addEventListener('change', e => {
 });
 $('cat-add-btn').addEventListener('click', () => {
   $('cat-name').value = '';
+  $('cat-color').value = '#3b82f6';
   $('cat-image-file').value = '';
   $('cat-img-fname').textContent = 'اختر صورة';
   $('cat-add-preview').style.display = 'none';
@@ -746,6 +752,7 @@ $('cat-edit-image-file').addEventListener('change', e => {
 function openCatEdit(cat) {
   $('cat-edit-id').value            = cat.id;
   $('cat-edit-name').value          = cat.name || '';
+  $('cat-edit-color').value         = cat.color || '#3b82f6';
   $('cat-edit-image-file').value    = '';
   $('cat-edit-fname').textContent   = '';
   const prev = $('cat-edit-preview');
@@ -769,13 +776,15 @@ async function saveCatEdit() {
     } catch (e) { toast('خطأ في رفع الصورة: ' + e.message, true); saveBtn.textContent = 'حفظ التعديل'; return; }
   }
   try {
-    await updateDoc(doc(db, 'Categories', id), { name, imageUrl });
+    const color = $('cat-edit-color')?.value || '#3b82f6';
+    await updateDoc(doc(db, 'Categories', id), { name, imageUrl, color });
     
     // Update local state without fetching
     const catIndex = categories.findIndex(c => c.id === id);
     if (catIndex !== -1) {
       categories[catIndex].name = name;
       categories[catIndex].imageUrl = imageUrl;
+      categories[catIndex].color = color;
     }
     renderCategoriesTable();
     

@@ -68,7 +68,7 @@
               <th>صورة</th><th>الاسم</th>
               <th>التصنيف</th>
               <th>السعر</th><th>الخصم</th>
-              <th>الحالة</th><th>الكمية</th><th>إجراءات</th>
+              <th>الحالة</th><th>النوع</th><th>الكمية</th><th>إجراءات</th>
             </tr>
             <tr class="filter-row">
               <th></th>
@@ -88,12 +88,28 @@
                   <option value="مستعمل">مستعمل</option>
                 </select>
               </th>
+              <th>
+                <select class="filter-input" data-filter="genre" id="filter-genre">
+                  <option value="">كل الأنواع</option>
+                  <option value="ألعاب سيارات">🚗 سيارات</option>
+                  <option value="أكشن">💥 أكشن</option>
+                  <option value="مغامرات">🏔️ مغامرات</option>
+                  <option value="ألعاب طخاخة">🔫 طخاخة</option>
+                  <option value="ألعاب رعب">👻 رعب</option>
+                  <option value="ألعاب جماعية">👥 ألعاب جماعية (2-4 لاعبين)</option>
+                  <option value="ألعاب سولو">🎮 سولو</option>
+                  <option value="عالم مفتوح">🌍 عالم مفتوح</option>
+                  <option value="رياضة">⚽ رياضة</option>
+                  <option value="قتال">🥊 قتال</option>
+                  <option value="ألغاز">🧩 ألغاز</option>
+                </select>
+              </th>
               <th><input class="filter-input" data-filter="quantity" type="text" placeholder="🔍"></th>
               <th></th>
             </tr>
           </thead>
           <tbody id="items-tbody">
-            <tr class="empty-row"><td colspan="8">جاري التحميل...</td></tr>
+            <tr class="empty-row"><td colspan="10">جاري التحميل...</td></tr>
           </tbody>
         </table>
       </div>
@@ -133,6 +149,10 @@
       <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">الاسم *</label>
       <input id="cat-name" class="bare" style="width:100%;box-sizing:border-box" placeholder="سيديات PS4...">
     </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">اللون</label>
+      <input type="color" id="cat-color" value="#3b82f6" style="width:60px;height:40px;border:none;border-radius:8px;cursor:pointer">
+    </div>
     <div style="margin-bottom:18px">
       <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">صورة (اختياري)</label>
       <div style="display:flex;align-items:center;gap:8px">
@@ -158,6 +178,10 @@
     <div style="margin-bottom:12px">
       <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">الاسم</label>
       <input id="cat-edit-name" class="bare" style="width:100%;box-sizing:border-box" placeholder="اسم التصنيف">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">اللون</label>
+      <input type="color" id="cat-edit-color" value="#3b82f6" style="width:60px;height:40px;border:none;border-radius:8px;cursor:pointer">
     </div>
     <div style="margin-bottom:18px">
       <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">صورة جديدة (اختياري)</label>
@@ -222,9 +246,29 @@
           </select>
         </div>
         <div class="field">
+          <label>النوع / التصنيف الفرعي</label>
+          <select id="item-genre">
+            <option value="">— اختر —</option>
+            <option value="ألعاب سيارات">🚗 ألعاب سيارات</option>
+            <option value="أكشن">💥 أكشن</option>
+            <option value="مغامرات">🏔️ مغامرات</option>
+            <option value="ألعاب طخاخة">🔫 ألعاب طخاخة</option>
+            <option value="ألعاب رعب">👻 ألعاب رعب</option>
+            <option value="ألعاب جماعية">👥 ألعاب جماعية (2-4 لاعبين)</option>
+            <option value="ألعاب سولو">🎮 ألعاب سولو (فردي)</option>
+            <option value="عالم مفتوح">🌍 عالم مفتوح</option>
+            <option value="رياضة">⚽ رياضة</option>
+            <option value="قتال">🥊 قتال</option>
+            <option value="ألغاز">🧩 ألغاز</option>
+          </select>
+        </div>
+        <div class="field">
           <label>الكمية المتاحة *</label>
           <input id="item-quantity" type="number" min="0" step="1" required placeholder="10" value="1">
         </div>
+      </div>
+
+      <div class="form-row">
         <div class="field">
           <label>معرّف التريلر (YouTube)</label>
           <input id="item-videoTrailerUrl" placeholder="https://youtu.be/dQw4w9WgXcQ أو dQw4w9WgXcQ">

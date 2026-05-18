@@ -4,6 +4,10 @@
 (function() {
   'use strict';
 
+  // Skip on mobile/touch devices for better performance
+  const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+  if (isTouchDevice) return; // Disable on mobile - prevents lag
+
   // Real PlayStation controller buttons (hollow/outlined like the actual buttons)
   const PS_BUTTONS = [
     { symbol: '△', color: '#00d96b', glow: '0 0 6px #00d96b, 0 0 14px rgba(0,217,107,.7), 0 0 22px rgba(0,217,107,.4)' }, // Triangle - Green
