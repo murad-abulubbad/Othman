@@ -4,6 +4,18 @@ import { db, collection, query, orderBy, getDocs } from '../firebase.js';
 // Fetches Categories + Items from Firestore.
 // Builds sections-nav and all product sections dynamically.
 
+// ── Cloudinary image optimizer ──
+// Inserts transformation params to serve smaller, optimized images.
+// w_400 = max 400px width, q_auto = auto quality, f_auto = best format (webp/avif), c_limit = don't upscale
+function optimizeCloudinaryUrl(url, width = 400) {
+  if (!url || typeof url !== 'string') return url;
+  // Only transform Cloudinary URLs
+  if (!url.includes('res.cloudinary.com') || !url.includes('/image/upload/')) return url;
+  // Avoid double-transformation
+  if (url.includes('/q_auto') || url.includes('/f_auto')) return url;
+  return url.replace('/image/upload/', `/image/upload/c_limit,w_${width},q_auto,f_auto/`);
+}
+
 async function loadFirestoreData() {
   console.log('Starting Firestore data load...');
   try {
@@ -136,10 +148,14 @@ async function loadFirestoreData() {
             imagesArray = [item.imageUrl];
           }
 
+          // Optimize images for grid (small thumbnails) and details (larger)
+          const optimizedThumb = optimizeCloudinaryUrl(mainImage, 400);
+          const optimizedFull = imagesArray.map(u => optimizeCloudinaryUrl(u, 900));
+
           const result = {
             name: item.name,
-            img: mainImage,
-            images: imagesArray,
+            img: optimizedThumb,
+            images: optimizedFull,
             price: finalPrice,
             priceLabel: priceLabel,
             genre: item.genre,

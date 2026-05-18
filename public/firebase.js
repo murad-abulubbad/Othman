@@ -11,6 +11,12 @@ import {
     updateDoc,
     orderBy
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged 
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCslThkqYCCNWRnp81P5_l2AY3gZkvFAgA",
@@ -24,6 +30,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // تصدير الأدوات التي سنحتاجها في الكود الآخر
-export { app, db, collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc, orderBy };
+export { app, db, auth, collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc, orderBy, signInWithEmailAndPassword, signOut, onAuthStateChanged };

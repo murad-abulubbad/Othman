@@ -1,4 +1,4 @@
-import { app, db } from '../firebase.js';
+import { app, db, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from '../firebase.js';
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc,
   doc, query, orderBy, where
@@ -13,11 +13,6 @@ let items      = [];
 let selectedItemIds = new Set();
 
 // ── HELPERS ────────────────────────────────────────────
-async function sha256(msg) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 function toast(msg, isErr = false) {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -171,47 +166,48 @@ function syncItemSelectionUI(pageItems = null) {
 
 // ── AUTH ───────────────────────────────────────────────
 async function login() {
-  const u    = $('admin-user').value.trim();
-  const p    = $('admin-pass').value;
-  const errEl = $('login-err');
+  const email    = $('admin-user').value.trim();
+  const password = $('admin-pass').value;
+  const errEl    = $('login-err');
   errEl.textContent = '';
 
-  if (!u || !p) { errEl.textContent = 'الرجاء إدخال بيانات الدخول'; return; }
+  if (!email || !password) { 
+    errEl.textContent = 'الرجاء إدخال الإيميل وكلمة المرور'; 
+    return; 
+  }
 
   const btn = $('login-btn');
-  btn.disabled = true; btn.textContent = 'جاري التحقق...';
+  btn.disabled = true; 
+  btn.textContent = 'جاري التحقق...';
 
   try {
-    const hash = await sha256(p);
-    const snap = await getDocs(
-      query(collection(db, 'AdminUsers'), where('username', '==', u))
-    );
-    const userData    = snap.empty ? null : snap.docs[0].data();
-    // Support both field name spellings: passhash (correct) and passhesh (typo)
-    const storedValue = userData?.passhash ?? userData?.passhesh ?? null;
-    // Auto-detect: if it's a 64-char hex string treat it as SHA-256, otherwise compare plaintext
-    const isHashed    = /^[0-9a-f]{64}$/i.test(storedValue ?? '');
-    const matches     = isHashed ? storedValue === hash : storedValue === p;
-    if (!snap.empty && matches) {
-      sessionStorage.setItem('ofg-admin', '1');
-      $('login-overlay').style.display = 'none';
-      $('dashboard').style.display     = 'block';
-      init();
-    } else {
-      errEl.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
-    }
+    await signInWithEmailAndPassword(auth, email, password);
+    // Auth state listener will handle UI transition
   } catch (e) {
-    errEl.textContent = 'خطأ في الاتصال: ' + e.message;
+    errEl.textContent = 'الإيميل أو كلمة المرور غير صحيحة';
+    btn.disabled = false; 
+    btn.textContent = 'تسجيل الدخول';
   }
-  btn.disabled = false; btn.textContent = 'تسجيل الدخول';
 }
 
 function logout() {
-  sessionStorage.removeItem('ofg-admin');
-  $('dashboard').style.display     = 'none';
-  $('login-overlay').style.display = 'flex';
-  $('admin-pass').value = '';
+  signOut(auth);
 }
+
+// Listen for auth state changes
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // User is signed in
+    $('login-overlay').style.display = 'none';
+    $('dashboard').style.display     = 'block';
+    init();
+  } else {
+    // User is signed out
+    $('dashboard').style.display     = 'none';
+    $('login-overlay').style.display = 'flex';
+    $('admin-pass').value = '';
+  }
+});
 
 // ── INIT ───────────────────────────────────────────────
 async function init() {
@@ -801,9 +797,4 @@ $('item-modal').addEventListener('click', e => {
   if (e.target === $('item-modal')) closeItemModal();
 });
 
-// ── AUTO-RESTORE SESSION ───────────────────────────────
-if (sessionStorage.getItem('ofg-admin') === '1') {
-  $('login-overlay').style.display = 'none';
-  $('dashboard').style.display     = 'block';
-  init();
-}
+// Auth state is handled by onAuthStateChanged listener above
