@@ -134,6 +134,7 @@ function enableCategoryDragging() {
         // Re-render instead of reloading
         renderCategoriesTable();
         toast('✅ تم حفظ الترتيب الجديد');
+        try { localStorage.removeItem('ofg_data_cache'); } catch {}
       } catch (err) { toast('خطأ في حفظ الترتيب: ' + err.message, true); }
     });
   });
@@ -283,6 +284,7 @@ async function addCategory() {
     
     $('cat-add-modal').style.display = 'none';
     toast('✅ تم إضافة التصنيف');
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
   } catch (e) { toast('خطأ: ' + e.message, true); }
   saveBtn.textContent = 'حفظ';
 }
@@ -316,7 +318,7 @@ async function deleteCategory(id) {
   if (!confirm('حذف هذا التصنيف؟')) return;
   try {
     await deleteDoc(doc(db, 'Categories', id));
-    
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
     // Update local state without fetching
     categories = categories.filter(c => c.id !== id);
     renderCategoriesTable();
@@ -413,6 +415,7 @@ async function deleteSelectedItems() {
   try {
     await Promise.all(ids.map(id => deleteDoc(doc(db, 'Items', id))));
     selectedItemIds.clear();
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
     toast(`🗑 تم حذف ${ids.length} عنصر${ids.length === 1 ? '' : 'ات'}`);
     
     // Update local state without fetching all docs again to reduce reads
@@ -670,6 +673,7 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
       }
       await updateDoc(doc(db, 'Items', id), data);
       toast('✅ تم تحديث العنصر بنجاح');
+      try { localStorage.removeItem('ofg_data_cache'); } catch {}
       
       // Update local state to save reads
       const idx = items.findIndex(i => i.id === id);
@@ -677,6 +681,7 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
     } else {
       const docRef = await addDoc(collection(db, 'Items'), data);
       toast('✅ تم إضافة العنصر بنجاح');
+      try { localStorage.removeItem('ofg_data_cache'); } catch {}
       
       // Add to local state to save reads
       items.push({ id: docRef.id, ...data });
@@ -840,6 +845,7 @@ async function saveCatEdit() {
     renderCategoriesTable();
     
     toast('✅ تم تعديل التصنيف');
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
     closeCatEdit();
   } catch (e) { toast('خطأ: ' + e.message, true); }
   saveBtn.textContent = 'حفظ التعديل';

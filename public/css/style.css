@@ -235,6 +235,11 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
 .cat-sidebar-item img{width:36px;height:36px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.1)}
 .cat-sidebar-item .cat-sb-name{flex:1;text-align:right}
 .cat-sidebar-item .cat-sb-count{font-size:.72rem;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);padding:2px 8px;border-radius:10px}
+.cat-sidebar-contact{border-top:1px solid rgba(255,255,255,.08);padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.cat-sidebar-contact-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;padding:10px;border-radius:10px;text-decoration:none;transition:all .2s}
+.cat-sidebar-contact-btn:hover{background:rgba(37,211,102,.25);box-shadow:0 0 14px rgba(37,211,102,.3)}
+.cat-sidebar-contact-item{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.6);font-size:.78rem;text-decoration:none;transition:color .2s;direction:ltr;unicode-bidi:embed}
+.cat-sidebar-contact-item:hover{color:#fff}
 
 .nav-cart-btn {
   background: linear-gradient(135deg, var(--red), var(--blue));
@@ -1010,8 +1015,8 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
 
 /* SECTION NAVIGATION CARDS */
 .sections-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px; max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px; max-width: 1100px; margin: 0 auto; width: 100%;
 }
 
 /* CATEGORY FILTER BAR (inside each section) */
@@ -1316,6 +1321,8 @@ footer {
 .hero-social-icons .social-icon.wa:hover { box-shadow: 0 12px 30px rgba(37,211,102,0.4); }
 .hero-social-icons .social-icon.map { background: linear-gradient(135deg, #ea4335, #c5221f); border-color: rgba(234,67,53,0.5); }
 .hero-social-icons .social-icon.map:hover { box-shadow: 0 12px 30px rgba(234,67,53,0.4); }
+.hero-social-icons .social-icon.yt { background: linear-gradient(135deg, #ff0000, #cc0000); border-color: rgba(255,0,0,0.5); }
+.hero-social-icons .social-icon.yt:hover { box-shadow: 0 12px 30px rgba(255,0,0,0.4); }
 
 /* Footer social icons - same style as hero */
 .footer-social-icons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 15px 0; }
@@ -1786,7 +1793,7 @@ img.console-float {
   gap: 12px;
 }
 .image-card-price {
-  font-family: 'Orbitron', monospace;
+  font-family: 'Lilita One', 'Orbitron', monospace;
   font-weight: 900;
   color: #6699ff;
   direction: ltr;
@@ -1841,8 +1848,8 @@ img.console-float {
   letter-spacing: 0.5px;
 }
 .price-new {
-  color: #00ff9d;
-  text-shadow: 0 0 12px rgba(0, 255, 157, 0.6), 0 0 2px rgba(0, 255, 157, 0.95);
+  color: #39ff14;
+  text-shadow: 0 0 12px rgba(57, 255, 20, 0.7), 0 0 24px rgba(57, 255, 20, 0.4), 0 0 2px rgba(57, 255, 20, 0.95);
   letter-spacing: 0.5px;
 }
 .image-card.is-ps5 .price-new {
@@ -1859,8 +1866,11 @@ img.console-float {
   gap: 4px;
 }
 .image-card-price.image-card-price-text .price-old {
-  font-size: 0.95rem;
-  opacity: 0.85;
+  font-size: 1.05rem;
+  opacity: 1;
+  color: rgba(255,140,140,0.9);
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(255,80,80,0.9);
 }
 .image-card-price.image-card-price-text .price-new {
   font-size: 1.35rem;
@@ -1887,7 +1897,7 @@ img.console-float {
 
 @media (max-width: 560px) {
   .image-card-price { padding: 8px 10px; border-radius: 10px; }
-  .image-card-price.image-card-price-text .price-old { font-size: 0.85rem; }
+  .image-card-price.image-card-price-text .price-old { font-size: 0.95rem; }
   .image-card-price.image-card-price-text .price-new { font-size: 1.15rem; }
   .image-card-price-text { font-size: 1.1rem; }
 }
@@ -3102,7 +3112,6 @@ section:not(#home) {
 
 /* Reduce particles & background symbols opacity for performance */
 #particle-canvas { opacity: 0.6; }
-.bg-symbol { opacity: 0.3; }
 
 /* Disable hover-tilt for better performance on all devices */
 .image-card.is-tilted,
@@ -3144,7 +3153,7 @@ body {
   .stat-number { font-size: 1.5rem; }
   .image-grid { gap: 10px; }
   .image-card { border-radius: 10px; }
-  .sections-grid { gap: 12px; }
+  .sections-grid { gap: 12px; grid-template-columns: repeat(2, 1fr); }
   .nav-card { padding: 15px 12px; }
   .nav-card-icon { font-size: 2rem; }
   .nav-card-title { font-size: 0.9rem; }
@@ -3176,10 +3185,14 @@ section:not(#home) {
 /* Disable infinite animations that cause scroll lag */
 .console-float,
 .energy-ring,
-.bg-symbol,
 .hero-logo-big,
 .stat-number {
   animation: none !important;
+}
+
+/* Re-enable bg-symbol floating animation */
+.bg-symbol {
+  animation: bgFloatRise linear infinite !important;
 }
 
 /* Disable marquee animation */

@@ -14,18 +14,52 @@ function optimizeCloudinaryUrl(url, width = 300) {
   return url.replace('/image/upload/', `/image/upload/c_fit,w_${width},q_85,f_auto/`);
 }
 
+const CACHE_KEY = 'ofg_data_cache';
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour in ms
+
+function getCachedData() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, categories, items } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) return null;
+    return { categories, items };
+  } catch { return null; }
+}
+
+function setCachedData(categories, items) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), categories, items }));
+  } catch {}
+}
+
+// Call this from admin panel after any write to bust the cache
+window.bustFirestoreCache = function() {
+  try { localStorage.removeItem(CACHE_KEY); } catch {}
+};
+
 async function loadFirestoreData() {
   try {
-    // Fetch Categories + Items in parallel for maximum speed
-    const [categoriesSnapshot, itemsSnapshot] = await Promise.all([
-      getDocs(query(collection(db, 'Categories'), orderBy('order', 'asc'))).catch(() =>
-        getDocs(collection(db, 'Categories'))
-      ),
-      getDocs(collection(db, 'Items'))
-    ]);
+    let categories, items;
 
-    const categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const cached = getCachedData();
+    if (cached) {
+      // Serve from cache — zero Firestore reads
+      categories = cached.categories;
+      items = cached.items;
+    } else {
+      // Fetch Categories + Items in parallel for maximum speed
+      const [categoriesSnapshot, itemsSnapshot] = await Promise.all([
+        getDocs(query(collection(db, 'Categories'), orderBy('order', 'asc'))).catch(() =>
+          getDocs(collection(db, 'Categories'))
+        ),
+        getDocs(collection(db, 'Items'))
+      ]);
+
+      categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCachedData(categories, items);
+    }
 
     const renderSectionCards = () => {
       const sectionsGrid = document.getElementById('sections-grid');
@@ -200,8 +234,11 @@ async function loadFirestoreData() {
       window._catPageTitles[`cat-${cat.id}`] = cat.name;
     });
 
-    // Populate featured ticker
-    const featuredItems = items.filter(i => i.featured === true);
+    // Populate featured ticker — use items marked featured, fallback to latest 10
+    let featuredItems = items.filter(i => i.featured === true);
+    if (featuredItems.length === 0) {
+      featuredItems = [...items].slice(0, 10);
+    }
     const tickerWrap = document.getElementById('news-ticker-wrap');
     const tickerTrack = document.getElementById('news-ticker-track');
     if (tickerTrack && featuredItems.length > 0) {
