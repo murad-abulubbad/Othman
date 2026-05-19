@@ -226,16 +226,17 @@
 
       <!-- Platform field removed: not stored or sent to database -->
 
-      <div class="form-row">
-        <div class="field full-width">
+      <div class="form-row three-col">
+        <div class="field">
           <label>التصنيف</label>
           <select id="item-categoryID">
             <option value="">— اختر تصنيفاً —</option>
           </select>
         </div>
-      </div>
-
-      <div class="form-row three-col">
+        <div class="field">
+          <label>الكمية المتاحة *</label>
+          <input id="item-quantity" type="number" min="0" step="1" required placeholder="10" value="1">
+        </div>
         <div class="field">
           <label>الحالة</label>
           <select id="item-condition">
@@ -243,23 +244,22 @@
             <option value="جديد">جديد</option>
           </select>
         </div>
-        <div class="field">
+      </div>
+
+      <div class="form-row">
+        <div class="field full-width">
           <label>النوع / التصنيف الفرعي (متعدد)</label>
-          <div id="item-genre-wrap" style="display:flex;flex-wrap:wrap;gap:7px;padding:4px 0;">
-            <button type="button" class="genre-tag" data-value="ألعاب سيارات">🚗 سيارات</button>
-            <button type="button" class="genre-tag" data-value="أكشن مغامرات">💥 أكشن</button>
-            <button type="button" class="genre-tag" data-value="ألعاب طخاخة">🔫 طخاخة</button>
-            <button type="button" class="genre-tag" data-value="ألعاب رعب">👻 رعب</button>
-            <button type="button" class="genre-tag" data-value="ألعاب جماعية">👥 جماعية</button>
-            <button type="button" class="genre-tag" data-value="واقع افتراضي">🥽 VR</button>
+          <div id="item-genre-wrap" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:4px 0;">
+            <button type="button" class="genre-tag" data-value="سيارات">🚗 سيارات</button>
+            <button type="button" class="genre-tag" data-value="أكشن">💥 أكشن مغامرات</button>
+            <button type="button" class="genre-tag" data-value="طخاخة">🔫 طخاخة</button>
+            <button type="button" class="genre-tag" data-value="رعب">👻 رعب</button>
+            <button type="button" class="genre-tag" data-value="جماعية">👥 جماعية</button>
+            <button type="button" class="genre-tag" data-value="VR">🥽 واقع افتراضي</button>
             <button type="button" class="genre-tag" data-value="عالم مفتوح">🌍 عالم مفتوح</button>
             <button type="button" class="genre-tag" data-value="رياضة">⚽ رياضة</button>
             <button type="button" class="genre-tag" data-value="قتال">🥊 قتال</button>
           </div>
-        </div>
-        <div class="field">
-          <label>الكمية المتاحة *</label>
-          <input id="item-quantity" type="number" min="0" step="1" required placeholder="10" value="1">
         </div>
       </div>
 

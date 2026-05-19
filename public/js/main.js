@@ -74,7 +74,7 @@ function renderGameGrid(targetId, games, platform, color) {
       </div>
       <div class="image-card-body">
         <div class="image-card-title">${g.name}</div>
-        <div class="image-card-genre">${g.genre || ' '}</div>
+        <div class="image-card-genre">${Array.isArray(g.genre) ? g.genre.join(' · ') : (g.genre || ' ')}</div>
         <div class="image-card-bottom">
           ${priceHtml}
           <div class="image-card-actions">
@@ -141,7 +141,7 @@ function openGameDetails(game) {
   const priceText = game.priceText || game.priceLabel || (hasNumericPrice ? `${Number(game.price || 0).toFixed(2)} JOD` : 'حسب الطلب');
   const rawLabel = game.platform || game.category || game.section || '';
   const detailLabel = (rawLabel === 'Other' || rawLabel === 'أخرى') ? '' : rawLabel;
-  const genreText = game.genre || game.sub || game.specs || game.kindLabel || 'Othman For Gaming';
+  const genreText = (Array.isArray(game.genre) ? game.genre.join(' · ') : game.genre) || game.sub || game.specs || game.kindLabel || 'Othman For Gaming';
   const descText = game.desc || game.description || '';
   const iconText = game.icon || '';
 

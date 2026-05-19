@@ -261,6 +261,7 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
 /* CART SIDEBAR */
 #cart-sidebar {
   position: fixed; left: 0; top: 0; bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   width: 380px; max-width: 95vw;
   background: rgba(5,5,16,0.97);
   border-right: 1px solid rgba(204,0,0,0.4);
@@ -395,6 +396,8 @@ nav.shrunk { height: 55px; background: rgba(8,10,32,0.85); }
 .cart-footer {
   border-top: 1px solid rgba(204,0,0,0.2);
   padding: 20px 25px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
 }
 .cart-total-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; color: rgba(255,255,255,0.6); }
 .cart-total-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
