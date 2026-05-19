@@ -27,6 +27,7 @@ function renderGameGrid(targetId, games, platform, color) {
   grid.innerHTML = games.map(g => {
     const condition = g.condition || 'مستعمل';
     const conditionClass = condition === 'جديد' ? ' is-new' : '';
+    const isOutOfStock = g.quantity !== null && g.quantity !== undefined && Number(g.quantity) === 0;
     // Store images in global map
     const itemKey = g.name + '_' + (g.img || '').slice(-20);
     const imagesArray = g.images || [g.img];
@@ -58,17 +59,18 @@ function renderGameGrid(targetId, games, platform, color) {
       : hasDiscount
         ? `<div class="image-card-price"><span style="text-decoration:line-through;opacity:.6;font-size:.85em">${g.originalPrice}</span> <span style="color:#ff4444;font-weight:bold">${g.discountPrice}</span> <span style="font-size:.55em;opacity:.55">JOD</span></div>`
         : `<div class="image-card-price">${g.price} <span style="font-size:.55em;opacity:.55">JOD</span></div>`;
-    const addButton = g.price > 0 || g.priceLabel
+    const addButton = (g.price > 0 || g.priceLabel) && !isOutOfStock
       ? `<button class="image-card-add"
                     onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg> أضف
             </button>`
       : '';
     return `
-    <div class="image-card${isPS5 ? ' is-ps5' : ''}" data-item-id="${g.id || ''}" onclick="openGameDetails(JSON.parse(decodeURIComponent('${detailData}')))">
+    <div class="image-card${isPS5 ? ' is-ps5' : ''}${isOutOfStock ? ' is-out-of-stock' : ''}" data-item-id="${g.id || ''}" onclick="openGameDetails(JSON.parse(decodeURIComponent('${detailData}')))">
       <div class="image-card-imgwrap">
         ${(platform && platform !== 'Other' && platform !== 'أخرى') ? `<span class="image-card-platform" ${platformStyle}>${platform}</span>` : ''}
         <span class="product-condition-badge${conditionClass}">${condition}</span>
+        ${isOutOfStock ? '<span class="out-of-stock-badge">نفذت الكمية</span>' : ''}
         <img class="image-card-img" src="${g.img}" alt="${g.name}" loading="lazy" decoding="async"
              onerror="this.style.objectFit='cover';this.src='images/logo.jpg'"/>
       </div>
@@ -798,29 +800,8 @@ ${e.truck} وطريقة الاستلام أو التوصيل
 }
 
 // ════════════════ PAGE-AS-PAGE ROUTER ════════════════
-const PAGE_IDS = ['devices','ps1-discs','ps2','ps3','ps4','ps5','xbox-discs','wii-discs','umd-discs','playstation-devices','xbox-devices','nintendo-devices','wii-devices','vr-devices','steering-devices','ps-xbox-accessories','repair-service','accessories','beauty'];
-const PAGE_TITLES = {
-  devices: 'الأجهزة',
-  'ps1-discs': 'سيديات PS1',
-  ps2: 'سيديات PS2',
-  ps3: 'سيديات PS3',
-  ps4: 'سيديات PS4',
-  ps5: 'سيديات PS5',
-  'xbox-discs': 'سيديات Xbox',
-  'wii-discs': 'سيديات Wii',
-  'umd-discs': 'سيديات UMD',
-  'playstation-devices': 'أجهزة PlayStation',
-  'xbox-devices': 'أجهزة Xbox',
-  'nintendo-devices': 'أجهزة نينتندو',
-  'wii-devices': 'أجهزة Wii',
-  'vr-devices': 'أجهزة VR',
-  'steering-devices': 'أجهزة ستيرنج',
-  'ps-xbox-accessories': 'إكسسوارات PS / Xbox',
-  'repair-service': 'خدمة صيانة',
-  accessories: 'الإكسسوارات',
-  beauty: 'التجميل',
-  home: 'الرئيسية'
-};
+const PAGE_IDS = [];
+const PAGE_TITLES = { home: 'الرئيسية' };
 
 let _pageTransitionLock = false;
 
@@ -866,18 +847,16 @@ function navigateToPage(pageId, push = true) {
       const target = document.getElementById(pageId);
       if (target) {
         // Reset & re-trigger entrance animations
-        target.querySelectorAll('.image-card, .device-showcase, .acc-card, .beauty-card, .section-title, .section-line').forEach(el => {
+        target.querySelectorAll('.image-card, .section-title, .section-line').forEach(el => {
           el.classList.remove('visible');
         });
         void target.offsetHeight;
         target.querySelectorAll('.section-title, .section-line').forEach(el => el.classList.add('visible'));
-        const cards = target.querySelectorAll('.image-card, .device-showcase, .acc-card, .beauty-card');
+        const cards = target.querySelectorAll('.image-card');
         cards.forEach((el, i) => {
           setTimeout(() => el.classList.add('visible'), 200 + i * 55);
         });
-        // Re-animate prices
-        target.querySelectorAll('.image-card-price, .device-price-big, .acc-price, .beauty-price, .ps5-price, .ps4-price').forEach(el => animatePrice(el));
-        // Sync added buttons after re-render
+        target.querySelectorAll('.image-card-price').forEach(el => animatePrice(el));
         syncAddedButtons();
       }
     }
@@ -986,7 +965,7 @@ const priceObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.4 });
 function watchPrices() {
-  document.querySelectorAll('.image-card-price, .device-price-big, .acc-price, .beauty-price, .ps5-price, .ps4-price, .ps3-price').forEach(el => priceObserver.observe(el));
+  document.querySelectorAll('.image-card-price').forEach(el => priceObserver.observe(el));
 }
 
 // ════════════════ BIG BACKGROUND SYMBOLS ════════════════
@@ -1023,7 +1002,7 @@ generateBgSymbols();
 // Sets   --rx/--ry  → rotation
 //        --mx/--my  → glare position (also reused by .section-nav-card spotlight)
 // Toggles .is-tilted to trigger the cubic-bezier CSS transitions.
-const TILT_SELECTOR = '.image-card, .device-showcase, .acc-card, .beauty-card';
+const TILT_SELECTOR = '.image-card';
 const TILT_MAX_DEG = 4;     // max rotation per axis (slightly reduced)
 let _tiltedCard = null;
 let _lastMouseMove = 0;

@@ -204,7 +204,8 @@ async function loadFirestoreData() {
             trailer: item.videoTrailerUrl,
             originalPrice: originalPrice,
             discountPrice: discountPrice,
-            description: item.description || ''
+            description: item.description || '',
+            quantity: item.quantity !== undefined ? Number(item.quantity) : null
           };
         });
 

@@ -811,205 +811,6 @@ section { position: relative; z-index: 2; padding: 80px 40px; }
   border: 2px solid #0E0E1F;
 }
 
-/* DEVICE GRID */
-.device-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 25px; max-width: 1200px; margin: 0 auto;
-}
-.device-card {
-  background: linear-gradient(135deg, rgba(204,0,0,0.12), rgba(5,5,16,0.9));
-  border: 1px solid rgba(204,0,0,0.25); border-radius: 12px;
-  padding: 30px 20px; text-align: center;
-  cursor: pointer; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-  opacity: 0; transform: translateY(40px);
-}
-.device-card.visible { opacity: 1; transform: translateY(0); transition: opacity 0.6s, transform 0.6s, box-shadow 0.3s, border-color 0.3s; }
-.device-card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(204,0,0,0.3); border-color: rgba(204,0,0,0.7); }
-.device-icon { font-size: 4rem; margin-bottom: 15px; display: block; animation: floatBounce 4s ease-in-out infinite; }
-@keyframes floatBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-.device-name { font-family: 'Orbitron', monospace; font-size: 1.05rem; font-weight: 700; color: white; margin-bottom: 6px; }
-.device-sub { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 15px; }
-.price-tag {
-  display: inline-block; font-family: 'Orbitron', monospace; font-size: 1.3rem;
-  font-weight: 900; color: var(--red-bright); margin-bottom: 15px;
-  text-shadow: var(--glow-red);
-}
-.price-tag::after { content: ' JOD'; font-size: 0.7rem; color: rgba(255,255,255,0.5); }
-
-/* GAME CARD */
-.games-carousel {
-  display: flex; gap: 20px; overflow-x: auto;
-  padding: 20px 0 30px; max-width: 1200px; margin: 0 auto;
-  scrollbar-width: thin; scrollbar-color: var(--red) #111;
-  scroll-snap-type: x mandatory;
-}
-.games-carousel::-webkit-scrollbar { height: 4px; }
-.games-carousel::-webkit-scrollbar-thumb { background: var(--red); }
-.game-card {
-  min-width: 200px; border-radius: 10px; overflow: hidden; cursor: pointer;
-  perspective: 800px; scroll-snap-align: start;
-  opacity: 0; transform: translateX(30px); transition: opacity 0.6s, transform 0.6s; flex-shrink: 0;
-}
-.game-card.visible { opacity: 1; transform: none; }
-.game-card-inner { position: relative; width: 100%; height: 280px; transform-style: preserve-3d; transition: transform 0.6s; }
-.game-card:hover .game-card-inner { transform: rotateY(180deg); }
-.game-front, .game-back {
-  position: absolute; inset: 0; border-radius: 10px; backface-visibility: hidden;
-}
-.game-front {
-  background: linear-gradient(135deg, rgba(204,0,0,0.25), rgba(5,5,16,0.9));
-  border: 1px solid rgba(204,0,0,0.3);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 12px;
-}
-.game-back {
-  background: linear-gradient(135deg, rgba(0,85,204,0.6), rgba(0,50,140,0.9));
-  border: 1px solid rgba(0,85,204,0.6);
-  transform: rotateY(180deg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;
-}
-.game-cover {
-  width: 90px; height: 90px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--red), #660000);
-  display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-}
-.game-title { font-weight: 700; font-size: 0.9rem; text-align: center; color: white; }
-.game-genre {
-  font-family: 'Orbitron', monospace; font-size: 0.55rem; letter-spacing: 2px;
-  color: var(--red-bright); border: 1px solid rgba(204,0,0,0.5); padding: 3px 10px; border-radius: 20px;
-}
-.stars { color: #FFD700; font-size: 0.9rem; }
-.game-desc { font-size: 0.8rem; color: rgba(255,255,255,0.85); line-height: 1.6; }
-.game-price-back { font-family: 'Orbitron', monospace; font-size: 1.2rem; color: white; margin-top: 8px; }
-
-/* PS3 GRID */
-.ps3-grid { columns: 3; gap: 20px; max-width: 1200px; margin: 0 auto; }
-@media (max-width: 900px) { .ps3-grid { columns: 2; } }
-@media (max-width: 600px) { .ps3-grid { columns: 1; } }
-.ps3-card {
-  break-inside: avoid; margin-bottom: 20px;
-  background: linear-gradient(135deg, rgba(204,0,0,0.1), rgba(5,5,16,0.85));
-  border: 1px solid rgba(204,0,0,0.2); border-radius: 10px; padding: 22px 18px;
-  cursor: pointer; transition: all 0.4s;
-  opacity: 0; transform: translateY(20px);
-}
-.ps3-card.visible { opacity: 1; transform: none; }
-.ps3-card:hover { transform: translateY(-5px); box-shadow: 0 15px 50px rgba(204,0,0,0.2); border-color: rgba(204,0,0,0.5); }
-.ps3-badge {
-  display: inline-block; font-family: 'Orbitron', monospace; font-size: 0.52rem;
-  letter-spacing: 2px; padding: 3px 10px; border-radius: 15px;
-  background: rgba(204,0,0,0.25); color: #ff8080; margin-bottom: 10px;
-  border: 1px solid rgba(204,0,0,0.4);
-}
-.ps3-icon { font-size: 2.5rem; margin-bottom: 8px; display: block; }
-.ps3-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
-.ps3-genre { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
-.ps3-price { font-family: 'Orbitron', monospace; color: var(--red-bright); font-size: 1.1rem; }
-
-/* PS4 GRID */
-.ps4-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px; max-width: 1200px; margin: 0 auto; transform: skewY(-2deg);
-}
-.ps4-card {
-  background: linear-gradient(135deg, rgba(0,85,204,0.15), rgba(5,5,16,0.9));
-  border: 1px solid rgba(0,85,204,0.35); border-radius: 6px; padding: 25px 18px;
-  cursor: pointer; transition: all 0.3s; transform: skewY(2deg);
-  opacity: 0;
-}
-.ps4-card.visible { opacity: 1; transition: opacity 0.6s, transform 0.3s, box-shadow 0.3s; }
-.ps4-card:hover { box-shadow: 0 15px 50px rgba(0,85,204,0.4); border-color: rgba(0,85,204,0.8); transform: skewY(2deg) translateY(-5px); }
-.ps4-icon { font-size: 2.5rem; margin-bottom: 12px; display: block; }
-.ps4-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
-.ps4-info { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
-.ps4-price { font-family: 'Orbitron', monospace; color: #6699ff; font-size: 1.1rem; }
-
-/* PS5 GRID */
-.ps5-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 25px; max-width: 1300px; margin: 0 auto;
-}
-.ps5-card {
-  border-radius: 12px; overflow: hidden; cursor: pointer;
-  position: relative;
-  background: linear-gradient(135deg, rgba(204,0,0,0.15), rgba(5,5,16,0.95));
-  border: 1px solid rgba(204,0,0,0.25); padding: 30px 25px;
-  transition: all 0.4s; opacity: 0; transform: translateY(30px) scale(0.95);
-}
-.ps5-card.visible { opacity: 1; transform: none; transition: opacity 0.7s, transform 0.7s; }
-.ps5-card::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(105deg, transparent 30%, rgba(204,0,0,0.05) 50%, transparent 70%);
-  animation: shimmer 3s linear infinite; pointer-events: none;
-}
-@keyframes shimmer { from { transform: translateX(-200%); } to { transform: translateX(200%); } }
-.ps5-card:hover { border-color: rgba(204,0,0,0.7); box-shadow: 0 20px 60px rgba(204,0,0,0.25); transform: translateY(-6px); }
-.ps5-badge {
-  font-family: 'Orbitron', monospace; font-size: 0.52rem; letter-spacing: 3px;
-  color: var(--red-bright); padding: 4px 12px; border: 1px solid rgba(204,0,0,0.4);
-  border-radius: 20px; display: inline-block; margin-bottom: 15px;
-}
-.ps5-icon { font-size: 3rem; margin-bottom: 15px; display: block; }
-.ps5-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 6px; }
-.ps5-genre { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 15px; }
-.ssd-bar-wrap { background: rgba(0,0,0,0.4); height: 4px; border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
-.ssd-bar { height: 100%; background: linear-gradient(90deg, var(--red), var(--blue-bright)); border-radius: 2px; width: 0; transition: width 1.5s 0.5s; box-shadow: 0 0 6px var(--red); }
-.ps5-card.visible .ssd-bar { width: var(--w, 80%); }
-.ssd-label { font-family: 'Orbitron', monospace; font-size: 0.52rem; letter-spacing: 2px; color: rgba(255,100,100,0.6); margin-bottom: 3px; }
-.ps5-price { font-family: 'Orbitron', monospace; font-size: 1.3rem; color: var(--red-bright); margin-top: 12px; text-shadow: var(--glow-red); }
-
-/* ACCESSORIES */
-.acc-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 25px; max-width: 1200px; margin: 0 auto;
-}
-.acc-card {
-  border-radius: 12px; padding: 30px 20px;
-  background: linear-gradient(135deg, rgba(0,85,204,0.15), rgba(5,5,16,0.85));
-  border: 1px solid rgba(0,85,204,0.2); cursor: pointer;
-  text-align: center; position: relative; overflow: hidden;
-  transition: all 0.4s; opacity: 0; transform: scale(0.9);
-}
-.acc-card.visible { opacity: 1; transform: scale(1); transition: opacity 0.6s, transform 0.6s; }
-.acc-card:hover { transform: scale(1.03) translateY(-5px); box-shadow: 0 20px 60px rgba(0,85,204,0.3); border-color: rgba(0,85,204,0.6); }
-.acc-badge {
-  position: absolute; top: 12px; left: 12px;
-  font-family: 'Orbitron', monospace; font-size: 0.52rem; letter-spacing: 1px;
-  padding: 3px 9px; border-radius: 10px;
-}
-.badge-new { background: rgba(0,85,204,0.3); color: #6699ff; border: 1px solid rgba(0,85,204,0.5); }
-.badge-hot { background: rgba(204,0,0,0.3); color: #ff6666; border: 1px solid rgba(204,0,0,0.5); }
-.acc-icon { font-size: 3.5rem; display: block; margin-bottom: 15px; }
-.acc-name { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
-.acc-sub { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
-.acc-price { font-family: 'Orbitron', monospace; color: #6699ff; font-size: 1.1rem; margin-bottom: 15px; }
-.color-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; }
-.color-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
-.color-dot:hover, .color-dot.active { border-color: white; transform: scale(1.3); }
-
-/* BEAUTY SECTION */
-.beauty-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 25px; max-width: 1200px; margin: 0 auto;
-}
-.beauty-card {
-  border-radius: 12px; padding: 30px 20px; text-align: center; cursor: pointer;
-  position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
-  transition: all 0.4s; opacity: 0; transform: translateY(30px);
-  animation: rgbBorder 5s linear infinite;
-}
-.beauty-card.visible { opacity: 1; transform: none; transition: opacity 0.6s, transform 0.6s; }
-@keyframes rgbBorder {
-  0% { background: linear-gradient(135deg, rgba(204,0,0,0.12), rgba(5,5,16,0.9)); border-color: rgba(204,0,0,0.4); }
-  50% { background: linear-gradient(135deg, rgba(0,85,204,0.12), rgba(5,5,16,0.9)); border-color: rgba(0,85,204,0.4); }
-  100% { background: linear-gradient(135deg, rgba(204,0,0,0.12), rgba(5,5,16,0.9)); border-color: rgba(204,0,0,0.4); }
-}
-.beauty-card:hover { transform: translateY(-8px) scale(1.03); }
-.beauty-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
-.beauty-name { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
-.beauty-sub { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
-.beauty-price { font-family: 'Orbitron', monospace; font-size: 1.1rem; margin-bottom: 15px; animation: priceAnim 5s linear infinite; }
-@keyframes priceAnim { 0%,100% { color: var(--red-bright); } 50% { color: #6699ff; } }
 
 /* ADD TO CART BUTTON */
 .add-btn {
@@ -1442,14 +1243,15 @@ footer {
 
 /* ── SOCIAL POPUP ───────────────────── */
 .social-popup-overlay {
-  display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.7);
-  backdrop-filter:blur(8px);align-items:center;justify-content:center;
+  display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);
+  backdrop-filter:blur(4px);align-items:flex-start;justify-content:center;
+  padding-top:70px;
 }
 .social-popup-overlay.open{display:flex;animation:fadeIn .25s}
 .social-popup {
   background:linear-gradient(145deg,#0d0d1a 0%,#1a1a2e 100%);
   border:1px solid rgba(255,255,255,.12);border-radius:22px;
-  padding:36px 32px 30px;max-width:380px;width:90%;text-align:center;
+  padding:24px 24px 20px;max-width:340px;width:88%;text-align:center;
   position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6);
 }
 .social-popup-close {
@@ -1458,19 +1260,19 @@ footer {
 }
 .social-popup-close:hover{color:#fff}
 .social-popup-title {
-  font-size:1.2rem;font-weight:800;color:#fff;margin:0 0 4px;
+  font-size:1.1rem;font-weight:800;color:#fff;margin:0 0 3px;
 }
 .social-popup-sub {
-  font-family:'Orbitron',monospace;font-size:.6rem;letter-spacing:2.5px;
-  color:rgba(255,255,255,.4);margin:0 0 22px;
+  font-family:'Orbitron',monospace;font-size:.55rem;letter-spacing:2px;
+  color:rgba(255,255,255,.4);margin:0 0 14px;
 }
 .social-popup-links {
-  display:flex;flex-wrap:wrap;gap:12px;justify-content:center;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
 }
 .social-popup-link {
-  display:flex;flex-direction:column;align-items:center;gap:7px;
-  width:72px;padding:14px 8px;border-radius:16px;text-decoration:none;
-  color:#fff;font-size:.72rem;font-weight:600;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:12px 6px;border-radius:16px;text-decoration:none;
+  color:#fff;font-size:.68rem;font-weight:600;transition:all .2s;
   border:1px solid rgba(255,255,255,.1);
 }
 .social-popup-link:hover{transform:translateY(-4px)}
@@ -1766,6 +1568,26 @@ img.console-float {
 .device-showcase > .product-condition-badge {
   top: 14px;
   left: 14px;
+}
+.out-of-stock-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(180,0,0,0.92);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 3;
+  border: 1px solid rgba(255,80,80,0.5);
+  box-shadow: 0 0 10px rgba(200,0,0,0.5);
+}
+.image-card.is-out-of-stock .image-card-img {
+  opacity: 0.5;
+  filter: grayscale(40%);
 }
 .game-detail-condition {
   width: fit-content;
@@ -3114,6 +2936,10 @@ img.console-float,
 #trailer-modal,
 .game-detail-close,
 .social-offer-bait,
+.cat-filter-row,
+.custom-select-dropdown,
+.social-popup-overlay,
+.cat-sidebar-overlay,
 section:not(#home) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -3123,10 +2949,7 @@ section:not(#home) {
 #particle-canvas { opacity: 0.6; }
 
 /* Disable hover-tilt for better performance on all devices */
-.image-card.is-tilted,
-.device-showcase.is-tilted,
-.acc-card.is-tilted,
-.beauty-card.is-tilted {
+.image-card.is-tilted {
   transform: none !important;
 }
 
