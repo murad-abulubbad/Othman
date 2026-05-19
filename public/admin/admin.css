@@ -177,6 +177,13 @@ tr.row-selected td{background:rgba(42,140,255,.08)}
 .filter-input::placeholder{color:rgba(255,255,255,.35)}
 select.filter-input option{background:var(--dk2);color:var(--w)}
 
+/* ── GENRE TAGS ─────────────────────── */
+.genre-tag{padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:600;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+  color:var(--w);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.genre-tag:hover{border-color:rgba(42,140,255,.5)}
+.genre-tag.active{background:rgba(42,140,255,.25);border-color:var(--bb);color:var(--bb)}
+
 /* ── PAGINATION ─────────────────────── */
 .pagination{display:flex;align-items:center;justify-content:center;gap:14px;
   padding:14px 0 4px;flex-wrap:wrap}

@@ -34,7 +34,7 @@
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="css/style.css?v=22">
+<link rel="stylesheet" href="css/style.css?v=23">
 </head>
 <body>
 
@@ -65,7 +65,7 @@
 </div>
 
 <!-- TOAST -->
-<div id="toast"><span class="toast-icon">🛒</span><span id="toast-msg">تمت الإضافة للسلة!</span></div>
+<div id="toast"><span class="toast-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg></span><span id="toast-msg">تمت الإضافة للسلة!</span></div>
 
 <div class="trailer-modal" id="trailer-modal" onclick="closeTrailer(event)">
   <div class="trailer-box">
@@ -88,12 +88,12 @@
 <div id="cart-sidebar">
   <div class="cart-header">
 
-    <div class="cart-title">🛒 سلة التسوق</div>
+    <div class="cart-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-left:6px"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg> سلة التسوق</div>
     <button class="cart-close" onclick="closeCart()">✕</button>
   </div>
   <div class="cart-items" id="cart-items-list">
     <div class="cart-empty">
-      <span class="cart-empty-icon">🎮</span>
+      <span class="cart-empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.2)"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></span>
       <p>السلة فارغة</p>
       <p style="font-size:0.8rem;margin-top:8px;color:rgba(255,255,255,0.3)">أضف منتجات من أي قسم</p>
     </div>
@@ -143,6 +143,9 @@
 
 <!-- NAVBAR -->
 <nav id="navbar">
+  <button class="nav-hamburger" id="nav-hamburger" onclick="document.getElementById('cat-sidebar').classList.add('open');document.getElementById('cat-sidebar-overlay').classList.add('open')">
+    <span></span><span></span><span></span>
+  </button>
   <a href="#home" class="nav-logo">
     <div class="nav-logo-wrap">
       <img src="images/logo.jpg" alt="O.F.G" class="nav-logo-img"/>
@@ -156,9 +159,21 @@
     <!-- category links injected by Firestore -->
   </ul>
   <button class="nav-cart-btn" onclick="openCart()">
-    🛒 السلة <span class="cart-badge" id="nav-cart-count">0</span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg> السلة <span class="cart-badge" id="nav-cart-count">0</span>
   </button>
 </nav>
+
+<!-- Categories Sidebar -->
+<div class="cat-sidebar-overlay" id="cat-sidebar-overlay" onclick="this.classList.remove('open');document.getElementById('cat-sidebar').classList.remove('open')"></div>
+<div class="cat-sidebar" id="cat-sidebar">
+  <div class="cat-sidebar-header">
+    <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-left:5px"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> الأقسام</h3>
+    <button onclick="document.getElementById('cat-sidebar').classList.remove('open');document.getElementById('cat-sidebar-overlay').classList.remove('open')">&times;</button>
+  </div>
+  <div class="cat-sidebar-list" id="cat-sidebar-list">
+    <!-- populated by firestore-loader -->
+  </div>
+</div>
 
 <!-- HERO -->
 <section id="home">
@@ -308,14 +323,40 @@
     <div class="hero-btns">
       <a href="#sections" class="btn-red" style="text-decoration:none;padding:14px 35px;border-radius:6px;font-weight:700;display:inline-block;">تصفح الأقسام</a>
     </div>
-    <a href="https://www.instagram.com/othmanforgaming?igsh=MTBob3J2cTFid2lndw==" target="_blank" rel="noopener" class="social-offer-bait">
-      <span class="social-offer-emoji">🔥</span>
+    <button class="social-offer-bait" onclick="document.getElementById('social-popup').classList.add('open')">
+      <span class="social-offer-emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg></span>
       <span class="social-offer-text">
-        <span>SOCIAL EXCLUSIVE</span>
-        
+        <span style="font-size:1rem;letter-spacing:1px;">تابعنا على صفحاتنا</span>
       </span>
       <span class="social-offer-arrow">↢</span>
-    </a>
+    </button>
+
+    <!-- Social Popup -->
+    <div id="social-popup" class="social-popup-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+      <div class="social-popup">
+        <button class="social-popup-close" onclick="this.closest('.social-popup-overlay').classList.remove('open')">&times;</button>
+        <h3 class="social-popup-title">تابعنا على منصاتنا</h3>
+        <p class="social-popup-sub">FOLLOW US ON SOCIAL MEDIA</p>
+        <div class="social-popup-links">
+          <a href="https://wa.me/962775560404" target="_blank" rel="noopener" class="social-popup-link wa">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.02 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.06.8.8-2.97-.2-.32A8.19 8.19 0 0 1 3.8 12c0-4.54 3.7-8.24 8.26-8.24M9.13 7.83c.21 0 .46.03.66.17.22.15.37.34.51.56.04.06.09.13.12.2.12.22.25.47.22.71-.04.4-.35.59-.56.74-.14.1-.27.2-.28.38-.01.18.05.28.15.43.25.36.55.7.88 1 .47.43 1 .78 1.58 1.04.23.1.4.05.55-.13.15-.18.26-.39.43-.57.16-.18.37-.23.6-.1.24.13 1.01.48 1.18.57.17.09.29.14.33.22.05.09.03.53-.13 1.04-.16.51-.94.98-1.32 1.08-.42.11-.9.03-1.55-.24-.98-.4-1.78-1.04-2.45-1.84-1.13-1.33-1.82-2.75-1.73-3.98.04-.56.32-.98.68-1.25.14-.1.29-.16.45-.16z"/></svg>
+            <span>واتساب</span>
+          </a>
+          <a href="https://www.instagram.com/othmanforgaming?igsh=MTBob3J2cTFid2lndw==" target="_blank" rel="noopener" class="social-popup-link ig">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+            <span>انستغرام</span>
+          </a>
+          <a href="https://www.facebook.com/share/1DtWfRzLvE/" target="_blank" rel="noopener" class="social-popup-link fb">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9 8H6v4h3v12h5V12h4l1-4h-5V7c0-1 .5-1 1.5-1H18V2h-3c-3 0-6 1-6 5v1z"/></svg>
+            <span>فيسبوك</span>
+          </a>
+          <a href="https://www.youtube.com/@esso_short/videos" target="_blank" rel="noopener" class="social-popup-link yt">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
+            <span>يوتيوب</span>
+          </a>
+        </div>
+      </div>
+    </div>
     <div class="hero-social-icons">
       <a href="https://maps.app.goo.gl/VjPRbkhEWAjXQ6ow9" target="_blank" rel="noopener" class="social-icon map" title="الموقع">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -333,6 +374,19 @@
   </div>
 </section>
 
+<!-- FEATURED TICKER -->
+<div class="news-ticker-wrap" id="news-ticker-wrap" style="display:none">
+  <div class="news-ticker-label">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    جديد
+  </div>
+  <div class="news-ticker-track-wrap">
+    <div class="news-ticker-track" id="news-ticker-track">
+      <!-- populated by firestore-loader -->
+    </div>
+  </div>
+</div>
+
 <!-- STATS -->
 <div class="stats-section">
   <div class="stats-grid">
@@ -347,10 +401,6 @@
     <div class="stat-item">
       <span class="stat-number" data-target="15000">0</span>
       <div class="stat-label">عميل راضٍ</div>
-    </div>
-    <div class="stat-item">
-      <span class="stat-number" data-target="5">0</span>
-      <div class="stat-label">أجيال PlayStation</div>
     </div>
   </div>
 </div>
@@ -404,13 +454,13 @@
   </a>
 </footer>
 
-<script src="js/main.js?v=10" defer></script>
+<script src="js/main.js?v=11" defer></script>
 <script src="js/click-particles.js?v=1" defer></script>
 
 <!-- ════ FIRESTORE DYNAMIC LOADER ════
      Fetches Categories + Items from Firestore.
      Builds sections-nav and all product sections dynamically.          -->
-<script type="module" src="js/firestore-loader.js?v=15" defer></script>
+<script type="module" src="js/firestore-loader.js?v=18" defer></script>
 
 <!-- Service Worker Registration for PWA -->
 <script>

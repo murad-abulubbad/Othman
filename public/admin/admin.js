@@ -1,11 +1,8 @@
-import { app, db, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from '../firebase.js';
+import { app, db, auth, storage, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, uploadBytesResumable, getDownloadURL, deleteObject } from '../firebase.js';
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc,
   doc, query, orderBy, where
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-// ── CLOUDINARY ─────────────────────────────────────────
-const CLD_CLOUD  = 'dpo1udlqv';
-const CLD_PRESET = 'ofg_store'; // unsigned upload preset — create in Cloudinary dashboard
 
 // ── STATE ──────────────────────────────────────────────
 let categories = [];
@@ -445,6 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── ITEM MODAL ─────────────────────────────────────────
 // Global array to hold current images during editing
 let currentItemImages = [];
+let currentItemImagesLoaded = false;
 
 function renderImagesGallery() {
   const mainPreview = $('main-image-preview');
@@ -510,6 +508,11 @@ function setAsMain(index) {
 }
 window.setAsMain = setAsMain;
 
+document.getElementById('item-genre-wrap')?.addEventListener('click', e => {
+  const btn = e.target.closest('.genre-tag');
+  if (btn) btn.classList.toggle('active');
+});
+
 function openItemModal(item = null) {
   $('item-modal-title').textContent = item ? 'تعديل العنصر' : 'إضافة عنصر جديد';
   $('item-id').value              = item?.id             || '';
@@ -522,6 +525,7 @@ function openItemModal(item = null) {
   } else if (item?.imageUrl) {
     currentItemImages = [item.imageUrl];
   }
+  currentItemImagesLoaded = currentItemImages.length > 0;
   renderImagesGallery();
 
   $('upload-fname').textContent   = '';
@@ -529,12 +533,17 @@ function openItemModal(item = null) {
   // platform field no longer used/stored
   $('item-categoryID').value      = item?.categoryID     || '';
   $('item-condition').value       = item?.condition      || 'مستعمل';
-  $('item-genre').value           = item?.genre          || '';
+  // Handle genres as array or legacy string
+  const genres = Array.isArray(item?.genre) ? item.genre : (item?.genre ? [item.genre] : []);
+  document.querySelectorAll('.genre-tag').forEach(btn => {
+    btn.classList.toggle('active', genres.includes(btn.dataset.value));
+  });
   $('item-quantity').value        = item?.quantity       ?? 1;
   $('item-originalPrice').value   = item?.originalPrice  ?? '';
   $('item-discountPrice').value   = item?.discountPrice  ?? 0;
   $('item-description').value     = item?.description    || '';
   $('item-videoTrailerUrl').value = item?.videoTrailerUrl || '';
+  $('item-featured').checked       = item?.featured === true;
   $('form-err').textContent       = '';
   $('item-modal').classList.add('open');
 }
@@ -543,41 +552,37 @@ window.openItemModal  = openItemModal;
 function closeItemModal() { $('item-modal').classList.remove('open'); }
 window.closeItemModal = closeItemModal;
 
-// ── IMAGE UPLOAD (Cloudinary) ─────────────────────────────────
-function uploadToCloudinary(file, folder) {
+// ── IMAGE UPLOAD (Firebase Storage) ─────────────────────────────────
+function uploadToFirebase(file, folder) {
   return new Promise((resolve, reject) => {
-    const form = new FormData();
-    form.append('file', file);
-    form.append('upload_preset', CLD_PRESET);
-    form.append('folder', folder);
+    const fileName = `${folder}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLD_CLOUD}/image/upload`);
-
-    xhr.upload.onprogress = ev => {
-      if (!ev.lengthComputable) return;
-      const pct = (ev.loaded / ev.total * 100).toFixed(0) + '%';
-      const bar = $('upload-progress-fill');
-      const wrap = $('upload-progress-bar');
-      if (bar && wrap) { wrap.style.display = 'block'; bar.style.width = pct; }
-    };
-    xhr.onload = () => {
-      const bar = $('upload-progress-fill'), wrap = $('upload-progress-bar');
-      if (bar && wrap) { wrap.style.display = 'none'; bar.style.width = '0%'; }
-      if (xhr.status === 200) {
-        resolve(JSON.parse(xhr.responseText).secure_url);
-      } else {
-        const msg = JSON.parse(xhr.responseText)?.error?.message || 'Upload failed';
-        reject(new Error(msg));
+    uploadTask.on('state_changed',
+      snapshot => {
+        const pct = (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(0) + '%';
+        const bar = $('upload-progress-fill');
+        const wrap = $('upload-progress-bar');
+        if (bar && wrap) { wrap.style.display = 'block'; bar.style.width = pct; }
+      },
+      error => {
+        const bar = $('upload-progress-fill'), wrap = $('upload-progress-bar');
+        if (bar && wrap) { wrap.style.display = 'none'; bar.style.width = '0%'; }
+        reject(error);
+      },
+      async () => {
+        const bar = $('upload-progress-fill'), wrap = $('upload-progress-bar');
+        if (bar && wrap) { wrap.style.display = 'none'; bar.style.width = '0%'; }
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        resolve(url);
       }
-    };
-    xhr.onerror = () => reject(new Error('Network error'));
-    xhr.send(form);
+    );
   });
 }
 
-function uploadCatImage(file)  { return uploadToCloudinary(file, 'ofg/categories'); }
-function uploadImage(file)     { return uploadToCloudinary(file, 'ofg/items'); }
+function uploadCatImage(file)  { return uploadToFirebase(file, 'ofg/categories'); }
+function uploadImage(file)     { return uploadToFirebase(file, 'ofg/items'); }
 
 $('item-image-file').addEventListener('change', async e => {
   const files = Array.from(e.target.files);
@@ -620,30 +625,49 @@ document.getElementById('item-form').addEventListener('submit', async (e) => {
   }
   saveBtn.disabled = true;
 
-  // Check if at least one image exists
-  if (currentItemImages.length === 0) {
+  // Check if at least one image exists (only required for new items)
+  if (currentItemImages.length === 0 && !id) {
     errEl.textContent = 'الرجاء إضافة صورة واحدة على الأقل للمنتج';
     saveBtn.disabled = false; saveBtn.textContent = '💾 حفظ';
     return;
   }
 
+  // If editing and user didn't touch images, keep old ones; if user cleared them, respect that
+  const existingItem = id ? items.find(i => i.id === id) : null;
+  const finalImages = currentItemImages.length > 0 ? currentItemImages :
+    (!currentItemImagesLoaded && existingItem?.images?.length ? existingItem.images :
+     !currentItemImagesLoaded && existingItem?.imageUrl ? [existingItem.imageUrl] : []);
+
   // Prepare data with images array (first image is main, rest are additional)
   const data = {
     name,
-    imageUrl: currentItemImages[0], // Keep for backward compatibility
-    images: currentItemImages, // New array format
+    imageUrl: finalImages[0] || '', // Keep for backward compatibility
+    images: finalImages, // New array format
     categoryID:      $('item-categoryID').value,
     condition:       $('item-condition').value,
-    genre:           $('item-genre').value,
+    genre:           Array.from(document.querySelectorAll('.genre-tag.active')).map(btn => btn.dataset.value),
     quantity:        parseInt($('item-quantity').value) || 0,
     originalPrice,
     discountPrice,
     description:     $('item-description').value.trim(),
     videoTrailerUrl: $('item-videoTrailerUrl').value.trim(),
+    featured:        $('item-featured').checked,
   };
   saveBtn.textContent = 'جاري الحفظ...';
   try {
     if (id) {
+      // Delete removed Firebase Storage images
+      const oldItem = items.find(i => i.id === id);
+      if (oldItem) {
+        const oldImgs = oldItem.images?.length ? oldItem.images : (oldItem.imageUrl ? [oldItem.imageUrl] : []);
+        const removedImgs = oldImgs.filter(url => url.includes('firebasestorage') && !finalImages.includes(url));
+        for (const url of removedImgs) {
+          try {
+            const path = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
+            await deleteObject(ref(storage, path));
+          } catch(_) {}
+        }
+      }
       await updateDoc(doc(db, 'Items', id), data);
       toast('✅ تم تحديث العنصر بنجاح');
       
@@ -685,7 +709,31 @@ document.addEventListener('click', async (e) => {
     try {
       const delId = delItemBtn.dataset.itemDel;
       selectedItemIds.delete(delId);
+      const delItem = items.find(it => it.id === delId);
+      console.log('delItem:', delItem);
+      console.log('delItem.images:', delItem?.images);
+      console.log('delItem.imageUrl:', delItem?.imageUrl);
       await deleteDoc(doc(db, 'Items', delId));
+      // Delete images from Firebase Storage (only Firebase Storage URLs)
+      if (delItem) {
+        const allImgs = delItem.images?.length ? delItem.images : (delItem.imageUrl ? [delItem.imageUrl] : []);
+        console.log('allImgs:', allImgs);
+        for (const url of allImgs) {
+          console.log('checking url:', url?.substring(0, 80));
+          if (url && url.includes('firebasestorage')) {
+            try {
+              const path = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
+              console.log('Deleting storage path:', path);
+              await deleteObject(ref(storage, path));
+              console.log('Deleted:', path);
+            } catch(err) { console.error('Storage delete error:', err); }
+          } else {
+            console.log('Skipping non-firebase URL:', url?.substring(0, 60));
+          }
+        }
+      } else {
+        console.warn('delItem not found in local state!');
+      }
       toast('🗑 تم حذف العنصر');
       
       // Update local state to save reads

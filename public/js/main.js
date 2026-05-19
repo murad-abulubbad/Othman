@@ -6,7 +6,7 @@ function showComingSoon(section) {
   t.classList.add('show');
   setTimeout(() => {
     t.classList.remove('show');
-    t.querySelector('.toast-icon').textContent = '🛒';
+    t.querySelector('.toast-icon').innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg>';
   }, 3500);
 }
 
@@ -47,10 +47,10 @@ function renderGameGrid(targetId, games, platform, color) {
       platform: platform
     };
     const detailData = encodeURIComponent(JSON.stringify(detailObj)).replace(/'/g, '%27');
-    const cartData = encodeURIComponent(JSON.stringify({name:g.name, price:g.price, priceLabel:g.priceLabel || '', img:g.img, icon:'💿', kind:'game', platform, condition})).replace(/'/g, '%27');
+    const cartData = encodeURIComponent(JSON.stringify({name:g.name, price:g.price, priceLabel:g.priceLabel || '', img:g.img, icon:'', kind:'game', platform, condition})).replace(/'/g, '%27');
     const trailerData = encodeURIComponent(JSON.stringify({id:g.trailer, title:g.name, provider:g.trailerProvider || 'youtube'})).replace(/'/g, '%27');
     const trailerButton = g.trailer
-      ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${trailerData}'); event.stopPropagation();">▶ تريلر</button>`
+      ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${trailerData}'); event.stopPropagation();"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> تريلر</button>`
       : '';
     const hasDiscount = g.originalPrice && g.discountPrice && g.discountPrice < g.originalPrice;
     const priceHtml = g.priceLabel
@@ -61,11 +61,11 @@ function renderGameGrid(targetId, games, platform, color) {
     const addButton = g.price > 0 || g.priceLabel
       ? `<button class="image-card-add"
                     onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">
-              🛒 أضف
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg> أضف
             </button>`
       : '';
     return `
-    <div class="image-card${isPS5 ? ' is-ps5' : ''}" onclick="openGameDetails(JSON.parse(decodeURIComponent('${detailData}')))">
+    <div class="image-card${isPS5 ? ' is-ps5' : ''}" data-item-id="${g.id || ''}" onclick="openGameDetails(JSON.parse(decodeURIComponent('${detailData}')))">
       <div class="image-card-imgwrap">
         ${(platform && platform !== 'Other' && platform !== 'أخرى') ? `<span class="image-card-platform" ${platformStyle}>${platform}</span>` : ''}
         <span class="product-condition-badge${conditionClass}">${condition}</span>
@@ -78,7 +78,7 @@ function renderGameGrid(targetId, games, platform, color) {
         <div class="image-card-bottom">
           ${priceHtml}
           <div class="image-card-actions">
-            <button class="favorite-btn${isFavorite({name:g.name, platform}) ? ' active' : ''}" onclick="toggleFavorite(this, '${encodeURIComponent(JSON.stringify(detailObj)).replace(/'/g, '%27')}'); event.stopPropagation();">❤</button>
+            <button class="favorite-btn${isFavorite({name:g.name, platform}) ? ' active' : ''}" onclick="toggleFavorite(this, '${encodeURIComponent(JSON.stringify(detailObj)).replace(/'/g, '%27')}'); event.stopPropagation();"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
             ${trailerButton}
             ${addButton}
           </div>
@@ -143,7 +143,7 @@ function openGameDetails(game) {
   const detailLabel = (rawLabel === 'Other' || rawLabel === 'أخرى') ? '' : rawLabel;
   const genreText = game.genre || game.sub || game.specs || game.kindLabel || 'Othman For Gaming';
   const descText = game.desc || game.description || '';
-  const iconText = game.icon || '🎮';
+  const iconText = game.icon || '';
 
   // Get images from global map or fallback to single image
   let images = game.images;
@@ -190,10 +190,10 @@ function openGameDetails(game) {
     condition: game.condition || ''
   })).replace(/'/g, '%27');
   const trailerAction = game.trailer
-    ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${encodeURIComponent(JSON.stringify({id:game.trailer, title:game.name, provider:game.trailerProvider || 'youtube'})).replace(/'/g, '%27')}'); event.stopPropagation();">▶ مشاهدة التريلر</button>`
+    ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${encodeURIComponent(JSON.stringify({id:game.trailer, title:game.name, provider:game.trailerProvider || 'youtube'})).replace(/'/g, '%27')}'); event.stopPropagation();"><svg width='14' height='14' viewBox='0 0 24 24' fill='currentColor'><path d='M8 5v14l11-7z'/></svg> مشاهدة التريلر</button>`
     : '';
   const addAction = game.canAdd !== false && (hasNumericPrice || game.priceLabel || game.addable)
-    ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">🛒 أضف للسلة</button>`
+    ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();"><svg width='14' height='14' viewBox='0 0 24 24' fill='currentColor'><path d='M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z'/></svg> أضف للسلة</button>`
     : '';
   box.innerHTML = `
     <button class="game-detail-close" onclick="closeGameDetails()">×</button>
@@ -407,7 +407,7 @@ function renderFavorites() {
   if (favorites.length === 0) {
     content.innerHTML = `
       <div class="favorite-sidebar-empty">
-        <div class="favorite-sidebar-empty-icon">❤</div>
+        <div class="favorite-sidebar-empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
         <p>لا توجد مفضلات بعد</p>
         <p style="font-size:0.85rem;margin-top:8px;">اضغط على القلب لحفظ المنتجات</p>
       </div>
@@ -415,17 +415,25 @@ function renderFavorites() {
     return;
   }
   
-  content.innerHTML = favorites.map(f => `
-    <div class="favorite-item" style="cursor:pointer" onclick="goToFavoriteItem('${f.name.replace(/'/g, "\\'")}')">
+  content.innerHTML = favorites.map(f => {
+    const cartData = encodeURIComponent(JSON.stringify({
+      name: f.name, price: f.price || 0, priceLabel: f.priceLabel || '',
+      img: f.img || '', icon: '', kind: f.kind || 'item',
+      platform: f.platform || '', condition: f.condition || ''
+    })).replace(/'/g, '%27');
+    const canAdd = f.price > 0 || f.priceLabel;
+    return `
+    <div class="favorite-item">
       ${f.img ? `<img class="favorite-item-img" src="${f.img}" alt="${f.name}" onerror="this.style.display='none'"/>` : ''}
       <div class="favorite-item-info">
         <div class="favorite-item-name">${f.name}</div>
         ${f.price ? `<div class="favorite-item-price">${f.price} JOD</div>` : ''}
         ${f.platform ? `<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px;">${f.platform}</div>` : ''}
+        ${canAdd ? `<button class="image-card-add" style="margin-top:8px;width:100%;justify-content:center;" onclick="addGameToCartFromEncoded('${cartData}', this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg> أضف للسلة</button>` : ''}
       </div>
-      <button class="favorite-item-remove" onclick="event.stopPropagation(); removeFavorite('${f.name.replace(/'/g, "\\'")}', '${f.platform || ''}')">✕</button>
-    </div>
-  `).join('');
+      <button class="favorite-item-remove" onclick="removeFavorite('${f.name.replace(/'/g, "\\'")}', '${f.platform || ''}')">✕</button>
+    </div>`;
+  }).join('');
 }
 
 function goToFavoriteItem(name) {
@@ -551,7 +559,7 @@ function openTrailer(videoId, title, provider = 'youtube') {
     <div class="trailer-error-fallback" id="trailer-error">
       <strong>⚠️ لم يتم تشغيل الفيديو</strong>
       <span>قد يكون الفيديو محظور من التشغيل داخل الموقع أو غير متاح</span>
-      <a href="${youtubeWatchUrl}" target="_blank" rel="noopener" class="trailer-external-btn">▶ فتح في يوتيوب</a>
+      <a href="${youtubeWatchUrl}" target="_blank" rel="noopener" class="trailer-external-btn"><svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor'><path d='M8 5v14l11-7z'/></svg> فتح في يوتيوب</a>
     </div>`;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -622,7 +630,7 @@ function addToCart(arg1, price, icon) {
       name: item.name,
       price: parseFloat(item.price),
       priceLabel: item.priceLabel || null,
-      icon: item.icon || '🎮',
+      icon: item.icon || '',
       img: item.img || null,
       kind: item.kind || 'item',
       platform: itemPlatform,
@@ -670,13 +678,13 @@ function updateCartUI() {
   const list = document.getElementById('cart-items-list');
   const footer = document.getElementById('cart-footer');
   if (cart.length === 0) {
-    list.innerHTML = '<div class="cart-empty"><span class="cart-empty-icon">🎮</span><p>السلة فارغة</p><p style="font-size:0.8rem;margin-top:8px;color:rgba(255,255,255,0.3)">أضف منتجات من أي قسم</p></div>';
+    list.innerHTML = '<div class="cart-empty"><span class="cart-empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.2)"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></span><p>السلة فارغة</p><p style="font-size:0.8rem;margin-top:8px;color:rgba(255,255,255,0.3)">أضف منتجات من أي قسم</p></div>';
     footer.style.display = 'none';
   } else {
     list.innerHTML = cart.map((item, i) => {
       const visual = item.img
         ? `<img class="cart-item-img" src="${item.img}" alt="${item.name}" onerror="this.style.display='none'"/>`
-        : `<span class="cart-item-icon">${item.icon || '🎮'}</span>`;
+        : `<span class="cart-item-icon"><svg width='24' height='24' viewBox='0 0 24 24' fill='rgba(255,255,255,0.3)'><path d='M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/></svg></span>`;
       const platformBadge = item.platform
         ? `<span style="font-family:'Orbitron',monospace;font-size:0.55rem;background:rgba(204,0,0,0.2);color:#ff8080;padding:2px 6px;border-radius:8px;margin-right:6px;letter-spacing:1px;">${item.platform}</span>`
         : '';
@@ -920,14 +928,27 @@ window.addEventListener('popstate', (e) => {
 (function initRouter(){
   const initial = location.hash.replace('#','') || 'home';
   if (initial !== 'home' && (PAGE_IDS.includes(initial) || initial.startsWith('cat-'))) {
-    // skip transition for instant first-paint
+    // Store for after Firestore loads dynamic sections
+    window._pendingDeepLink = initial;
     document.body.classList.add('in-page-mode');
-    document.querySelectorAll('section').forEach(s => s.classList.toggle('page-active', s.id === initial));
   } else {
-    // Always show home and sections by default
     document.body.classList.remove('in-page-mode');
   }
 })();
+
+// Called by firestore-loader after all sections are rendered
+window._applyPendingDeepLink = function() {
+  const id = window._pendingDeepLink;
+  if (!id) return;
+  window._pendingDeepLink = null;
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('page-active', s.id === id));
+  const target = document.getElementById(id);
+  if (target) {
+    target.querySelectorAll('.section-title, .section-line').forEach(el => el.classList.add('visible'));
+    const cards = target.querySelectorAll('.image-card');
+    cards.forEach((el, i) => setTimeout(() => el.classList.add('visible'), i * 55));
+  }
+};
 
 // ════════════════ PRICE COUNTER ANIMATION ════════════════
 function animatePrice(el) {
@@ -1140,7 +1161,7 @@ document.querySelectorAll('.price-max').forEach(input => {
 function syncAddedButtons() {
   document.querySelectorAll('.image-card-add.added, .image-card-add.just-added').forEach(btn => {
     btn.classList.remove('added', 'just-added');
-    if (btn.innerHTML.trim().startsWith('✓')) btn.innerHTML = '🛒 أضف';
+    if (btn.innerHTML.trim().startsWith('✓')) btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg> أضف';
   });
 }
 syncAddedButtons();

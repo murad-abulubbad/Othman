@@ -17,6 +17,13 @@ import {
     signOut, 
     onAuthStateChanged 
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import {
+    getStorage,
+    ref,
+    uploadBytesResumable,
+    getDownloadURL,
+    deleteObject
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCslThkqYCCNWRnp81P5_l2AY3gZkvFAgA",
@@ -31,6 +38,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 // تصدير الأدوات التي سنحتاجها في الكود الآخر
-export { app, db, auth, collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc, orderBy, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+export { app, db, auth, storage, collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc, orderBy, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, uploadBytesResumable, getDownloadURL, deleteObject };
