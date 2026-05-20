@@ -274,7 +274,7 @@ async function loadFirestoreData() {
       catSidebarList.innerHTML = categories.map(cat => {
         const count = items.filter(i => i.categoryID === cat.id).length;
         const img = cat.imageUrl ? `<img src="${cat.imageUrl}" alt="${cat.name}">` : `<svg width='24' height='24' viewBox='0 0 24 24' fill='rgba(255,255,255,0.5)'><path d='M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/></svg>`;
-        return `<button class="cat-sidebar-item" onclick="document.getElementById('cat-${cat.id}')?.scrollIntoView({behavior:'smooth'});closeCatSidebar()">
+        return `<button class="cat-sidebar-item" onclick="closeCatSidebar();navigateToPage('cat-${cat.id}')">
           ${img}
           <span class="cat-sb-name">${cat.name}</span>
           <span class="cat-sb-count">${count}</span>

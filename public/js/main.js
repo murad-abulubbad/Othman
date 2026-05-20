@@ -876,6 +876,7 @@ function navigateToPage(pageId, push = true) {
     }, 700);
   }, 1200); // hold long enough for the console logos to fully appear
 }
+window.navigateToPage = navigateToPage;
 
 // Intercept clicks on internal anchor links (#devices, #ps4, etc.)
 document.addEventListener('click', (e) => {

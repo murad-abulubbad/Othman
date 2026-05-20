@@ -2997,6 +2997,8 @@ html {
 }
 
 /* ── FEATURED NEWS TICKER ─────────────────────────── */
+.ticker-heading{text-align:right;color:#ff2d55;font-size:1rem;font-weight:800;letter-spacing:2px;padding:6px 16px 4px;font-family:'Cairo',sans-serif;text-shadow:0 0 10px rgba(255,45,85,0.9),0 0 25px rgba(255,45,85,0.6),0 0 50px rgba(255,45,85,0.3);animation:tickerGlow 1.8s ease-in-out infinite alternate}
+@keyframes tickerGlow{from{text-shadow:0 0 6px rgba(255,45,85,0.7),0 0 15px rgba(255,45,85,0.4);opacity:0.75}to{text-shadow:0 0 14px rgba(255,45,85,1),0 0 35px rgba(255,45,85,0.8),0 0 70px rgba(255,45,85,0.4);opacity:1}}
 .news-ticker-wrap{display:flex;align-items:center;direction:ltr;background:rgba(0,0,0,.45);border-top:1px solid rgba(255,45,85,.35);border-bottom:1px solid rgba(255,45,85,.35);overflow:hidden;height:110px;position:relative;z-index:10}
 .news-ticker-label{flex-shrink:0;display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--red),var(--blue));color:#fff;font-size:.78rem;font-weight:800;letter-spacing:1px;padding:0 18px;height:100%;white-space:nowrap}
 .news-ticker-track-wrap{flex:1;overflow:hidden;position:relative;height:100%;direction:ltr}
