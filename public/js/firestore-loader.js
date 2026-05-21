@@ -1,4 +1,4 @@
-import { db, collection, query, orderBy, getDocs } from '../firebase.js';
+import { db, collection, query, orderBy, getDocs, onSnapshot } from '../firebase.js';
 
 // ════ FIRESTORE DYNAMIC LOADER ════
 // Fetches Categories + Items from Firestore.
@@ -15,7 +15,7 @@ function optimizeCloudinaryUrl(url, width = 300) {
 }
 
 const CACHE_KEY = 'ofg_data_cache';
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour in ms
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 function getCachedData() {
   try {
@@ -38,28 +38,75 @@ window.bustFirestoreCache = function() {
   try { localStorage.removeItem(CACHE_KEY); } catch {}
 };
 
-async function loadFirestoreData() {
-  try {
-    let categories, items;
+// ── State ──
+let _categories = [];
+let _items = [];
+let _catsReady = false;
+let _itemsReady = false;
+let _rendered = false;
+let _unsubCats = null;
+let _unsubItems = null;
 
-    const cached = getCachedData();
-    if (cached) {
-      // Serve from cache — zero Firestore reads
-      categories = cached.categories;
-      items = cached.items;
-    } else {
-      // Fetch Categories + Items in parallel for maximum speed
-      const [categoriesSnapshot, itemsSnapshot] = await Promise.all([
-        getDocs(query(collection(db, 'Categories'), orderBy('order', 'asc'))).catch(() =>
-          getDocs(collection(db, 'Categories'))
-        ),
-        getDocs(collection(db, 'Items'))
-      ]);
+function _tryRender() {
+  if (!_catsReady || !_itemsReady) return;
+  setCachedData(_categories, _items);
+  renderAll(_categories, _items);
+}
 
-      categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCachedData(categories, items);
+function loadFirestoreData() {
+  // Paint from cache immediately for fast first load
+  const cached = getCachedData();
+  if (cached && !_rendered) {
+    _categories = cached.categories;
+    _items = cached.items;
+    _catsReady = true;
+    _itemsReady = true;
+    renderAll(_categories, _items);
+  }
+
+  // Unsubscribe any previous listeners
+  if (_unsubCats) { _unsubCats(); _unsubCats = null; }
+  if (_unsubItems) { _unsubItems(); _unsubItems = null; }
+
+  // Real-time listener for Categories
+  _unsubCats = onSnapshot(
+    query(collection(db, 'Categories'), orderBy('order', 'asc')),
+    (snap) => {
+      _categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      _catsReady = true;
+      _tryRender();
+    },
+    () => {
+      // Fallback: one-time fetch if listener fails
+      getDocs(collection(db, 'Categories')).then(snap => {
+        _categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        _catsReady = true;
+        _tryRender();
+      });
     }
+  );
+
+  // Real-time listener for Items
+  _unsubItems = onSnapshot(
+    collection(db, 'Items'),
+    (snap) => {
+      _items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      _itemsReady = true;
+      _tryRender();
+    },
+    () => {
+      getDocs(collection(db, 'Items')).then(snap => {
+        _items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        _itemsReady = true;
+        _tryRender();
+      });
+    }
+  );
+}
+
+function renderAll(categories, items) {
+  _rendered = true;
+  try {
 
     const renderSectionCards = () => {
       const sectionsGrid = document.getElementById('sections-grid');
@@ -323,7 +370,6 @@ function setupCategoryFilter(catId, catName, items, color) {
     // Only filter by price if slider is NOT at maximum (user moved it)
     const filterByPrice = sliderVal < sliderMax;
 
-    if (genreVal) console.log('Filter genre:', genreVal, '| Items genres:', items.map(i => i.name + ':' + JSON.stringify(i.genre)));
     const filtered = items.filter(item => {
       const matchesSearch = !searchTerm || item.name.toLowerCase().includes(searchTerm);
       const itemPrice = item.price || item.originalPrice || 0;
@@ -391,8 +437,13 @@ function setupCategoryFilter(catId, catName, items, color) {
     });
   });
 
+}
+
+// Single shared document click handler to close all open dropdowns (no per-category leak)
+if (!window._dropdownClickHandlerAdded) {
+  window._dropdownClickHandlerAdded = true;
   document.addEventListener('click', () => {
-    filterBar.querySelectorAll('.custom-select-dropdown.open').forEach(d => {
+    document.querySelectorAll('.custom-select-dropdown.open').forEach(d => {
       d.classList.remove('open');
       d.previousElementSibling?.classList.remove('active');
     });

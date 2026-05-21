@@ -4,7 +4,8 @@ import {
     collection, 
     query, 
     where, 
-    getDocs, 
+    getDocs,
+    onSnapshot,
     addDoc, 
     deleteDoc, 
     doc,
@@ -41,4 +42,4 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 
 // تصدير الأدوات التي سنحتاجها في الكود الآخر
-export { app, db, auth, storage, collection, query, where, getDocs, addDoc, deleteDoc, doc, updateDoc, orderBy, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, uploadBytesResumable, getDownloadURL, deleteObject };
+export { app, db, auth, storage, collection, query, where, getDocs, onSnapshot, addDoc, deleteDoc, doc, updateDoc, orderBy, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, uploadBytesResumable, getDownloadURL, deleteObject };

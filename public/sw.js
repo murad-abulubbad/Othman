@@ -1,49 +1,49 @@
 // Service Worker for Othman For Gaming PWA
-// Minimal implementation for PWA install prompt
+const CACHE_NAME = 'othman-gaming-v3';
 
-const CACHE_NAME = 'othman-gaming-v1';
+// Only cache static assets (images, fonts, icons) — never HTML/JS/CSS
+const CACHEABLE = (url) => {
+  return /\.(png|jpg|jpeg|webp|gif|ico|svg|woff2?|ttf)$/i.test(url) &&
+    !url.includes('firebase') &&
+    !url.includes('googleapis') &&
+    !url.includes('gstatic') &&
+    !url.includes('cloudinary');
+};
 
-// Install event
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
-});
+self.addEventListener('install', () => self.skipWaiting());
 
-// Activate event
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
-    })
+    caches.keys().then(names =>
+      Promise.all(names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n)))
+    )
   );
   self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-  
-  // Skip Firebase and external requests
-  if (event.request.url.includes('firebase') || 
-      event.request.url.includes('googleapis') ||
-      event.request.url.includes('gstatic')) return;
-  
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Clone response for cache
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone);
+  const url = event.request.url;
+
+  // Always go to network for HTML, JS, CSS, Firebase, APIs
+  if (url.includes('firebase') || url.includes('googleapis') || url.includes('gstatic') ||
+      url.includes('cloudinary') || /\.(html|js|css)(\?|$)/.test(url)) {
+    return; // browser default — no SW involvement
+  }
+
+  // Cache-first for static assets (images/fonts)
+  if (CACHEABLE(url)) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
         });
-        return response;
       })
-      .catch(() => {
-        return caches.match(event.request);
-      })
-  );
+    );
+  }
 });
