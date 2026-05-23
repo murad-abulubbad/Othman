@@ -18,12 +18,35 @@ const PS5_GAMES = [];
 // Global store for item images to avoid encoding issues
 window._itemImagesMap = window._itemImagesMap || {};
 
+let _favoritesCache = null;
+
+function getFavorites() {
+  if (Array.isArray(_favoritesCache)) return _favoritesCache;
+  try {
+    _favoritesCache = JSON.parse(localStorage.getItem('othman_favorites') || '[]');
+  } catch {
+    _favoritesCache = [];
+  }
+  return _favoritesCache;
+}
+
+function saveFavorites(favorites) {
+  _favoritesCache = favorites;
+  localStorage.setItem('othman_favorites', JSON.stringify(favorites));
+  updateFavoriteBadge();
+}
+
+function getFavoriteLookup() {
+  return new Set(getFavorites().map(f => `${f.name}::${f.platform || ''}`));
+}
+
 function renderGameGrid(targetId, games, platform, color) {
   const grid = document.getElementById(targetId);
   if (!grid) return;
   const isPS5 = platform === 'PS5';
   const platformColor = color || (isPS5 ? '#2A8CFF' : '#CC0000');
   const platformStyle = platform ? `style="background:${platformColor};color:#fff;box-shadow:0 0 10px ${platformColor}80"` : '';
+  const favoriteLookup = getFavoriteLookup();
   grid.innerHTML = games.map(g => {
     const condition = g.condition || 'مستعمل';
     const conditionClass = condition === 'جديد' ? ' is-new' : '';
@@ -71,7 +94,7 @@ function renderGameGrid(targetId, games, platform, color) {
         ${(platform && platform !== 'Other' && platform !== 'أخرى') ? `<span class="image-card-platform" ${platformStyle}>${platform}</span>` : ''}
         <span class="product-condition-badge${conditionClass}">${condition}</span>
         ${isOutOfStock ? '<span class="out-of-stock-badge">نفذت الكمية</span>' : ''}
-        <img class="image-card-img" src="${g.img}" alt="${g.name}" loading="lazy" decoding="async"
+        <img class="image-card-img" src="${g.img}" alt="${g.name}" loading="lazy" decoding="async" fetchpriority="low"
              onerror="this.style.objectFit='cover';this.src='images/logo.jpg'"/>
       </div>
       <div class="image-card-body">
@@ -80,7 +103,7 @@ function renderGameGrid(targetId, games, platform, color) {
         <div class="image-card-bottom">
           ${priceHtml}
           <div class="image-card-actions">
-            <button class="favorite-btn${isFavorite({name:g.name, platform}) ? ' active' : ''}" onclick="toggleFavorite(this, '${encodeURIComponent(JSON.stringify(detailObj)).replace(/'/g, '%27')}'); event.stopPropagation();"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
+            <button class="favorite-btn${favoriteLookup.has(`${g.name}::${platform || ''}`) ? ' active' : ''}" onclick="toggleFavorite(this, '${detailData}'); event.stopPropagation();"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
             ${trailerButton}
             ${addButton}
           </div>
@@ -331,19 +354,6 @@ function markUsedProducts() {
 markUsedProducts();
 
 // ════════════════ FAVORITES / WISHLIST ════════════════
-function getFavorites() {
-  try {
-    return JSON.parse(localStorage.getItem('othman_favorites') || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function saveFavorites(favorites) {
-  localStorage.setItem('othman_favorites', JSON.stringify(favorites));
-  updateFavoriteBadge();
-}
-
 function toggleFavorite(btn, productData) {
   const product = JSON.parse(decodeURIComponent(productData));
   const favorites = getFavorites();
@@ -362,8 +372,7 @@ function toggleFavorite(btn, productData) {
 }
 
 function isFavorite(product) {
-  const favorites = getFavorites();
-  return favorites.some(f => f.name === product.name && f.platform === product.platform);
+  return getFavorites().some(f => f.name === product.name && f.platform === product.platform);
 }
 
 function removeFavorite(name, platform) {

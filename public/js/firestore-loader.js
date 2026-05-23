@@ -6,6 +6,8 @@ import { db, collection, query, orderBy, getDocs, onSnapshot } from '../firebase
 
 // ── Cloudinary image optimizer ──
 const _isMobile = window.innerWidth <= 768;
+const _gridThumbWidth = _isMobile ? 420 : 800;
+const _detailImageWidth = _isMobile ? 720 : 800;
 function optimizeCloudinaryUrl(url, width = 300) {
   if (!url || typeof url !== 'string') return url;
   if (!url.includes('res.cloudinary.com') || !url.includes('/image/upload/')) return url;
@@ -107,6 +109,22 @@ function loadFirestoreData() {
 function renderAll(categories, items) {
   _rendered = true;
   try {
+    const itemsByCategory = new Map();
+    const categoriesById = new Map();
+    const categoryCounts = new Map();
+
+    categories.forEach(cat => {
+      categoriesById.set(cat.id, cat);
+      itemsByCategory.set(cat.id, []);
+      categoryCounts.set(cat.id, 0);
+    });
+
+    items.forEach(item => {
+      const catId = item.categoryID;
+      if (!itemsByCategory.has(catId)) itemsByCategory.set(catId, []);
+      itemsByCategory.get(catId).push(item);
+      categoryCounts.set(catId, (categoryCounts.get(catId) || 0) + 1);
+    });
 
     const renderSectionCards = () => {
       const sectionsGrid = document.getElementById('sections-grid');
@@ -115,7 +133,7 @@ function renderAll(categories, items) {
           sectionsGrid.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px;">لا توجد أقسام حالياً. أضف أقسام من لوحة الإدارة.</div>';
         } else {
           sectionsGrid.innerHTML = categories.map(cat => {
-            const categoryItems = items.filter(item => item.categoryID === cat.id);
+            const categoryItems = itemsByCategory.get(cat.id) || [];
             const iconHtml = cat.imageUrl
               ? `<img class="section-nav-icon" src="${cat.imageUrl}" alt="${cat.name}" onerror="this.outerHTML='<span class=\'section-nav-icon\'><svg width=\'28\' height=\'28\' viewBox=\'0 0 24 24\' fill=\'currentColor\'><path d=\'M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z\'/></svg></span>'">`
               : `<span class="section-nav-icon"><svg width='28' height='28' viewBox='0 0 24 24' fill='currentColor'><path d='M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/></svg></span>`;
@@ -142,7 +160,7 @@ function renderAll(categories, items) {
     const dynamicSections = document.getElementById('dynamic-sections');
     if (dynamicSections) {
       dynamicSections.innerHTML = categories.map(cat => {
-        const categoryItems = items.filter(item => item.categoryID === cat.id);
+        const categoryItems = itemsByCategory.get(cat.id) || [];
         const hasItems = categoryItems.length > 0;
         const body = hasItems
           ? `
@@ -236,8 +254,8 @@ function renderAll(categories, items) {
             imagesArray = [item.imageUrl];
           }
 
-          const optimizedThumb = optimizeCloudinaryUrl(mainImage, 800);
-          const optimizedFull = imagesArray.map(u => optimizeCloudinaryUrl(u, 800));
+          const optimizedThumb = optimizeCloudinaryUrl(mainImage, _gridThumbWidth);
+          const optimizedFull = imagesArray.map(u => optimizeCloudinaryUrl(u, _detailImageWidth));
 
           return {
             id: item.id,
@@ -292,7 +310,7 @@ function renderAll(categories, items) {
     if (tickerTrack && featuredItems.length > 0) {
       const buildItem = (item) => {
         const price = item.discountPrice || item.originalPrice || item.price || 0;
-        const cat = categories.find(c => c.id === item.categoryID);
+        const cat = categoriesById.get(item.categoryID);
         const safeId = (item.id || '').replace(/'/g, '');
         return `<div class="ticker-item" onclick="(function(){var el=document.querySelector('[data-item-id=\\'${safeId}\\']')||document.getElementById('cat-${item.categoryID}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});})()">
           <span class="ticker-item-badge">جديد</span>
@@ -319,7 +337,7 @@ function renderAll(categories, items) {
       const sidebar = document.getElementById('cat-sidebar');
       const close = () => { sidebar?.classList.remove('open'); overlay?.classList.remove('open'); };
       catSidebarList.innerHTML = categories.map(cat => {
-        const count = items.filter(i => i.categoryID === cat.id).length;
+        const count = categoryCounts.get(cat.id) || 0;
         const img = cat.imageUrl ? `<img src="${cat.imageUrl}" alt="${cat.name}">` : `<svg width='24' height='24' viewBox='0 0 24 24' fill='rgba(255,255,255,0.5)'><path d='M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/></svg>`;
         return `<button class="cat-sidebar-item" onclick="closeCatSidebar();navigateToPage('cat-${cat.id}')">
           ${img}
@@ -353,6 +371,8 @@ function setupCategoryFilter(catId, catName, items, color) {
   // Active filter values
   let conditionVal = '';
   let genreVal = '';
+  let searchTimer = null;
+  let sliderFrame = 0;
 
   // Set slider max based on actual item prices (display only, don't filter)
   if (priceSlider) {
@@ -392,11 +412,15 @@ function setupCategoryFilter(catId, catName, items, color) {
   if (priceSlider && priceValue) {
     priceSlider.addEventListener('input', () => {
       priceValue.textContent = `${priceSlider.value} دينار`;
-      applyFilter();
+      cancelAnimationFrame(sliderFrame);
+      sliderFrame = requestAnimationFrame(applyFilter);
     });
   }
 
-  searchInput.addEventListener('input', applyFilter);
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilter, 120);
+  });
 
   // Wire custom dropdowns
   const filterBar = document.getElementById(`filter-cat-${catId}`);

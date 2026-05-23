@@ -2323,6 +2323,119 @@ img.console-float {
 .coming-soon-block p { color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 20px; }
 .coming-soon-block .countdown { font-family: 'Orbitron', monospace; color: var(--red-bright); letter-spacing: 4px; font-size: 0.75rem; }
 
+@media (max-width: 768px), (pointer: coarse) {
+  html { scroll-behavior: auto; }
+  body { background-attachment: scroll; }
+  nav,
+  section:not(#home),
+  #cart-sidebar,
+  .favorite-sidebar,
+  .cat-sidebar,
+  .cat-filter-row,
+  .custom-select-dropdown,
+  .cart-overlay,
+  .cat-sidebar-overlay {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  nav,
+  section:not(#home),
+  #cart-sidebar,
+  .favorite-sidebar,
+  .cat-sidebar,
+  .cat-filter-row,
+  .custom-select-dropdown {
+    box-shadow: none;
+  }
+  #particle-canvas,
+  .bg-symbols,
+  .hero-bg,
+  .split-line,
+  .scanlines,
+  .console-collage,
+  .energy-ring,
+  .loader-orbit {
+    display: none !important;
+  }
+  .loader-text,
+  .loader-logo-img,
+  .hero-logo-big,
+  .hero-badge,
+  .hero-title,
+  .hero-sub,
+  .hero-btns,
+  .marquee-track,
+  .nav-links a,
+  .nav-brand span,
+  .nav-logo-wrap,
+  .favorite-toggle-btn,
+  .section-nav-card,
+  .image-card,
+  .device-showcase,
+  .cart-item,
+  .favorite-item,
+  .feature-img-wrap::before,
+  .feature-img-wrap img {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+  .section-title,
+  .section-line,
+  .section-nav-card,
+  .image-card,
+  .device-showcase,
+  .cart-item,
+  .favorite-item {
+    contain: layout paint;
+    content-visibility: auto;
+    contain-intrinsic-size: 320px 420px;
+  }
+  .section-nav-card:hover,
+  .image-card:hover,
+  .device-showcase:hover,
+  .cart-item:hover,
+  .favorite-item:hover,
+  .nav-cart-btn:hover,
+  .btn-red:hover,
+  .btn-blue:hover,
+  .add-btn:hover,
+  .favorite-toggle-btn:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .feature-grid {
+    gap: 24px;
+  }
+  .feature-img-wrap::before,
+  .feature-img-wrap img {
+    filter: none !important;
+    mix-blend-mode: normal !important;
+  }
+  .cat-filter-row {
+    padding: 10px 12px;
+  }
+  .cat-filter-search,
+  .custom-select-btn,
+  .cat-filter-slider {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .cart-checkout-btn,
+  .nav-cart-btn,
+  .add-btn,
+  .image-card-add,
+  .image-card-trailer,
+  .favorite-btn,
+  .favorite-toggle-btn,
+  .cart-qty-btn,
+  .cart-close,
+  .cat-sidebar-item,
+  .custom-select-btn,
+  .custom-option {
+    touch-action: manipulation;
+  }
+}
+
 /* ════════════════ BIG BACKGROUND PS SYMBOLS ════════════════ */
 .bg-symbols {
   position: fixed; inset: 0;
