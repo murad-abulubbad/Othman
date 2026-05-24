@@ -1,0 +1,264 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CARDS — image-grid, image-card (+ variants), prices, badges,
+   favorite button on card, in-card actions
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Grid container ────────────────────────────────────────────── */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 25px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* ── Image card ────────────────────────────────────────────────── */
+.image-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(0,85,204,0.18), rgba(5,5,16,0.95));
+  border: 1px solid rgba(0,85,204,0.4);
+  cursor: pointer;
+  transition: transform 0.4s, opacity 0.4s, box-shadow 0.4s, border-color 0.4s;
+  opacity: 0;
+  transform: translateY(30px);
+  display: flex; flex-direction: column;
+  /* Off-screen optimization — saves work for cards below the fold. */
+  content-visibility: auto;
+  contain-intrinsic-size: 320px 420px;
+}
+.image-card.is-ps5 {
+  background: linear-gradient(160deg, rgba(204,0,0,0.18), rgba(5,5,16,0.97));
+  border-color: rgba(204,0,0,0.4);
+}
+.image-card.visible { opacity: 1; transform: none; }
+.image-card:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: 0 25px 60px rgba(0,85,204,0.45);
+  border-color: rgba(0,85,204,0.85);
+}
+.image-card.is-ps5:hover {
+  box-shadow: 0 25px 60px rgba(204,0,0,0.45);
+  border-color: rgba(204,0,0,0.85);
+}
+
+.image-card-imgwrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #000;
+  overflow: hidden;
+}
+.image-card-img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  background: radial-gradient(ellipse at center, rgba(0,85,204,0.15), #000 70%);
+  transition: transform 0.5s;
+}
+.image-card.is-ps5 .image-card-img {
+  background: radial-gradient(ellipse at center, rgba(204,0,0,0.15), #000 70%);
+}
+.image-card:hover .image-card-img { transform: scale(1.06); }
+.image-card-imgwrap::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(5,5,16,0.85));
+  pointer-events: none;
+}
+
+.image-card-platform {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(0,85,204,0.85);
+  color: white;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.6rem; letter-spacing: 1.5px; font-weight: 900;
+  padding: 4px 10px; border-radius: 4px;
+  z-index: 2;
+  box-shadow: 0 0 12px rgba(0,85,204,0.6);
+}
+.image-card.is-ps5 .image-card-platform {
+  background: rgba(204,0,0,0.85);
+  box-shadow: 0 0 12px rgba(204,0,0,0.6);
+}
+
+/* ── Badges ────────────────────────────────────────────────────── */
+.product-condition-badge {
+  position: absolute; top: 10px; left: 10px;
+  z-index: 4;
+  padding: 5px 11px; border-radius: 999px;
+  font-size: 0.68rem; font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #ff8a00, #cc0000);
+  border: 1px solid rgba(255,255,255,0.24);
+  box-shadow: 0 0 18px rgba(255,138,0,0.45);
+}
+.product-condition-badge.is-new {
+  background: linear-gradient(135deg, #00b83a, #007a28);
+  box-shadow: 0 0 18px rgba(0,184,58,0.55);
+}
+
+.out-of-stock-badge {
+  position: absolute;
+  bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(180,0,0,0.92);
+  color: #fff;
+  font-size: 0.7rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 6px;
+  white-space: nowrap; z-index: 3;
+  border: 1px solid rgba(255,80,80,0.5);
+  box-shadow: 0 0 10px rgba(200,0,0,0.5);
+}
+.image-card.is-out-of-stock .image-card-img { opacity: 0.5; filter: grayscale(40%); }
+
+/* ── Card body ─────────────────────────────────────────────────── */
+.image-card-body {
+  padding: 14px 16px 16px;
+  flex: 1;
+  display: flex; flex-direction: column;
+}
+.image-card-title {
+  font-weight: 700; font-size: 0.98rem;
+  margin-bottom: 5px; line-height: 1.3;
+  color: white;
+}
+.image-card-genre {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.55rem; letter-spacing: 1.8px;
+  color: #6699ff;
+  margin-bottom: 12px;
+}
+.image-card.is-ps5 .image-card-genre { color: #ff7070; }
+.image-card-bottom {
+  margin-top: auto;
+  display: flex; flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+/* ── Price box ─────────────────────────────────────────────────── */
+.image-card-price {
+  font-family: 'Lilita One', 'Orbitron', monospace;
+  font-weight: 900;
+  color: #6699ff;
+  direction: ltr; unicode-bidi: embed;
+  width: 100%;
+  flex: 0 0 auto;
+  min-width: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 85, 204, 0.18), rgba(0, 0, 0, 0.35));
+  border: 1px solid rgba(102, 153, 255, 0.25);
+  box-shadow: inset 0 0 18px rgba(0, 85, 204, 0.15);
+}
+.image-card.is-ps5 .image-card-price {
+  color: var(--red-bright);
+  background: linear-gradient(135deg, rgba(204, 0, 0, 0.18), rgba(0, 0, 0, 0.35));
+  border-color: rgba(255, 80, 80, 0.3);
+  box-shadow: inset 0 0 18px rgba(204, 0, 0, 0.18);
+}
+.image-card-price-text { font-size: 1.25rem; letter-spacing: 0; gap: 4px; }
+
+/* Dual price (old + discount) */
+.price-old, .price-new {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  display: block;
+  direction: ltr; unicode-bidi: embed;
+  white-space: nowrap; line-height: 1.15;
+}
+.price-old {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 80, 80, 0.95);
+  text-decoration-thickness: 2.5px;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+}
+.image-card-price.image-card-price-text .price-old { font-size: 1.05rem; opacity: 1; color: rgba(255,140,140,0.9); }
+.price-new {
+  color: #39ff14;
+  text-shadow: 0 0 12px rgba(57, 255, 20, 0.7), 0 0 24px rgba(57, 255, 20, 0.4), 0 0 2px rgba(57, 255, 20, 0.95);
+  letter-spacing: 0.5px;
+}
+.image-card-price.image-card-price-text .price-new { font-size: 1.35rem; }
+.image-card.is-ps5 .price-new {
+  color: #ff5577;
+  text-shadow: 0 0 12px rgba(255, 60, 90, 0.6), 0 0 2px rgba(255, 60, 90, 0.95);
+}
+
+/* ── Action row (favorite + trailer + add) ─────────────────────── */
+.image-card-actions {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.image-card-bottom .image-card-actions { width: 100%; justify-content: flex-end; }
+
+.image-card-add {
+  background: linear-gradient(135deg, var(--blue), #003a99);
+  border: none; border-radius: 8px;
+  color: white; font-family: 'Cairo', sans-serif;
+  font-weight: 700; font-size: 0.78rem;
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.25s, box-shadow 0.25s;
+  display: flex; align-items: center; gap: 5px;
+}
+.image-card.is-ps5 .image-card-add { background: linear-gradient(135deg, var(--red), #800); }
+.image-card-add:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,85,204,0.5); }
+.image-card.is-ps5 .image-card-add:hover { box-shadow: 0 8px 20px rgba(204,0,0,0.5); }
+
+.image-card-trailer {
+  background: linear-gradient(135deg, #cc0000, #0055cc);
+  border: none; border-radius: 8px;
+  color: white; font-family: 'Cairo', sans-serif;
+  font-weight: 700; font-size: 0.78rem;
+  padding: 8px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.25s, box-shadow 0.25s;
+  display: flex; align-items: center; gap: 5px;
+}
+.image-card-trailer:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(255,45,85,0.45); }
+
+.favorite-btn {
+  width: 100%; height: 32px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.25s;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.5);
+}
+.favorite-btn:hover {
+  background: rgba(255,45,85,0.3);
+  border-color: var(--red-bright);
+  color: var(--red-bright);
+  transform: scale(1.05);
+}
+.favorite-btn.active {
+  color: var(--red-bright);
+  background: rgba(255,45,85,0.4);
+  border-color: var(--red-bright);
+  animation: heartPulse 0.4s ease-out;
+}
+@keyframes heartPulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Brief click feedback for the "أضف" button */
+.image-card-add.just-added {
+  animation: justAddedPulse 0.35s ease;
+}
+@keyframes justAddedPulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(0,184,58,0.7); }
+  40%  { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(0,184,58,0.0); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(0,184,58,0); }
+}

@@ -33,8 +33,21 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@400;700;900&family=Lilita+One&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="css/style.css?v=23">
+<!-- Fonts loaded async (media=print + onload swap) — never blocks first paint -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@700;900&family=Lilita+One&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@700;900&family=Lilita+One&display=swap" rel="stylesheet"></noscript>
+<!-- ════ CSS — parallel-loaded parts ════
+     Each <link> downloads concurrently over HTTP/2 (much faster than
+     @import which serializes). Order = cascade order. -->
+<link rel="stylesheet" href="css/parts/01-base.css?v=2">
+<link rel="stylesheet" href="css/parts/02-navbar.css?v=2">
+<link rel="stylesheet" href="css/parts/03-hero.css?v=2">
+<link rel="stylesheet" href="css/parts/04-sections.css?v=2">
+<link rel="stylesheet" href="css/parts/05-cards.css?v=2">
+<link rel="stylesheet" href="css/parts/06-cart-favorites.css?v=2">
+<link rel="stylesheet" href="css/parts/07-modals.css?v=2">
+<link rel="stylesheet" href="css/parts/08-filters.css?v=2">
+<link rel="stylesheet" href="css/parts/09-responsive.css?v=2">
 </head>
 <body>
 
@@ -155,7 +168,6 @@
     </div>
   </a>
   <ul class="nav-links" id="nav-links">
-    <li><a href="#home" class="active">الرئيسية</a></li>
     <!-- category links injected by Firestore -->
   </ul>
   <button class="nav-cart-btn" onclick="openCart()">
@@ -201,129 +213,6 @@
   <div class="energy-ring r1"></div>
   <div class="energy-ring r3"></div>
 
-  <!-- GAMING CONSOLE COLLAGE -->
-  <div class="console-collage">
-    <!-- PS5 (left top) — REAL PHOTO -->
-    <img class="console-float ps5 is-photo" src="images/Ps5.jpeg" alt="PlayStation 5" loading="lazy"/>
-
-    <!-- XBOX (left bottom) — REAL PHOTO -->
-    <img class="console-float xbox is-photo" src="images/Xbox360.jpeg" alt="Xbox" loading="lazy"/>
-
-    <!-- NINTENDO WII (right top) -->
-    <svg class="console-float wii" viewBox="0 0 100 230" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="wiW" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#dadae5"/><stop offset="50%" stop-color="#fff"/><stop offset="100%" stop-color="#aab"/>
-        </linearGradient>
-      </defs>
-      <rect x="22" y="10" width="56" height="210" rx="4" fill="url(#wiW)" stroke="#99a" stroke-width="0.8"/>
-      <rect x="32" y="92" width="36" height="2" fill="#666"/>
-      <text x="50" y="60" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" font-style="italic" fill="#0099ff">Wii</text>
-      <circle cx="50" cy="170" r="3" fill="#0066ff" opacity="0.9"/>
-      <rect x="35" y="185" width="6" height="1.5" fill="#777"/>
-      <rect x="46" y="185" width="6" height="1.5" fill="#777"/>
-      <rect x="57" y="185" width="6" height="1.5" fill="#777"/>
-      <rect x="35" y="195" width="30" height="1" fill="#bbb"/>
-    </svg>
-
-    <!-- GAMING PC (right bottom) -->
-    <svg class="console-float pc" viewBox="0 0 220 280" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="pcB" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#1a1a22"/><stop offset="100%" stop-color="#000"/>
-        </linearGradient>
-        <linearGradient id="rgb" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#ff00aa"/><stop offset="33%" stop-color="#ff1a1a"/><stop offset="66%" stop-color="#0055cc"/><stop offset="100%" stop-color="#00ffff"/>
-        </linearGradient>
-        <radialGradient id="fanR" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#ff0066" stop-opacity="0.8"/><stop offset="60%" stop-color="rgba(204,0,0,0.2)"/><stop offset="100%" stop-color="transparent"/>
-        </radialGradient>
-        <radialGradient id="fanB" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#00ccff" stop-opacity="0.8"/><stop offset="60%" stop-color="rgba(0,85,204,0.2)"/><stop offset="100%" stop-color="transparent"/>
-        </radialGradient>
-      </defs>
-      <rect x="20" y="10" width="180" height="265" rx="3" fill="url(#pcB)" stroke="#3a3a3a"/>
-      <rect x="35" y="25" width="150" height="200" rx="2" fill="#0a0a14" stroke="#1a1a28"/>
-      <circle cx="70" cy="65" r="22" fill="url(#fanR)"/>
-      <circle cx="70" cy="65" r="20" fill="none" stroke="#ff0066" stroke-width="1" opacity="0.7"/>
-      <g stroke="#222" stroke-width="0.8" fill="none" opacity="0.7">
-        <line x1="70" y1="50" x2="70" y2="80"/><line x1="55" y1="65" x2="85" y2="65"/>
-        <line x1="60" y1="55" x2="80" y2="75"/><line x1="60" y1="75" x2="80" y2="55"/>
-      </g>
-      <circle cx="150" cy="65" r="22" fill="url(#fanB)"/>
-      <circle cx="150" cy="65" r="20" fill="none" stroke="#0099ff" stroke-width="1" opacity="0.7"/>
-      <g stroke="#222" stroke-width="0.8" fill="none" opacity="0.7">
-        <line x1="150" y1="50" x2="150" y2="80"/><line x1="135" y1="65" x2="165" y2="65"/>
-        <line x1="140" y1="55" x2="160" y2="75"/><line x1="140" y1="75" x2="160" y2="55"/>
-      </g>
-      <circle cx="110" cy="125" r="28" fill="url(#fanB)" opacity="0.9"/>
-      <circle cx="110" cy="125" r="26" fill="none" stroke="#00ccff" stroke-width="1.2" opacity="0.8"/>
-      <g stroke="#222" stroke-width="0.8" fill="none" opacity="0.6">
-        <line x1="110" y1="105" x2="110" y2="145"/><line x1="90" y1="125" x2="130" y2="125"/>
-      </g>
-      <rect x="40" y="170" width="140" height="35" fill="#0a0a0e" stroke="#444" stroke-width="0.5"/>
-      <rect x="40" y="180" width="140" height="3" fill="url(#rgb)" opacity="0.9"/>
-      <text x="110" y="198" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="900" fill="#fff" letter-spacing="1">RTX 4080</text>
-      <circle cx="35" cy="245" r="3" fill="#00ff66"/>
-      <rect x="55" y="244" width="20" height="2" fill="#666"/><rect x="85" y="244" width="20" height="2" fill="#666"/>
-      <rect x="120" y="244" width="6" height="2" fill="#666"/><rect x="135" y="244" width="6" height="2" fill="#666"/>
-    </svg>
-
-    <!-- FLOATING DUALSENSE PS PAD -->
-    <svg class="console-float pad-ps" viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="dsW" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#aab"/>
-        </linearGradient>
-      </defs>
-      <path d="M40,25 Q15,30 18,55 Q20,90 50,95 L70,95 Q78,82 90,82 Q102,82 110,95 L130,95 Q160,90 162,55 Q165,30 140,25 L100,18 L80,18 Z" fill="url(#dsW)" stroke="#333" stroke-width="0.8"/>
-      <circle cx="55" cy="55" r="10" fill="#222"/>
-      <path d="M50,55 L60,55 M55,50 L55,60" stroke="#888" stroke-width="1.5"/>
-      <circle cx="125" cy="45" r="2.8" fill="#66ccff"/>
-      <circle cx="135" cy="55" r="2.8" fill="#ff66cc"/>
-      <circle cx="125" cy="65" r="2.8" fill="#66ff66"/>
-      <circle cx="115" cy="55" r="2.8" fill="#ff6666"/>
-      <rect x="73" y="38" width="30" height="14" rx="2" fill="#1a1a26"/>
-      <rect x="73" y="58" width="30" height="2" fill="#0099ff" opacity="0.8"/>
-      <circle cx="80" cy="78" r="6" fill="#1a1a22"/>
-      <circle cx="100" cy="78" r="6" fill="#1a1a22"/>
-    </svg>
-
-    <!-- FLOATING XBOX PAD -->
-    <svg class="console-float pad-xbox" viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="xpD" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#2a2a2e"/><stop offset="100%" stop-color="#0a0a0e"/>
-        </linearGradient>
-      </defs>
-      <path d="M38,28 Q15,35 18,60 Q22,95 52,98 L72,98 Q80,85 90,85 Q100,85 108,98 L128,98 Q158,95 162,60 Q165,35 142,28 L100,22 L80,22 Z" fill="url(#xpD)" stroke="#444" stroke-width="0.8"/>
-      <circle cx="90" cy="42" r="9" fill="#0c0c10" stroke="#0f0" stroke-width="0.8"/>
-      <text x="90" y="46" text-anchor="middle" font-family="Arial" font-size="10" font-weight="900" fill="#0f0">X</text>
-      <circle cx="55" cy="55" r="9" fill="#1a1a1e"/>
-      <circle cx="55" cy="55" r="3" fill="#0c0c10"/>
-      <circle cx="118" cy="50" r="3" fill="#ffd700"/>
-      <circle cx="128" cy="60" r="3" fill="#ff4444"/>
-      <circle cx="118" cy="70" r="3" fill="#33ff66"/>
-      <circle cx="108" cy="60" r="3" fill="#3399ff"/>
-      <rect x="73" y="62" width="20" height="20" rx="3" fill="#1a1a1e"/>
-      <path d="M83,67 L83,77 M78,72 L88,72" stroke="#666" stroke-width="1"/>
-    </svg>
-
-    <!-- FLOATING WII REMOTE -->
-    <svg class="console-float pad-wii" viewBox="0 0 60 180" xmlns="http://www.w3.org/2000/svg">
-      <rect x="15" y="10" width="30" height="160" rx="6" fill="#fff" stroke="#aab" stroke-width="0.6"/>
-      <circle cx="30" cy="30" r="5" fill="#0099ff" opacity="0.6"/>
-      <circle cx="30" cy="30" r="3" fill="#00ccff"/>
-      <circle cx="30" cy="55" r="4" fill="#1a1a1e"/>
-      <text x="30" y="58" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">A</text>
-      <rect x="22" y="65" width="16" height="6" rx="2" fill="#222"/>
-      <text x="30" y="70" text-anchor="middle" font-family="Arial" font-size="5" fill="#fff">+</text>
-      <rect x="22" y="74" width="16" height="6" rx="2" fill="#222"/>
-      <text x="30" y="79" text-anchor="middle" font-family="Arial" font-size="5" fill="#fff">−</text>
-      <circle cx="30" cy="100" r="3" fill="#444"/>
-      <circle cx="30" cy="115" r="3" fill="#444"/>
-      <text x="30" y="155" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" font-weight="900" fill="#888">Wii</text>
-    </svg>
   </div>
 
   <div class="hero-content">
@@ -391,9 +280,9 @@
   </div>
 </section>
 
-<!-- FEATURED TICKER -->
-<div class="ticker-heading">وصل حديثاً</div>
-<div class="news-ticker-wrap" id="news-ticker-wrap" style="display:none">
+<!-- FEATURED TICKER (visible only on home; toggled via .is-populated class) -->
+<div class="ticker-heading" id="ticker-heading">وصل حديثاً</div>
+<div class="news-ticker-wrap" id="news-ticker-wrap">
   <div class="news-ticker-track-wrap">
     <div class="news-ticker-track" id="news-ticker-track">
       <!-- populated by firestore-loader -->
@@ -468,21 +357,9 @@
   </a>
 </footer>
 
-<script src="js/main.js?v=11" defer></script>
-<script src="js/click-particles.js?v=1" defer></script>
-
-<!-- ════ FIRESTORE DYNAMIC LOADER ════
-     Fetches Categories + Items from Firestore.
-     Builds sections-nav and all product sections dynamically.          -->
-<script type="module" src="js/firestore-loader.js?v=18" defer></script>
-
-<!-- Service Worker Registration for PWA -->
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then((reg) => console.log('SW registered:', reg))
-    .catch((err) => console.log('SW registration failed:', err));
-}
-</script>
+<!-- ════ APP ENTRY ════
+     Single ES-module entry point that imports every feature module
+     and registers the service worker. See public/js/app.js. -->
+<script type="module" src="js/app.js?v=10"></script>
 </body>
 </html>

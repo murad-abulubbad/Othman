@@ -1,5 +1,5 @@
 // Service Worker for Othman For Gaming PWA
-const CACHE_NAME = 'othman-gaming-v3';
+const CACHE_NAME = 'othman-gaming-v5-mobileperf';
 
 // Only cache static assets (images, fonts, icons) — never HTML/JS/CSS
 const CACHEABLE = (url) => {

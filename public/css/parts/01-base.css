@@ -1,0 +1,231 @@
+/* ═══════════════════════════════════════════════════════════════════
+   BASE — variables, reset, body, html, fonts, loader
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --red:         #E60029;
+  --red-bright:  #FF2D55;
+  --blue:        #0066E6;
+  --blue-bright: #2A8CFF;
+  --dark:        #0E0E1F;
+  --dark2:       #15152C;
+  --dark3:       #1A1A30;
+  --white:       #FFFFFF;
+  --glow-red:    0 0 24px rgba(255,45,85,0.7), 0 0 48px rgba(230,0,41,0.4);
+  --glow-blue:   0 0 24px rgba(42,140,255,0.7), 0 0 48px rgba(0,102,230,0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  background: #0c1245;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 100% 80% at 0% 0%, rgba(30, 100, 255, 0.78), transparent 58%),
+    radial-gradient(ellipse 100% 80% at 100% 100%, rgba(255, 25, 60, 0.78), transparent 58%),
+    radial-gradient(ellipse 60% 80% at 50% 50%, rgba(120, 30, 110, 0.45), transparent 70%),
+    linear-gradient(135deg, #0c1245 0%, #1a0d3a 50%, #3a0d18 100%);
+  background-attachment: scroll;        /* fixed is broken on many browsers + slow */
+  background-size: cover;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  color: var(--white);
+  font-family: 'Cairo', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Section "veil" — dark wash for readability over the colorful body bg.
+   No backdrop-filter (GPU-heavy on mobile; we get the same look with solid color). */
+section { background: transparent; position: relative; z-index: 2; padding: 80px 40px; }
+section:not(#home) { background: rgba(6, 8, 28, 0.85); }
+section#home { background: transparent; }
+
+/* Page transitions reveal cards via .visible class */
+.section-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900; text-align: center;
+  margin-bottom: 12px; color: var(--white);
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.section-title.visible { opacity: 1; transform: none; }
+.section-title span { color: var(--red-bright); }
+
+.section-line {
+  width: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--red), var(--blue-bright), transparent);
+  margin: 0 auto 60px;
+  transition: width 0.7s 0.2s;
+  box-shadow: 0 0 10px var(--red);
+}
+.section-line.visible { width: 200px; }
+
+/* `content-visibility: auto` lets the browser skip layout + paint for
+   sections that are off-screen. Huge scroll-perf win on long pages.
+   `contain-intrinsic-size` reserves space so scroll position doesn't jump
+   while off-screen sections are still being rasterised. */
+.dynamic-category-section {
+  margin-bottom: 100px;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 800px;
+}
+
+/* ── Fade-up reusable keyframe ─────────────────────────────────── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── LOADER ────────────────────────────────────────────────────── */
+#loader {
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 0% 0%, rgba(30, 100, 255, 0.55), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 100% 100%, rgba(255, 25, 60, 0.55), transparent 55%),
+    linear-gradient(135deg, #0a0d3a 0%, #1a0a30 50%, #350a18 100%);
+  z-index: 99998;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.6s, visibility 0.6s;
+}
+#loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.loader-logo-wrap {
+  position: relative;
+  width: 220px; height: 220px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 30px;
+}
+.loader-logo-img {
+  width: 150px; height: 150px;
+  border-radius: 50%; object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.18);
+  position: relative; z-index: 4;
+  animation: loaderLogoPulse 1.4s ease-in-out infinite alternate;
+}
+@keyframes loaderLogoPulse {
+  from { transform: scale(0.95); box-shadow: 0 0 30px rgba(255,45,85,0.5), 0 0 60px rgba(42,140,255,0.3); }
+  to   { transform: scale(1.06); box-shadow: 0 0 70px rgba(42,140,255,0.85), 0 0 130px rgba(255,45,85,0.5); }
+}
+
+.loader-orbit { position: absolute; border-radius: 50%; pointer-events: none; }
+.loader-orbit:nth-child(1) {
+  width: 180px; height: 180px;
+  border: 1px dashed rgba(255,45,85,0.55);
+  animation: loaderSpin 4s linear infinite;
+}
+.loader-orbit-2 {
+  width: 220px; height: 220px;
+  border: 1px solid rgba(42,140,255,0.45);
+  animation: loaderSpin 6s linear infinite reverse;
+}
+.loader-orbit-3 {
+  width: 260px; height: 260px;
+  border: 1px dotted rgba(255,255,255,0.25);
+  animation: loaderSpin 9s linear infinite;
+}
+@keyframes loaderSpin { to { transform: rotate(360deg); } }
+
+.loader-bar-wrap { width: 320px; height: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.loader-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #D6002A 0%, #00B83A 50%, #1E6FE6 100%);
+  animation: loaderFill 2.2s ease forwards;
+  box-shadow: 0 0 8px rgba(0,0,0,0.4);
+}
+@keyframes loaderFill { from { width: 0; } to { width: 100%; } }
+
+.loader-text {
+  font-family: 'Orbitron', monospace; font-size: 0.65rem;
+  letter-spacing: 5px; color: rgba(255,255,255,0.85);
+  margin-top: 18px; animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0.45; } }
+
+/* ── PARTICLES CANVAS (decorative — disabled on mobile in responsive) ─ */
+#particle-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.4; }
+
+/* ── BG SYMBOLS (floating PS shapes) ───────────────────────────── */
+.bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bg-symbol {
+  position: absolute;
+  font-family: 'Orbitron', sans-serif; font-weight: 900;
+  user-select: none;
+  animation: bgFloatRise linear infinite;
+}
+.bg-symbol.s-x        { color: rgba(255, 80, 110, 0.30); }
+.bg-symbol.s-circle   { color: rgba(120, 180, 255, 0.32); }
+.bg-symbol.s-square   { color: rgba(255, 130, 200, 0.30); }
+.bg-symbol.s-triangle { color: rgba(120, 255, 180, 0.30); }
+.bg-symbol.bright.s-x        { color: rgba(255, 70, 110, 0.85); }
+.bg-symbol.bright.s-circle   { color: rgba(80, 170, 255, 0.85); }
+.bg-symbol.bright.s-square   { color: rgba(255, 130, 220, 0.80); }
+.bg-symbol.bright.s-triangle { color: rgba(80, 255, 180, 0.80); }
+@keyframes bgFloatRise {
+  0%   { transform: translate(var(--xOff,0px), 30vh) rotate(0deg) scale(0.9); opacity: 0; }
+  8%   { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translate(calc(var(--xOff,0px) + var(--xDrift,40px)), -130vh) rotate(360deg) scale(1.05); opacity: 0; }
+}
+
+/* ── TOAST ─────────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: #1a1a2e;
+  border: 2px solid #cc0000; border-radius: 8px;
+  padding: 15px 20px; color: white; font-weight: 600; font-size: 0.95rem;
+  z-index: 99990; transition: opacity 0.3s ease, transform 0.3s ease;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 4px 20px rgba(204, 0, 0, 0.4);
+  opacity: 0; transform: translateX(100px);
+  pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateX(0); pointer-events: auto; }
+#toast .toast-icon { font-size: 1.4rem; }
+
+/* ── BUTTONS (base) ────────────────────────────────────────────── */
+.btn-red, .btn-blue, .add-btn,
+.image-card-add, .image-card-trailer,
+.cart-checkout-btn, .nav-cart-btn {
+  position: relative;
+  overflow: hidden;
+}
+.btn-red {
+  background: linear-gradient(135deg, var(--red), #990000);
+  color: white; border: none; padding: 14px 35px;
+  border-radius: 6px; font-family: 'Cairo', sans-serif;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+  box-shadow: var(--glow-red);
+}
+.btn-red:hover { transform: translateY(-3px); box-shadow: 0 0 40px rgba(204,0,0,0.8); }
+.btn-blue {
+  background: linear-gradient(135deg, var(--blue), #003399);
+  color: white; border: none; padding: 14px 35px;
+  border-radius: 6px; font-family: 'Cairo', sans-serif;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+  box-shadow: var(--glow-blue);
+}
+.btn-blue:hover { transform: translateY(-3px); box-shadow: 0 0 40px rgba(0,85,204,0.8); }
+
+.add-btn {
+  background: linear-gradient(135deg, var(--red), var(--blue));
+  border: none; border-radius: 6px; color: white;
+  font-family: 'Cairo', sans-serif; font-weight: 700;
+  padding: 10px 20px; font-size: 0.88rem; cursor: pointer;
+  width: 100%; transition: transform 0.25s, box-shadow 0.25s;
+}
+.add-btn:hover { box-shadow: var(--glow-red); transform: translateY(-1px); }
+.add-btn.added { background: linear-gradient(135deg, #005500, #008800); }
+
+/* Click ripple element (created by JS) */
+.ripple {
+  position: absolute; border-radius: 50%;
+  transform: scale(0);
+  animation: ripple-anim 0.7s ease-out;
+  background: rgba(255,255,255,0.55);
+  pointer-events: none;
+}
+@keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }

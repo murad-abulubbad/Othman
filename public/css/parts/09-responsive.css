@@ -1,0 +1,412 @@
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE + MOBILE PERFORMANCE
+   ═══════════════════════════════════════════════════════════════════
+
+   PERFORMANCE STRATEGY (mobile ≤ 768px and touch devices):
+
+   1. Kill all `text-shadow` — multi-layer text-shadows are the biggest
+      paint cost on mobile Chrome. We lose some glow; we gain ~5ms per
+      paint cycle.
+   2. Reduce `box-shadow` to single sharp shadows or none. Blurred box
+      shadows force the compositor to repaint large regions.
+   3. Cap body background to a flat gradient (1 layer, not 4).
+   4. Stop infinite animations (ticker, bg-symbols, logo orbits, glow
+      pulses). Each running animation is a continuous composite layer.
+   5. Hover transforms removed — they're meaningless on touch and
+      cost a layout/paint when the touch state lingers.
+   6. `content-visibility: auto` already applied to sections in base.
+      We extend it here to favorite/cart items too.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── ≤ 768px — main mobile breakpoint ─────────────────────────── */
+@media (max-width: 768px) {
+
+  /* ─────────── BODY + PAGE ─────────── */
+  html { scroll-behavior: auto; }                /* smooth scroll is JS-driven on mobile */
+  body {
+    /* Flat background — 1 paint layer instead of 4 stacked radials */
+    background: linear-gradient(135deg, #0c1245 0%, #1a0d3a 55%, #3a0d18 100%);
+    background-attachment: scroll;
+  }
+
+  /* ─────────── NAV ─────────── */
+  nav { padding: 0 12px; height: 58px; }
+  nav.shrunk { height: 50px; }
+  .nav-logo-wrap {
+    width: 36px; height: 36px;
+    box-shadow: none;                            /* drop the glow ring */
+    animation: none;                             /* drop glowPulse */
+  }
+  .nav-logo-img { width: 36px; height: 36px; }
+  .nav-brand { font-size: 0.7rem; text-shadow: none; }
+  .nav-brand span { text-shadow: none; }
+  .nav-links { display: none; }
+  .nav-cart-btn { box-shadow: none; }
+  .cart-badge { box-shadow: none; }
+
+  /* ─────────── SECTIONS ─────────── */
+  section { padding: 60px 20px; }
+  .dynamic-category-section {
+    margin-bottom: 40px;
+    contain-intrinsic-size: 1px 600px;           /* tighter estimate for narrow viewport */
+  }
+  .section-title { text-shadow: none; }          /* keep readability without glow */
+  .section-line { box-shadow: none; }
+
+  /* ─────────── DECORATIVE LAYERS — OFF ─────────── */
+  #particle-canvas,
+  .console-collage,
+  .energy-ring,
+  .hero-grid-bg,
+  .split-line,
+  .scanlines,
+  .hero-logo-orbit { display: none; }
+
+  /* bg-symbols pruned aggressively via JS (already done in effects.js),
+     and the floating animation is killed here so any remaining ones
+     don't repaint. */
+  .bg-symbol {
+    animation: none;
+    opacity: 0.18;                               /* still visible, just static */
+  }
+
+  /* ─────────── HERO ─────────── */
+  #home {
+    justify-content: flex-start;
+    padding: 75px 14px 30px;
+  }
+  #home .hero-content { width: 100%; max-width: 440px; padding: 0 10px; }
+  #home .hero-logo-img {
+    width: clamp(90px, 28vw, 120px);
+    height: clamp(90px, 28vw, 120px);
+    margin-bottom: 14px;
+    animation: none;                             /* drop logoMega */
+    box-shadow: 0 0 24px rgba(255,45,85,0.4);    /* single static shadow */
+  }
+  #home .hero-badge { font-size: 0.54rem; letter-spacing: 3px; padding: 6px 14px; margin-bottom: 18px; max-width: 94vw; }
+  #home .hero-sub { font-size: 1rem; line-height: 1.75; margin-bottom: 22px; }
+  #home .hero-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: min(100%, 380px);
+    margin: 0 auto;
+  }
+  #home .hero-btns .btn-red,
+  #home .hero-btns .btn-blue {
+    width: 100%;
+    padding: 15px 10px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    box-shadow: none;                            /* drop multi-layer glow */
+  }
+  #home .social-offer-bait {
+    width: min(100%, 430px);
+    margin-top: 16px;
+    padding: 12px 14px;
+    gap: 10px;
+    border-radius: 18px;
+    animation: none;                             /* drop offerPop infinite */
+    box-shadow: none;
+  }
+  #home .social-offer-emoji {
+    width: 46px; height: 46px; font-size: 1.45rem;
+    animation: none;                             /* drop offerEmojiBounce */
+    box-shadow: none;
+  }
+  #home .social-offer-text { font-size: 0.9rem; line-height: 1.35; }
+  #home .social-offer-text span { color: #ffd35a; }
+  #home .social-offer-arrow { animation: none; } /* drop offerArrow */
+  #home .hero-social-icons { gap: 10px; margin-top: 20px; animation: none; }
+  .hero-social-icons .social-icon { width: 40px; height: 40px; }
+
+  /* ─────────── LOADER ─────────── */
+  .loader-orbit { display: none; }               /* drop 3 spinning orbits */
+  .loader-logo-img { animation: none; box-shadow: 0 0 30px rgba(255,45,85,0.4); }
+  .loader-bar { box-shadow: none; }
+
+  /* ─────────── STATS ─────────── */
+  .stats-grid { gap: 30px; }
+  .stat-number {
+    animation: none;
+    text-shadow: none;                           /* drop expensive glow */
+  }
+
+  /* ─────────── FOOTER ─────────── */
+  .footer-logo img { box-shadow: 0 0 12px rgba(214,0,42,0.4); }
+  .footer-logo-text span { text-shadow: none; }
+  .footer-sub { color: rgba(204,0,0,0.6); }
+  .footer-social-icons { gap: 10px; }
+  .footer-social-icons .social-icon { width: 40px; height: 40px; }
+
+  /* ─────────── TICKER ─────────── */
+  /* The ticker animation runs forever on desktop. On mobile, JS pauses
+     it when it scrolls off-screen (see effects.js → tickerVisibility).
+     We also slow it down so motion sickness / battery is lower. */
+  .news-ticker-wrap { height: 84px; }
+  .news-ticker-track { animation-duration: 60s; }
+  .ticker-item img { width: 52px; height: 52px; }
+  .ticker-item-name { font-size: 0.72rem; max-width: 180px; }
+  .ticker-heading { font-size: 0.85rem; text-shadow: none; padding: 6px 12px 2px; }
+
+  /* ─────────── PAGE TRANSITION ─────────── */
+  #page-transition .trans-bar-logo { width: clamp(100px, 30vw, 220px); }
+  #page-transition .trans-logo { letter-spacing: 3px; text-shadow: none; }
+
+  /* ─────────── CARDS ─────────── */
+  /* All hover transforms are useless on touch and add repaint cost.
+     We override here AND in the @media (pointer: coarse) block. */
+  .image-card,
+  .section-nav-card { transition: opacity 0.3s; }
+  .image-card { transform: none; }
+  .image-card:hover,
+  .image-card.is-ps5:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(0,85,204,0.4);
+  }
+  .image-card:hover .image-card-img { transform: none; }
+  .section-nav-card { box-shadow: none; }
+  .section-nav-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(204,0,0,0.2);
+    background: linear-gradient(135deg, rgba(204,0,0,0.1), rgba(5,5,16,0.85));
+  }
+  .section-nav-card:hover .section-nav-icon { transform: none; }
+  .section-nav-card::before { display: none; }   /* drop radial-gradient pseudo */
+
+  /* Price box — drop inset shadow which is paint-heavy */
+  .image-card-price { box-shadow: none; }
+  .price-new { text-shadow: 0 0 6px rgba(57, 255, 20, 0.55); } /* single layer */
+  .price-old { text-decoration-thickness: 2px; }
+
+  /* Action buttons */
+  .image-card-add, .image-card-trailer { box-shadow: none; }
+  .image-card-platform { box-shadow: none; }
+  .product-condition-badge { box-shadow: none; }
+  .out-of-stock-badge { box-shadow: none; }
+
+  /* Favorite button click pulse OK to keep (one-shot) */
+
+  /* ─────────── FILTER BAR ─────────── */
+  .cat-filter-bar { margin: 0 10px 16px; }
+  .cat-filter-row {
+    border-radius: 16px;
+    padding: 10px 12px;
+    gap: 8px;
+    flex-direction: column;
+    align-items: stretch;
+    box-shadow: none;
+  }
+  .cat-filter-search {
+    width: 100%; min-width: unset;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    border-radius: 12px;
+  }
+  .cat-filter-search:focus { box-shadow: none; }
+  .cat-filter-price { justify-content: center; padding: 2px 0; border: none; }
+  .cat-filter-slider { width: 110px; }
+  .cat-filter-slider::-webkit-slider-thumb { box-shadow: none; }
+  .cat-filter-slider::-moz-range-thumb { box-shadow: none; }
+  .price-value { min-width: 60px; font-size: 0.82rem; }
+  .cat-filter-selects-row { display: flex; gap: 8px; }
+  .cat-filter-selects-row .custom-select-wrap { flex: 1; position: relative; }
+  .cat-filter-selects-row .custom-select-btn {
+    width: 100%;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    padding: 10px 8px;
+    text-align: center;
+    box-shadow: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 44px;
+  }
+  .custom-select-dropdown {
+    right: 0;
+    left: 0;
+    min-width: auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    max-height: 200px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .custom-option {
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ─────────── GAME DETAIL MODAL ─────────── */
+  .game-detail-box {
+    grid-template-columns: 1fr;
+    max-height: 92vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: min(480px, 96vw);
+    box-shadow: 0 0 30px rgba(0,0,0,0.6);         /* single shadow, no glow */
+  }
+  .game-detail-cover { min-height: 0; max-height: 200px; height: 200px; }
+  .game-detail-cover img { object-fit: contain; width: 100%; height: 200px; padding: 8px; }
+  .game-detail-content { padding: 16px 14px 20px; }
+  .game-detail-name { font-size: 1.1rem; }
+  .game-detail-platform { box-shadow: none; }
+  .game-detail-condition { box-shadow: none; }
+  .game-detail-price { box-shadow: none; }
+  .game-detail-cover-icon { filter: none; }       /* drop drop-shadow */
+
+  /* ─────────── TRAILER MODAL ─────────── */
+  .trailer-box { box-shadow: 0 0 30px rgba(0,0,0,0.6); }
+
+  /* ─────────── CART / FAVORITES SIDEBARS ─────────── */
+  #cart-sidebar { box-shadow: none; }
+  .favorite-sidebar { box-shadow: none; }
+  .favorite-toggle-btn {
+    box-shadow: 0 4px 12px rgba(255,45,85,0.4);
+  }
+  .favorite-toggle-btn:hover { transform: translateY(-50%); box-shadow: 0 4px 12px rgba(255,45,85,0.4); }
+  .cart-total-price { text-shadow: none; }       /* drop expensive glow */
+}
+
+/* ── ≤ 480px — small phones ───────────────────────────────────── */
+@media (max-width: 480px) {
+  section { padding: 20px 12px; }
+  .dynamic-category-section {
+    margin-bottom: 15px;
+    contain-intrinsic-size: 1px 500px;
+  }
+  .section-title { font-size: 1.3rem; margin-bottom: 6px; }
+  .section-line { margin-bottom: 12px; height: 2px; }
+  .stats-section { padding: 15px 12px; }
+  .stats-grid { gap: 20px; }
+  .stat-number { font-size: 1.5rem; }
+
+  /* Denser card grid */
+  .image-grid { gap: 10px; }
+  .image-card {
+    border-radius: 10px;
+    contain-intrinsic-size: 200px 320px;
+  }
+  .sections-grid { gap: 12px; grid-template-columns: repeat(2, 1fr); }
+  .section-nav-card { padding: 18px 10px; }
+
+  /* Cart items compressed */
+  .cart-item { padding: 8px 10px; gap: 10px; flex-direction: row; align-items: center; }
+  .cart-item-img { width: 50px; height: 50px; min-width: 50px; flex-shrink: 0; }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-name { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cart-item-price { font-size: 0.8rem; }
+  .cart-item-actions { padding: 3px 6px; gap: 6px; flex-shrink: 0; }
+  .cart-qty-btn { width: 22px; height: 22px; font-size: 0.85rem; }
+  .cart-qty-num { font-size: 0.8rem; min-width: 16px; }
+
+  /* Favorite items compressed */
+  .favorite-item { padding: 8px 10px; gap: 10px; }
+  .favorite-item-img { width: 50px; height: 50px; min-width: 50px; flex-shrink: 0; }
+  .favorite-item-name { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .favorite-item-price { font-size: 0.8rem; }
+  .favorite-item-remove { width: 26px; height: 26px; font-size: 0.85rem; }
+
+  /* Game detail gallery on small phones */
+  .game-detail-cover { max-height: 160px; height: 160px; }
+  .game-detail-cover img { height: 160px; padding: 6px; }
+  .game-detail-cover.has-gallery {
+    min-height: 350px; max-height: none;
+    padding-bottom: 90px;
+  }
+  .detail-gallery-main { min-height: 260px; padding: 15px; }
+  .detail-gallery-main img { max-height: 240px; }
+  .detail-gallery-thumbs { padding: 12px 15px; gap: 10px; justify-content: flex-start; }
+  .detail-thumb { width: 65px; height: 65px; border-radius: 8px; box-shadow: none; }
+  .game-detail-name { font-size: 1.3rem; }
+  .game-detail-price { font-size: 1.1rem; padding: 6px 14px; }
+  .game-detail-actions .image-card-add,
+  .game-detail-actions .image-card-trailer {
+    min-width: 120px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+
+  /* Price box compact */
+  .image-card-price { padding: 8px 10px; border-radius: 10px; }
+  .image-card-price.image-card-price-text .price-old { font-size: 0.95rem; }
+  .image-card-price.image-card-price-text .price-new { font-size: 1.15rem; }
+}
+
+/* ── ≤ 430px — tiny phones ─────────────────────────────────────── */
+@media (max-width: 430px) {
+  nav { height: 54px; }
+  .nav-logo-wrap { width: 32px; height: 32px; }
+  .nav-logo-img  { width: 32px; height: 32px; }
+  #home { padding-top: 62px; }
+  #home .hero-logo-img {
+    width: clamp(80px, 22vw, 100px);
+    height: clamp(80px, 22vw, 100px);
+    margin-bottom: 10px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOUCH-DEVICE OVERRIDES — applies to ALL touch devices regardless of
+   viewport size (covers tablets in landscape, large phones, etc.)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (pointer: coarse) {
+
+  /* Kill ALL hover transforms — meaningless on touch */
+  .image-card:hover,
+  .section-nav-card:hover,
+  .nav-cart-btn:hover,
+  .nav-logo:hover .nav-logo-wrap,
+  .btn-red:hover, .btn-blue:hover,
+  .add-btn:hover, .image-card-add:hover, .image-card-trailer:hover,
+  .favorite-btn:hover, .favorite-toggle-btn:hover,
+  .cart-checkout-btn:hover,
+  .footer-social-icons .social-icon:hover,
+  .hero-social-icons .social-icon:hover,
+  .detail-thumb:hover {
+    transform: none;
+  }
+
+  /* Make tap targets respond instantly (no 300ms delay) */
+  a, button,
+  .cart-checkout-btn, .nav-cart-btn,
+  .add-btn, .image-card-add, .image-card-trailer,
+  .favorite-btn, .favorite-toggle-btn,
+  .cart-qty-btn, .cart-close,
+  .cat-sidebar-item,
+  .custom-select-btn, .custom-option,
+  .image-card, .section-nav-card,
+  .detail-thumb, .ticker-item {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Native momentum scrolling for sidebars */
+  .cart-items,
+  .favorite-sidebar-content,
+  .cat-sidebar,
+  .detail-gallery-thumbs {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   REDUCED MOTION — respect user preference
+   ═══════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .news-ticker-track { animation: none !important; transform: none !important; }
+}

@@ -1,0 +1,155 @@
+/* ═══════════════════════════════════════════════════════════════════
+   FILTERS — per-category filter bar + custom-select dropdowns
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cat-filter-bar {
+  margin: 0 auto 24px;
+  max-width: 1100px;
+  position: relative;
+  z-index: 50;
+}
+.cat-filter-row {
+  display: flex; align-items: center;
+  gap: 10px; flex-wrap: wrap;
+  background: linear-gradient(135deg, rgba(10,10,30,0.85), rgba(5,5,20,0.9));
+  border: 1px solid rgba(0,255,136,0.15);
+  border-radius: 50px;
+  padding: 10px 18px;
+  box-shadow: 0 0 20px rgba(0,255,136,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.cat-filter-search {
+  flex: 1; min-width: 160px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.3);
+  color: white;
+  font-size: 0.9rem;
+  font-family: 'Cairo', sans-serif;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.cat-filter-search::placeholder { color: rgba(255,255,255,0.35); }
+.cat-filter-search:focus {
+  border-color: #00ff88;
+  box-shadow: 0 0 12px rgba(0,255,136,0.2);
+}
+
+.cat-filter-price {
+  display: flex; align-items: center; gap: 8px;
+  white-space: nowrap;
+  padding: 0 8px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  border-left: 1px solid rgba(255,255,255,0.08);
+}
+.cat-filter-price span { color: rgba(255,255,255,0.6); font-size: 0.82rem; }
+
+.cat-filter-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 120px; height: 4px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.15);
+  outline: none;
+  cursor: pointer;
+}
+.cat-filter-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #00ff88;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0,255,136,0.6);
+}
+.cat-filter-slider::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #00ff88;
+  cursor: pointer; border: none;
+  box-shadow: 0 0 8px rgba(0,255,136,0.6);
+}
+.price-value { color: #00ff88; font-weight: 700; font-size: 0.85rem; min-width: 70px; }
+
+.cat-filter-selects-row { display: flex; gap: 8px; align-items: center; }
+
+/* ── Custom dropdown ───────────────────────────────────────────── */
+.custom-select-wrap { position: relative; z-index: 100; }
+.custom-select-btn {
+  padding: 9px 16px;
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.custom-select-btn:hover,
+.custom-select-btn.active {
+  border-color: #00ff88;
+  box-shadow: 0 0 10px rgba(0,255,136,0.2);
+  background: rgba(0,255,136,0.08);
+}
+.custom-select-btn.has-value {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.custom-select-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: auto;
+  min-width: 140px;
+  max-width: 200px;
+  background: linear-gradient(135deg, rgba(15,15,40,0.98), rgba(10,10,30,0.98));
+  border: 2px solid rgba(0,255,136,0.4);
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 2147483647;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.9), 0 0 30px rgba(0,255,136,0.15);
+  animation: dropdownIn 0.2s ease-out;
+  pointer-events: auto;
+  overflow: hidden;
+}
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)  scale(1); }
+}
+.custom-select-dropdown.open {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.custom-option {
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.custom-option:hover,
+.custom-option:active {
+  background: rgba(0,255,136,0.12);
+  color: #fff;
+}
+.custom-option.selected {
+  background: rgba(0,255,136,0.15);
+  color: #00ff88;
+  font-weight: 600;
+}
