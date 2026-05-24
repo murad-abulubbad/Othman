@@ -21,11 +21,20 @@
   opacity: 0; transform: scale(0.9);
 }
 .section-nav-card.visible { opacity: 1; transform: scale(1); }
-.section-nav-card:hover {
-  border-color: rgba(204,0,0,0.7);
-  background: linear-gradient(135deg, rgba(204,0,0,0.2), rgba(0,85,204,0.1));
-  transform: translateY(-8px);
-  box-shadow: var(--glow-red);
+@media (hover: hover) {
+  .section-nav-card:hover {
+    border-color: rgba(204,0,0,0.7);
+    background: linear-gradient(135deg, rgba(204,0,0,0.2), rgba(0,85,204,0.1));
+    transform: translateY(-8px);
+    box-shadow: var(--glow-red);
+  }
+}
+.section-nav-card.tapped,
+.section-nav-card:active {
+  border-color: rgba(204,0,0,0.9) !important;
+  background: linear-gradient(135deg, rgba(204,0,0,0.3), rgba(0,85,204,0.15)) !important;
+  transform: scale(1.05) !important;
+  box-shadow: var(--glow-red) !important;
 }
 .section-nav-card::before {
   content: ''; position: absolute; inset: 0;
@@ -33,7 +42,9 @@
   opacity: 0; transition: opacity 0.3s;
   pointer-events: none;
 }
-.section-nav-card:hover::before { opacity: 1; }
+@media (hover: hover) {
+  .section-nav-card:hover::before { opacity: 1; }
+}
 
 .section-nav-icon {
   font-size: 3.5rem;
@@ -49,8 +60,10 @@ img.section-nav-icon {
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 4px 18px rgba(0,0,0,0.4);
 }
-.section-nav-card:hover .section-nav-icon {
-  transform: scale(1.2) rotate(-8deg) translateY(-4px);
+@media (hover: hover) {
+  .section-nav-card:hover .section-nav-icon {
+    transform: scale(1.2) rotate(-8deg) translateY(-4px);
+  }
 }
 .section-nav-name {
   font-family: 'Orbitron', monospace;

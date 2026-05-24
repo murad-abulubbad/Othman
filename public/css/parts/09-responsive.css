@@ -66,8 +66,7 @@
      and the floating animation is killed here so any remaining ones
      don't repaint. */
   .bg-symbol {
-    animation: none;
-    opacity: 0.18;                               /* still visible, just static */
+    opacity: 0.45;
   }
 
   /* ─────────── HERO ─────────── */
@@ -106,18 +105,15 @@
     padding: 12px 14px;
     gap: 10px;
     border-radius: 18px;
-    animation: none;                             /* drop offerPop infinite */
     box-shadow: none;
   }
   #home .social-offer-emoji {
     width: 46px; height: 46px; font-size: 1.45rem;
-    animation: none;                             /* drop offerEmojiBounce */
     box-shadow: none;
   }
   #home .social-offer-text { font-size: 0.9rem; line-height: 1.35; }
   #home .social-offer-text span { color: #ffd35a; }
-  #home .social-offer-arrow { animation: none; } /* drop offerArrow */
-  #home .hero-social-icons { gap: 10px; margin-top: 20px; animation: none; }
+  #home .hero-social-icons { gap: 10px; margin-top: 20px; }
   .hero-social-icons .social-icon { width: 40px; height: 40px; }
 
   /* ─────────── LOADER ─────────── */
@@ -410,3 +406,4 @@
   }
   .news-ticker-track { animation: none !important; transform: none !important; }
 }
+

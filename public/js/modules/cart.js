@@ -171,17 +171,17 @@ export function updateCartUI() {
 
 // Symbols for WhatsApp messages (using text for compatibility)
 const EMOJI = {
-  game: "[GAME]",
-  sparkle: "*",
-  wave: "",
-  product: "",
-  qty: "Qty:",
-  price: "",
-  box: "",
-  money: "Total:",
-  check: "[✓]",
-  truck: "",
-  heart: "<3"
+  game: "🎮",
+  sparkle: "✨",
+  wave: "👋",
+  product: "🛒",
+  qty: "🔢",
+  price: "💰",
+  box: "📦",
+  money: "💵",
+  check: "✅",
+  truck: "🚚",
+  heart: "❤️"
 };
 
 function formatLinePrice(item, lineTotal) {

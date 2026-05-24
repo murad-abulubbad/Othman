@@ -43,7 +43,8 @@ function buildFilterBarHtml(catId, catName, items) {
     'VR': 'VR',
     'عالم مفتوح': 'عالم مفتوح',
     'رياضة': 'رياضة',
-    'قتال': 'قتال'
+    'قتال': 'قتال',
+    'سباق': 'سباق'
   };
   genres.forEach(g => {
     const label = genreLabels[g] || g;

@@ -39,6 +39,7 @@ import {
 } from './modules/effects.js';
 
 import { startFirestoreLoader } from './modules/firestore.js';
+import { initCopyProtection } from './modules/utils.js';
 
 // ── Expose all functions used by inline onclick handlers ────────────
 // Inline onclick="..." in HTML reads from the global scope. ES modules
@@ -92,6 +93,7 @@ const idle = window.requestIdleCallback
 
 function boot() {
   // ── HOT: blocking work the user sees instantly ────────────────
+  initCopyProtection();    // disable copy / right-click
   initRouterModule();      // wire anchor clicks + popstate
   updateCartUI();          // cart badge from localStorage
   renderFavorites();       // favorites count from localStorage

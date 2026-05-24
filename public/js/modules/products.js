@@ -93,7 +93,7 @@ export function renderGameGrid(targetId, games, platform, color) {
     return `
     <div class="image-card${isPS5 ? ' is-ps5' : ''}${isOutOfStock ? ' is-out-of-stock' : ''}" data-item-id="${g.id || ''}" onclick="openGameDetails(JSON.parse(decodeURIComponent('${detailData}')))">
       <div class="image-card-imgwrap">
-        ${showPlatformBadge ? `<span class="image-card-platform" ${platformStyle}>${platform}</span>` : ''}
+        ${showPlatformBadge ? `<span class="image-card-platform" ${platformStyle} onclick="event.stopPropagation(); navigateToPage('cat-${g.section || g.category || ''}')">${platform}</span>` : ''}
         <span class="product-condition-badge${conditionClass}">${condition}</span>
         ${isOutOfStock ? '<span class="out-of-stock-badge">نفذت الكمية</span>' : ''}
         <img class="image-card-img" src="${g.img}" alt="${escapeHtml(g.name)}" loading="lazy" decoding="async" fetchpriority="low" onerror="${NO_IMAGE_FALLBACK}"/>

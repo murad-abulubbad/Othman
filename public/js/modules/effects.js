@@ -21,11 +21,7 @@ const BG_SYMBOL_VARIANTS = [
 export function generateBgSymbols() {
   const wrap = document.getElementById('bg-symbols');
   if (!wrap) return;
-  // On mobile we don't spawn any moving symbols — they cost a continuous
-  // composite layer. Desktop gets the full effect.
-  if (IS_MOBILE) return;
-
-  const total = 12;
+  const total = IS_MOBILE ? 8 : 12;
   const frag = document.createDocumentFragment();
   for (let i = 0; i < total; i++) {
     const v = BG_SYMBOL_VARIANTS[Math.floor(Math.random() * BG_SYMBOL_VARIANTS.length)];
@@ -34,11 +30,12 @@ export function generateBgSymbols() {
     const el = document.createElement('span');
     el.className = `bg-symbol ${v.cls}${bright ? ' bright' : ''}`;
     el.textContent = v.ch;
-    el.style.left = (Math.random() * 100) + '%';
-    el.style.fontSize = (big ? (60 + Math.random() * 100) : (24 + Math.random() * 50)) + 'px';
+    el.style.left = (Math.random() * 90) + '%';
+    el.style.top = (Math.random() * 90) + '%';
+    el.style.fontSize = (big ? (40 + Math.random() * 60) : (20 + Math.random() * 35)) + 'px';
     el.style.setProperty('--xOff', '0px');
     el.style.setProperty('--xDrift', ((Math.random() - 0.5) * 200) + 'px');
-    el.style.animationDuration = (12 + Math.random() * 18) + 's';
+    el.style.animationDuration = (IS_MOBILE ? (18 + Math.random() * 20) : (12 + Math.random() * 18)) + 's';
     el.style.animationDelay = -(Math.random() * 25) + 's';
     frag.appendChild(el);
   }

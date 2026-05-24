@@ -54,3 +54,17 @@ export function optimizeCloudinaryUrl(url, width = 300) {
 export function buildImageKey(name, mainImg) {
   return name + '_' + (mainImg || '').slice(-20);
 }
+
+// ── Copy / Right-click protection ───────────────────────────────
+export function initCopyProtection() {
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('copy', e => e.preventDefault());
+  document.addEventListener('cut', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      ['c', 'u', 's', 'a', 'p'].includes(e.key.toLowerCase())
+    ) e.preventDefault();
+    if (e.key === 'F12') e.preventDefault();
+  });
+}

@@ -34,14 +34,25 @@ export function toggleFavorite(btn, productData) {
   if (!product) return;
   const favorites = getFavorites();
   const index = favorites.findIndex(f => f.name === product.name && f.platform === product.platform);
-  if (index > -1) {
-    favorites.splice(index, 1);
-    btn?.classList.remove('active');
-  } else {
+  const isAdding = index < 0;
+  if (isAdding) {
     favorites.push(product);
-    btn?.classList.add('active');
+  } else {
+    favorites.splice(index, 1);
   }
   setFavorites(favorites);
+  
+  // Update ALL buttons for this product (including the clicked one) to keep state in sync
+  if (btn) {
+    btn.classList.toggle('active', isAdding);
+    // Force blur to remove sticky :hover/:active on mobile touch
+    btn.blur();
+    // Force a reflow to ensure visual update on mobile
+    void btn.offsetHeight;
+  }
+  
+  // Sync all favorite buttons across the page
+  updateFavoriteButtons();
   renderFavorites();
   updateFavoriteBadge();
 }

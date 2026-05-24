@@ -69,6 +69,7 @@ export function navigateToPage(pageId, push = true) {
       if (next) {
         next.classList.add('page-active');
         revealCardsIn(next);
+        window.scrollTo({ top: 0, behavior: 'instant' });
       }
     }
 
@@ -98,6 +99,11 @@ function onAnchorClick(e) {
   const target = href || 'home';
   if (target === 'home' || PAGE_IDS.includes(target) || target.startsWith('cat-')) {
     e.preventDefault();
+    // Visual tap feedback for section nav cards
+    if (link.classList.contains('section-nav-card')) {
+      link.classList.add('tapped');
+      setTimeout(() => link.classList.remove('tapped'), 600);
+    }
     navigateToPage(target);
   } else if (target === 'sections') {
     e.preventDefault();
