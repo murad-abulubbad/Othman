@@ -193,6 +193,12 @@ footer {
 
 /* ── PAGE-AS-PAGE MODE ─────────────────────────────────────────── */
 body:not(.in-page-mode) section:not(#home):not(#sections) { display: none; }
+body:not(.in-page-mode) #dynamic-sections { display: none; height: 0; overflow: hidden; }
+body:not(.in-page-mode) #dynamic-sections .dynamic-category-section {
+  content-visibility: hidden;
+  contain-intrinsic-size: 0;
+}
+body:not(.in-page-mode) #back-home-wrap { display: none; }
 /* Ticker shows on the home page only. Inner-page mode hides both the
    heading and the strip. Higher specificity than .is-populated so CSS wins. */
 .news-ticker-wrap.is-populated { display: flex; }
@@ -204,13 +210,7 @@ body.in-page-mode #ticker-heading,
 body.in-page-mode #news-ticker-wrap,
 body.in-page-mode #news-ticker-wrap.is-populated { display: none; }
 body.in-page-mode section:not(.page-active) {
-  visibility: hidden;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-  opacity: 0;
+  display: none !important;
 }
 body.in-page-mode section.page-active {
   visibility: visible;

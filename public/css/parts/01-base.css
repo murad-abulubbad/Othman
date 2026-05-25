@@ -82,8 +82,6 @@ section#home { background: transparent; }
    while off-screen sections are still being rasterised. */
 .dynamic-category-section {
   margin-bottom: 100px;
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 800px;
 }
 
 /* ── Fade-up reusable keyframe ─────────────────────────────────── */
