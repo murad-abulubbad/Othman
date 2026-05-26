@@ -22,8 +22,8 @@ const CACHE_KEY = 'ofg_data_cache';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Image sizes adapt to viewport — saves bandwidth & decode time on mobile.
-const GRID_THUMB_WIDTH   = IS_MOBILE ? 420 : 800;
-const DETAIL_IMAGE_WIDTH = IS_MOBILE ? 720 : 800;
+const GRID_THUMB_WIDTH   = IS_MOBILE ? 1000 : 1200;
+const DETAIL_IMAGE_WIDTH = 1200;
 
 // ── Cache helpers ──────────────────────────────────────────────────
 

@@ -5,6 +5,9 @@
 
 import { renderGameGrid } from './products.js';
 
+// Normalize misspelled genre names from Firestore
+const genreNormalize = { 'طخاخة': 'طخطخه', 'أكشن': 'أكشن و مغامرات', 'أكشن مغامرات': 'أكشن و مغامرات', 'VR': 'واقع افتراضي' };
+
 // Build filter bar HTML dynamically based on available genres and conditions
 function buildFilterBarHtml(catId, catName, items) {
   // Get unique conditions and genres from items
@@ -30,23 +33,26 @@ function buildFilterBarHtml(catId, catName, items) {
     conditionOptions.push(`<div class="custom-option" data-value="${c}">${c}</div>`);
   });
   
+  const normalizedGenres = new Set();
+  genres.forEach(g => normalizedGenres.add(genreNormalize[g] || g));
+
   // Build genre options dynamically - only show genres that exist in items
   const genreOptions = ['<div class="custom-option" data-value="">الكل</div>'];
   const genreLabels = {
-    'أكشن': 'أكشن',
+    'أكشن و مغامرات': 'أكشن و مغامرات',
     'طخطخه': 'طخطخه',
     'سولز': 'سولز',
     'استراتيجية': 'استراتيجية',
     'سيارات': 'سيارات',
     'رعب': 'رعب',
     'جماعية': 'جماعية',
-    'VR': 'VR',
+    'واقع افتراضي': 'واقع افتراضي',
     'عالم مفتوح': 'عالم مفتوح',
     'رياضة': 'رياضة',
     'قتال': 'قتال',
     'سباق': 'سباق'
   };
-  genres.forEach(g => {
+  normalizedGenres.forEach(g => {
     const label = genreLabels[g] || g;
     genreOptions.push(`<div class="custom-option" data-value="${g}">${label}</div>`);
   });
@@ -117,9 +123,10 @@ export function setupCategoryFilter(catId, catName, items, color) {
       const itemPrice = item.price || item.originalPrice || 0;
       const matchesPrice = !filterByPrice || itemPrice <= sliderVal;
       const matchesCondition = !conditionVal || (item.condition || 'مستعمل') === conditionVal;
-      const itemGenres = Array.isArray(item.genre)
+      const rawGenres = Array.isArray(item.genre)
         ? item.genre
         : (item.genre ? [item.genre] : []);
+      const itemGenres = rawGenres.map(g => genreNormalize[g] || g);
       const matchesGenre = !genreVal || itemGenres.includes(genreVal);
       return matchesSearch && matchesPrice && matchesCondition && matchesGenre;
     });

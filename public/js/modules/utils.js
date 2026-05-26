@@ -47,7 +47,7 @@ export function optimizeCloudinaryUrl(url, width = 300) {
   if (!url || typeof url !== 'string') return url;
   if (!url.includes('res.cloudinary.com') || !url.includes('/image/upload/')) return url;
   if (url.includes('/q_') || url.includes('/f_auto')) return url;
-  return url.replace('/image/upload/', `/image/upload/c_fit,w_${width},q_85,f_auto/`);
+  return url.replace('/image/upload/', `/image/upload/c_fit,w_${width},q_auto,f_auto/`);
 }
 
 // Build a stable image-key for the global itemImagesMap.
