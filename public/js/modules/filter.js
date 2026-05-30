@@ -50,7 +50,8 @@ function buildFilterBarHtml(catId, catName, items) {
     'عالم مفتوح': 'عالم مفتوح',
     'رياضة': 'رياضة',
     'قتال': 'قتال',
-    'سباق': 'سباق'
+    'سباق': 'سباق',
+    'محاكاة': 'محاكاة'
   };
   normalizedGenres.forEach(g => {
     const label = genreLabels[g] || g;
