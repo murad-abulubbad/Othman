@@ -65,9 +65,13 @@ input.bare:focus,select.bare:focus{border-color:var(--bb)}
 /* ΓöÇΓöÇ SECTION BOX ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .section-box{background:var(--dk2);border:1px solid rgba(255,255,255,.08);
   border-radius:13px;padding:22px;margin-bottom:22px}
-.section-box-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:nowrap}
-.section-box-head h3{font-size:.95rem;color:var(--bb)}
+.section-box-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:nowrap;cursor:pointer;user-select:none}
+.section-box.collapsed .section-box-head{margin-bottom:0}
+.section-box-head h3{font-size:.95rem;color:var(--bb);margin:0}
 .section-actions{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;justify-content:flex-end;white-space:nowrap}
+.section-box-head::after{content:'▲';font-size:.7rem;opacity:.5;transition:transform .25s;flex-shrink:0}
+.section-box.collapsed .section-box-head::after{transform:rotate(180deg)}
+.section-box.collapsed .section-box-body{display:none}
 
 /* ΓöÇΓöÇ TABLE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .table-wrap{overflow-x:auto}

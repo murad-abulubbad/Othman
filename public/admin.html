@@ -41,6 +41,7 @@
       <small>عثمان للألعاب</small>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
+      <a href="orders.html" class="btn btn-edit btn-sm">الطلبات</a>
       <a href="index.html" class="btn btn-edit btn-sm">← المتجر</a>
       <button class="btn btn-danger btn-sm" id="logout-btn">خروج</button>
     </div>
@@ -53,13 +54,14 @@
 
     <!-- Items Section -->
     <div class="section-box">
-      <div class="section-box-head">
+      <div class="section-box-head" data-collapse-toggle>
         <h3>📦 عناصر المتجر</h3>
         <div class="section-actions">
           <button class="btn btn-danger btn-sm" id="delete-selected-items" disabled>حذف المحدد</button>
           <button class="btn btn-primary btn-sm" onclick="openItemModal()">+ إضافة عنصر</button>
         </div>
       </div>
+      <div class="section-box-body">
       <div class="table-wrap">
         <table>
           <thead>
@@ -107,13 +109,15 @@
         <span class="pg-info" id="pg-info">صفحة 1</span>
         <button class="btn btn-edit btn-sm" id="pg-next">التالي →</button>
       </div>
+      </div>
     </div>
 
     <!-- Categories Section -->
-    <div class="section-box">
-      <div class="section-box-head">
+    <div class="section-box collapsed">
+      <div class="section-box-head" data-collapse-toggle>
         <h3>🗂️ التصنيفات</h3>
       </div>
+      <div class="section-box-body">
       <div style="margin-bottom:14px">
         <button class="btn btn-primary" id="cat-add-btn">+ إضافة تصنيف</button>
       </div>
@@ -125,13 +129,15 @@
           </tbody>
         </table>
       </div>
+      </div>
     </div>
 
     <!-- Genres Section -->
-    <div class="section-box">
-      <div class="section-box-head">
+    <div class="section-box collapsed">
+      <div class="section-box-head" data-collapse-toggle>
         <h3>🏷️ الأنواع / التصنيفات الفرعية</h3>
       </div>
+      <div class="section-box-body">
       <div style="margin-bottom:14px">
         <button class="btn btn-primary" id="genre-add-btn">+ إضافة نوع</button>
       </div>
@@ -143,10 +149,12 @@
           </tbody>
         </table>
       </div>
+      </div>
     </div>
 
   </div>
 </div>
+
 
 <!-- ════ CATEGORY ADD MODAL ════ -->
 <div id="cat-add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center">
@@ -368,6 +376,16 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<script>
+document.addEventListener('click', e => {
+  const head = e.target.closest('[data-collapse-toggle]');
+  if (!head) return;
+  if (e.target.closest('button, input, select, a')) return;
+  const box = head.closest('.section-box');
+  if (box) box.classList.toggle('collapsed');
+});
+</script>
 
 <!-- ════ FIREBASE LOGIC ════ -->
 <script type="module" src="admin/admin.js"></script>

@@ -12,7 +12,7 @@
 
 import { db } from '../firebase.js';
 import {
-  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy
+  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const $ = (id) => document.getElementById(id);
@@ -123,29 +123,74 @@ function openGenreEdit(g) {
 }
 
 async function saveGenreEdit() {
-  const id   = $('genre-edit-id').value;
-  const name = $('genre-edit-name').value.trim();
+  const id      = $('genre-edit-id').value;
+  const name    = $('genre-edit-name').value.trim();
   if (!name) return;
+  const oldGenre = genres.find(g => g.id === id);
+  const oldName  = oldGenre?.name;
   if (genres.some(g => g.name === name && g.id !== id)) { _toast('هذا النوع موجود مسبقاً', true); return; }
   try {
     await updateDoc(doc(db, 'Genres', id), { name });
     const idx = genres.findIndex(g => g.id === id);
     if (idx !== -1) { genres[idx].name = name; }
+
+    // Update all Items that carry the old genre name
+    if (oldName && oldName !== name) {
+      const snap = await getDocs(query(collection(db, 'Items'), where('genre', 'array-contains', oldName)));
+      const updates = snap.docs.map(d => {
+        const newGenre = d.data().genre.map(v => v === oldName ? name : v);
+        return updateDoc(doc(db, 'Items', d.id), { genre: newGenre });
+      });
+      await Promise.all(updates);
+      if (updates.length) _toast(`✅ تم تعديل النوع وتحديث ${updates.length} منتج`);
+      else _toast('✅ تم تعديل النوع');
+    } else {
+      _toast('✅ تم تعديل النوع');
+    }
+
     renderGenresTable();
     $('genre-edit-modal').style.display = 'none';
-    _toast('✅ تم تعديل النوع');
     bustStoreCache();
+
+    // Re-render genre tags in the item modal if it's open, replacing old name with new
+    const wrap = $('item-genre-wrap');
+    if (wrap && oldName && oldName !== name) {
+      wrap.querySelectorAll('.genre-tag').forEach(btn => {
+        if (btn.dataset.value === oldName) {
+          btn.dataset.value = name;
+          btn.textContent   = name;
+        }
+      });
+    }
   } catch (e) { _toast('خطأ: ' + e.message, true); }
 }
 
 async function deleteGenre(id) {
-  if (!confirm('حذف هذا النوع؟ (لن يتأثر تخزينه على المنتجات الحالية)')) return;
+  const g = genres.find(x => x.id === id);
+  if (!confirm(`حذف النوع "${g?.name}"؟ سيُحذف أيضاً من كل المنتجات المرتبطة به.`)) return;
   try {
+    // Remove this genre name from all Items that carry it
+    if (g?.name) {
+      const snap = await getDocs(query(collection(db, 'Items'), where('genre', 'array-contains', g.name)));
+      const updates = snap.docs.map(d => {
+        const newGenre = d.data().genre.filter(v => v !== g.name);
+        return updateDoc(doc(db, 'Items', d.id), { genre: newGenre });
+      });
+      await Promise.all(updates);
+    }
     await deleteDoc(doc(db, 'Genres', id));
-    genres = genres.filter(g => g.id !== id);
+    genres = genres.filter(x => x.id !== id);
     renderGenresTable();
-    _toast('🗑 تم حذف النوع');
+    _toast('🗑 تم حذف النوع من الجدول والمنتجات');
     bustStoreCache();
+
+    // Remove the tag from the item modal if it's open
+    const wrap = $('item-genre-wrap');
+    if (wrap && g?.name) {
+      wrap.querySelectorAll('.genre-tag').forEach(btn => {
+        if (btn.dataset.value === g.name) btn.remove();
+      });
+    }
   } catch (e) { _toast('خطأ: ' + e.message, true); }
 }
 
