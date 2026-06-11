@@ -7,7 +7,7 @@ const CACHEABLE = (url) => {
     !url.includes('firebase') &&
     !url.includes('googleapis') &&
     !url.includes('gstatic') &&
-    !url.includes('cloudinary');
+    true;
 };
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -27,7 +27,7 @@ self.addEventListener('fetch', (event) => {
 
   // Always go to network for HTML, JS, CSS, Firebase, APIs
   if (url.includes('firebase') || url.includes('googleapis') || url.includes('gstatic') ||
-      url.includes('cloudinary') || /\.(html|js|css)(\?|$)/.test(url)) {
+      /\.(html|js|css)(\?|$)/.test(url)) {
     return; // browser default — no SW involvement
   }
 

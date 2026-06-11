@@ -91,19 +91,6 @@
               <th>
                 <select class="filter-input" data-filter="genre" id="filter-genre">
                   <option value="">كل الأنواع</option>
-                  <option value="أكشن">أكشن</option>
-                  <option value="طخطخه">� طخطخه</option>
-                  <option value="سولز">سولز</option>
-                  <option value="استراتيجية">استراتيجية</option>
-                  <option value="سيارات">� سيارات</option>
-                  <option value="رعب">رعب</option>
-                  <option value="جماعية">جماعية</option>
-                  <option value="VR">واقع افتراضي</option>
-                  <option value="عالم مفتوح">عالم مفتوح</option>
-                  <option value="رياضة">رياضة</option>
-                  <option value="قتال">قتال</option>
-                  <option value="سباق">سباق</option>
-                  <option value="محاكاة">محاكاة</option>
                 </select>
               </th>
               <th><input class="filter-input" data-filter="quantity" type="text" placeholder="🔍"></th>
@@ -135,6 +122,24 @@
           <thead><tr><th></th><th>الاسم</th><th>عدد العناصر</th><th>الصورة</th><th>إجراءات</th></tr></thead>
           <tbody id="cats-tbody">
             <tr class="empty-row"><td colspan="5">جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Genres Section -->
+    <div class="section-box">
+      <div class="section-box-head">
+        <h3>🏷️ الأنواع / التصنيفات الفرعية</h3>
+      </div>
+      <div style="margin-bottom:14px">
+        <button class="btn btn-primary" id="genre-add-btn">+ إضافة نوع</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>الاسم</th><th>إجراءات</th></tr></thead>
+          <tbody id="genres-tbody">
+            <tr class="empty-row"><td colspan="3">جاري التحميل...</td></tr>
           </tbody>
         </table>
       </div>
@@ -203,6 +208,37 @@
   </div>
 </div>
 
+<!-- ════ GENRE ADD MODAL ════ -->
+<div id="genre-add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:#13131f;border:1px solid rgba(204,0,0,.3);border-radius:14px;padding:28px 32px;width:380px;max-width:92vw">
+    <h3 style="margin:0 0 18px;font-family:Orbitron,monospace;color:#fff">إضافة نوع جديد</h3>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">الاسم *</label>
+      <input id="genre-name" class="bare" style="width:100%;box-sizing:border-box" placeholder="أكشن مغامرات...">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-secondary" id="genre-cancel-btn">إلغاء</button>
+      <button class="btn btn-primary" id="genre-save-btn">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ GENRE EDIT MODAL ════ -->
+<div id="genre-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:#13131f;border:1px solid rgba(204,0,0,.3);border-radius:14px;padding:28px 32px;width:360px;max-width:92vw">
+    <h3 style="margin:0 0 18px;font-family:Orbitron,monospace;color:#fff">تعديل النوع</h3>
+    <input type="hidden" id="genre-edit-id">
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">الاسم</label>
+      <input id="genre-edit-name" class="bare" style="width:100%;box-sizing:border-box" placeholder="اسم النوع">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-secondary" id="genre-edit-cancel-btn">إلغاء</button>
+      <button class="btn btn-primary" id="genre-edit-save-btn">حفظ التعديل</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════ ITEM FORM MODAL ════ -->
 <div id="item-modal">
   <div class="modal-card">
@@ -253,21 +289,7 @@
       <div class="form-row">
         <div class="field full-width">
           <label>النوع / التصنيف الفرعي (متعدد)</label>
-          <div id="item-genre-wrap" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:4px 0;">
-            <button type="button" class="genre-tag" data-value="أكشن">💥 أكشن مغامرات</button>
-            <button type="button" class="genre-tag" data-value="طخطخه">� طخطخه</button>
-            <button type="button" class="genre-tag" data-value="سولز">⚔️ سولز</button>
-            <button type="button" class="genre-tag" data-value="استراتيجية">♟️ استراتيجية</button>
-            <button type="button" class="genre-tag" data-value="سيارات">� سيارات</button>
-            <button type="button" class="genre-tag" data-value="رعب">👻 رعب</button>
-            <button type="button" class="genre-tag" data-value="جماعية">👥 جماعية</button>
-            <button type="button" class="genre-tag" data-value="VR">🥽 واقع افتراضي</button>
-            <button type="button" class="genre-tag" data-value="عالم مفتوح">🌍 عالم مفتوح</button>
-            <button type="button" class="genre-tag" data-value="رياضة">⚽ رياضة</button>
-            <button type="button" class="genre-tag" data-value="قتال">🥊 قتال</button>
-            <button type="button" class="genre-tag" data-value="سباق">🏎️ سباق</button>
-            <button type="button" class="genre-tag" data-value="محاكاة">🎮 محاكاة</button>
-          </div>
+          <div id="item-genre-wrap" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:4px 0;"></div>
         </div>
       </div>
 

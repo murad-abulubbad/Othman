@@ -12,7 +12,6 @@
 
 import { db, collection, query, orderBy, getDocs, onSnapshot } from '../../firebase.js';
 import { catItems, catPageTitles, IS_MOBILE } from './state.js';
-import { optimizeCloudinaryUrl } from './utils.js';
 import { renderGameGrid } from './products.js';
 import { buildFilterBarHtml, setupCategoryFilter, attachDropdownCloseHandler } from './filter.js';
 import { applyPendingDeepLink } from './router.js';
@@ -167,8 +166,8 @@ function formatItem(item) {
   return {
     id: item.id,
     name: item.name,
-    img: optimizeCloudinaryUrl(mainImage, GRID_THUMB_WIDTH),
-    images: imagesArray.map(u => optimizeCloudinaryUrl(u, DETAIL_IMAGE_WIDTH)),
+    img: mainImage,
+    images: imagesArray,
     price: finalPrice,
     priceLabel,
     genre: item.genre,

@@ -10,7 +10,7 @@
 import {
   addToCart, removeFromCart, increaseQty, decreaseQty,
   addGameToCartFromEncoded, openCart, closeCart,
-  sendCartToWhatsApp, updateCartUI
+  sendCartToWhatsApp, sendCartToMessenger, updateCartUI
 } from './modules/cart.js';
 
 import {
@@ -54,6 +54,7 @@ Object.assign(window, {
   openCart,
   closeCart,
   sendCartToWhatsApp,
+  sendCartToMessenger,
 
   // Favorites
   toggleFavorite,

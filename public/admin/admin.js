@@ -3,6 +3,7 @@ import {
   collection, getDocs, addDoc, updateDoc, deleteDoc,
   doc, query, orderBy, where
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { initGenres, loadGenres, renderGenreTags } from './genres.js';
 
 // ── STATE ──────────────────────────────────────────────
 let categories = [];
@@ -212,7 +213,7 @@ onAuthStateChanged(auth, (user) => {
 
 // ── INIT ───────────────────────────────────────────────
 async function init() {
-  await Promise.all([ loadCategories(), loadItems() ]);
+  await Promise.all([ loadCategories(), loadItems(), loadGenres() ]);
 }
 
 // ── CATEGORIES ─────────────────────────────────────────
@@ -341,7 +342,10 @@ function getFilteredItems() {
     if (itemsFilters.originalPrice && !String(it.originalPrice ?? '').includes(itemsFilters.originalPrice)) return false;
     if (itemsFilters.discountPrice && !String(it.discountPrice ?? '').includes(itemsFilters.discountPrice)) return false;
     if (itemsFilters.condition && (it.condition||'') !== itemsFilters.condition) return false;
-    if (itemsFilters.genre && (it.genre||'') !== itemsFilters.genre) return false;
+    if (itemsFilters.genre) {
+      const g = Array.isArray(it.genre) ? it.genre : (it.genre ? [it.genre] : []);
+      if (!g.includes(itemsFilters.genre)) return false;
+    }
     if (itemsFilters.quantity && !String(it.quantity ?? '').includes(itemsFilters.quantity)) return false;
     return true;
   });
@@ -374,7 +378,7 @@ function renderItemsTable() {
           <td>${priceHtml}</td>
           <td>${hasDiscount ? it.discountPrice + ' JOD' : '—'}</td>
           <td>${it.condition||'—'}</td>
-          <td>${it.genre || '—'}</td>
+          <td>${Array.isArray(it.genre) ? (it.genre.join('، ') || '—') : (it.genre || '—')}</td>
           <td>${qtyBadge}</td>
           <td class="td-actions">
             <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>
@@ -511,11 +515,6 @@ function setAsMain(index) {
 }
 window.setAsMain = setAsMain;
 
-document.getElementById('item-genre-wrap')?.addEventListener('click', e => {
-  const btn = e.target.closest('.genre-tag');
-  if (btn) btn.classList.toggle('active');
-});
-
 function openItemModal(item = null) {
   $('item-modal-title').textContent = item ? 'تعديل العنصر' : 'إضافة عنصر جديد';
   $('item-id').value              = item?.id             || '';
@@ -536,11 +535,9 @@ function openItemModal(item = null) {
   // platform field no longer used/stored
   $('item-categoryID').value      = item?.categoryID     || '';
   $('item-condition').value       = item?.condition      || 'مستعمل';
-  // Handle genres as array or legacy string
-  const genres = Array.isArray(item?.genre) ? item.genre : (item?.genre ? [item.genre] : []);
-  document.querySelectorAll('.genre-tag').forEach(btn => {
-    btn.classList.toggle('active', genres.includes(btn.dataset.value));
-  });
+  // Handle genres as array or legacy string — tags rendered dynamically from Genres collection.
+  const selectedGenres = Array.isArray(item?.genre) ? item.genre : (item?.genre ? [item.genre] : []);
+  renderGenreTags(selectedGenres);
   $('item-quantity').value        = item?.quantity       ?? 1;
   $('item-originalPrice').value   = item?.originalPrice  ?? '';
   $('item-discountPrice').value   = item?.discountPrice  ?? 0;
@@ -769,6 +766,9 @@ $('cat-cancel-btn').addEventListener('click', () => { $('cat-add-modal').style.d
 $('cat-save-btn').addEventListener('click', addCategory);
 $('cat-edit-cancel-btn').addEventListener('click', closeCatEdit);
 $('cat-edit-save-btn').addEventListener('click', saveCatEdit);
+
+// ── GENRES (modular) ───────────────────────────────────
+initGenres({ toast });
 $('delete-selected-items')?.addEventListener('click', deleteSelectedItems);
 $('select-all-items')?.addEventListener('change', e => {
   const checked = e.target.checked;

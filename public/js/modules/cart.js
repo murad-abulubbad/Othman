@@ -239,3 +239,81 @@ ${EMOJI.truck} وطريقة الاستلام أو التوصيل
     window.open(url, '_blank', 'noopener');
   }
 }
+
+export function sendCartToMessenger() {
+  if (!cart.length) {
+    showToast('السلة فارغة', '🛒');
+    return;
+  }
+  const total = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+  const count = cart.reduce((s, i) => s + (i.qty || 1), 0);
+  const orderLines = cart.map((item, index) => {
+    const qty = item.qty || 1;
+    const lineTotal = item.price * qty;
+    const platform = item.platform ? `\n   ${EMOJI.game} النوع: ${item.platform}` : '';
+    const condition = item.condition ? `\n   ${EMOJI.check} الحالة: ${item.condition}` : '';
+    const priceText = formatLinePrice(item, lineTotal);
+    return `#${index + 1}
+   ${EMOJI.product} المنتج: ${item.name}${platform}${condition}
+   ${EMOJI.qty} الكمية: ${qty}
+   ${EMOJI.price} السعر: ${priceText}`;
+  }).join('\n────────────────\n');
+
+  const message = `${EMOJI.game}${EMOJI.sparkle} طلب جديد من موقع Othman For Gaming ${EMOJI.sparkle}${EMOJI.game}
+
+السلام عليكم ${EMOJI.wave}
+حبيت أطلب المنتجات التالية:
+
+────────────────
+${orderLines}
+────────────────
+
+${EMOJI.box} عدد القطع: ${count}
+${EMOJI.money} المجموع الكلي: ${total.toFixed(2)} JOD
+
+${EMOJI.check} يرجى تأكيد توفر الطلب
+${EMOJI.truck} وطريقة الاستلام أو التوصيل
+
+شكراً لكم ${EMOJI.heart}`;
+
+  // Messenger doesn't support pre-filled text via URL
+  // Try multiple clipboard methods, then open messenger
+  async function copyToClipboard(text) {
+    // Method 1: Modern Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (e) {}
+    }
+    // Method 2: execCommand fallback
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      const success = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return success;
+    } catch (e) {
+      document.body.removeChild(textarea);
+      return false;
+    }
+  }
+
+  copyToClipboard(message).then((copied) => {
+    if (copied) {
+      showToast('تم نسخ الرسالة! الصقها في الماسنجر', '�');
+    } else {
+      showToast('اضغط Ctrl+C لنسخ الرسالة', '⚠️');
+      // Show message in console for manual copy
+      console.log('=== رسالة الطلب ===\n' + message + '\n==================');
+    }
+    // Open messenger after short delay
+    setTimeout(() => {
+      window.open('https://m.me/othmanforgaming', '_blank', 'noopener');
+    }, 500);
+  });
+}

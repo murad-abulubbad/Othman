@@ -32,7 +32,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-<link rel="dns-prefetch" href="https://res.cloudinary.com">
 <!-- Fonts loaded async (media=print + onload swap) — never blocks first paint -->
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@700;900&family=Lilita+One&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@700;900&family=Lilita+One&display=swap" rel="stylesheet"></noscript>
@@ -117,7 +116,10 @@
       <div class="cart-total-label">المجموع الكلي</div>
       <div class="cart-total-price"><span id="cart-total">0</span> JOD</div>
     </div>
-    <button type="button" class="cart-checkout-btn" onclick="sendCartToWhatsApp()">📲 إرسال الطلب على واتساب</button>
+    <div class="cart-checkout-buttons">
+      <button type="button" class="cart-checkout-btn whatsapp" onclick="sendCartToWhatsApp()">📲 إرسال على واتساب</button>
+      <button type="button" class="cart-checkout-btn messenger" onclick="sendCartToMessenger()">💬 إرسال على ماسنجر</button>
+    </div>
   </div>
 </div>
 
