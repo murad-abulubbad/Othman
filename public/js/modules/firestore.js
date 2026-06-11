@@ -47,6 +47,11 @@ window.bustFirestoreCache = function () {
   try { localStorage.removeItem(CACHE_KEY); } catch {}
 };
 
+// ── Slug helper ─────────────────────────────────────────────────────
+function toSlug(name) {
+  return (name || '').trim().replace(/\s+/g, '-').replace(/[^\u0600-\u06FF\w-]/g, '');
+}
+
 // ── State ───────────────────────────────────────────────────────────
 
 let _categories = [];
@@ -189,11 +194,15 @@ function renderAll(categories, items) {
     const categoriesById = new Map();
     const categoryCounts = new Map();
 
+    const slugMap = new Map();
     categories.forEach(cat => {
+      cat.slug = toSlug(cat.name);
+      slugMap.set(cat.slug, cat.id);
       categoriesById.set(cat.id, cat);
       itemsByCategory.set(cat.id, []);
       categoryCounts.set(cat.id, 0);
     });
+    window._catSlugMap = slugMap;
 
     items.forEach(item => {
       const catId = item.categoryID;
@@ -237,7 +246,7 @@ function renderSectionCards(categories) {
       ? `<img class="section-nav-icon" src="${cat.imageUrl}" alt="${cat.name}" onerror="this.outerHTML='${PLACEHOLDER_NAV_ICON.replace(/'/g, "\\'")}'">`
       : PLACEHOLDER_NAV_ICON;
     return `
-      <a href="#cat-${cat.id}" class="section-nav-card">
+      <a href="#${cat.slug}" class="section-nav-card">
         ${iconHtml}
         <div class="section-nav-name">${cat.name}</div>
       </a>`;
@@ -266,7 +275,7 @@ function renderDynamicSections(categories, items, itemsByCategory) {
 
     const titleColor = cat.color || '#3b82f6';
     return `
-      <section id="cat-${cat.id}" class="dynamic-category-section">
+      <section id="${cat.slug}" class="dynamic-category-section" data-cat-id="${cat.id}">
         <h2 class="section-title visible" style="color:${titleColor};text-shadow:0 0 20px ${titleColor}40">${cat.name}</h2>
         <div class="section-line visible" style="background:${titleColor};box-shadow:0 0 15px ${titleColor}"></div>
         ${body}
@@ -294,7 +303,7 @@ function renderDynamicSections(categories, items, itemsByCategory) {
     setTimeout(() => setupCategoryFilter(cat.id, cat.name, formattedItems, cat.color), 0);
 
     // Map for router titles.
-    catPageTitles[`cat-${cat.id}`] = cat.name;
+    catPageTitles[cat.slug] = cat.name;
   });
 }
 
@@ -348,7 +357,7 @@ function populateCatSidebar(categories, categoryCounts) {
     const img = cat.imageUrl
       ? `<img src="${cat.imageUrl}" alt="${cat.name}">`
       : SIDEBAR_FALLBACK_ICON;
-    return `<button class="cat-sidebar-item" onclick="closeCatSidebar();navigateToPage('cat-${cat.id}')">
+    return `<button class="cat-sidebar-item" onclick="closeCatSidebar();navigateToPage('${cat.slug}')">
       ${img}
       <span class="cat-sb-name">${cat.name}</span>
       <span class="cat-sb-count">${count}</span>

@@ -28,7 +28,7 @@ function revealCardsIn(target) {
 export function navigateToPage(pageId, push = true) {
   if (_pageTransitionLock) return;
 
-  const isDynCat = pageId.startsWith('cat-');
+  const isDynCat = pageId.startsWith('cat-') || window._catSlugMap?.has(pageId);
   if (pageId !== 'home' && !PAGE_IDS.includes(pageId) && !isDynCat) pageId = 'home';
 
   const overlay = document.getElementById('page-transition');
@@ -97,7 +97,7 @@ function onAnchorClick(e) {
   if (!link) return;
   const href = link.getAttribute('href').slice(1);
   const target = href || 'home';
-  if (target === 'home' || PAGE_IDS.includes(target) || target.startsWith('cat-')) {
+  if (target === 'home' || PAGE_IDS.includes(target) || target.startsWith('cat-') || window._catSlugMap?.has(target)) {
     e.preventDefault();
     // Visual tap feedback for section nav cards
     if (link.classList.contains('section-nav-card')) {
@@ -124,7 +124,7 @@ function onPopState() {
 // ── Initial deep-link handling ─────────────────────────────────────
 function initRouter() {
   const initial = location.hash.replace('#', '') || 'home';
-  if (initial !== 'home' && (PAGE_IDS.includes(initial) || initial.startsWith('cat-'))) {
+  if (initial !== 'home' && (PAGE_IDS.includes(initial) || initial.startsWith('cat-') || window._catSlugMap?.has(initial))) {
     setPendingDeepLink(initial);
     document.body.classList.add('in-page-mode');
   } else {
