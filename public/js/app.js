@@ -10,7 +10,7 @@
 import {
   addToCart, removeFromCart, increaseQty, decreaseQty,
   addGameToCartFromEncoded, openCart, closeCart,
-  sendCartToWhatsApp, sendCartToMessenger, updateCartUI
+  sendCartToWhatsApp, updateCartUI
 } from './modules/cart.js';
 
 import {
@@ -20,7 +20,8 @@ import {
 } from './modules/favorites.js';
 
 import {
-  renderGameGrid, openGameDetails, closeGameDetails, showDetailImage
+  renderGameGrid, openGameDetails, closeGameDetails, showDetailImage,
+  nextDetailImage, prevDetailImage
 } from './modules/products.js';
 
 import {
@@ -54,7 +55,6 @@ Object.assign(window, {
   openCart,
   closeCart,
   sendCartToWhatsApp,
-  sendCartToMessenger,
 
   // Favorites
   toggleFavorite,
@@ -67,6 +67,8 @@ Object.assign(window, {
   openGameDetails,
   closeGameDetails,
   showDetailImage,
+  nextDetailImage,
+  prevDetailImage,
   renderGameGrid, // exposed so admin tools can re-render if needed
 
   // Trailer

@@ -132,6 +132,29 @@ export function showDetailImage(index) {
   document.querySelectorAll('.detail-thumb').forEach((t, i) => {
     t.classList.toggle('active', i === index);
   });
+  updateGalleryNavButtons();
+}
+
+export function nextDetailImage() {
+  if (!detailGallery.images.length) return;
+  const nextIndex = (detailGallery.index + 1) % detailGallery.images.length;
+  showDetailImage(nextIndex);
+}
+
+export function prevDetailImage() {
+  if (!detailGallery.images.length) return;
+  const prevIndex = (detailGallery.index - 1 + detailGallery.images.length) % detailGallery.images.length;
+  showDetailImage(prevIndex);
+}
+
+function updateGalleryNavButtons() {
+  const prevBtn = document.querySelector('.gallery-nav.prev');
+  const nextBtn = document.querySelector('.gallery-nav.next');
+  if (prevBtn && nextBtn) {
+    // Always enable both buttons since we're cycling through images
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
+  }
 }
 
 // ── Open / close detail modal ──────────────────────────────────────
@@ -167,16 +190,14 @@ export function openGameDetails(game) {
   // Build gallery HTML.
   let galleryHtml;
   if (detailGallery.images.length > 1) {
-    const thumbsHtml = detailGallery.images.map((img, i) =>
-      `<img src="${escapeHtml(img)}" class="detail-thumb${i === 0 ? ' active' : ''}" onclick="showDetailImage(${i})" alt=""/>`
-    ).join('');
     galleryHtml = `
       <div class="detail-gallery">
         <div class="detail-gallery-main">
+          <button class="gallery-nav prev" onclick="prevDetailImage()">&#8249;</button>
           <img id="detail-main-image" src="${escapeHtml(detailGallery.images[0])}" alt="${escapeHtml(game.name)}"
                onerror="this.closest('.game-detail-cover').classList.add('no-image');this.outerHTML='<span class=&quot;game-detail-cover-icon&quot;>${escapeHtml(iconText)}</span>'"/>
+          <button class="gallery-nav next" onclick="nextDetailImage()">&#8250;</button>
         </div>
-        <div class="detail-gallery-thumbs">${thumbsHtml}</div>
       </div>`;
   } else if (game.img) {
     galleryHtml = `<img src="${escapeHtml(game.img)}" alt="${escapeHtml(game.name)}"

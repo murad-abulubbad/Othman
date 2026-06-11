@@ -323,8 +323,6 @@
   }
   .detail-gallery-main { min-height: 260px; padding: 15px; }
   .detail-gallery-main img { max-height: 240px; }
-  .detail-gallery-thumbs { padding: 12px 15px; gap: 10px; justify-content: flex-start; }
-  .detail-thumb { width: 65px; height: 65px; border-radius: 8px; box-shadow: none; }
   .game-detail-name { font-size: 1.3rem; }
   .game-detail-price { font-size: 1.1rem; padding: 6px 14px; }
   .game-detail-actions .image-card-add,
@@ -369,8 +367,7 @@
   .favorite-btn:hover, .favorite-toggle-btn:hover,
   .cart-checkout-btn:hover,
   .footer-social-icons .social-icon:hover,
-  .hero-social-icons .social-icon:hover,
-  .detail-thumb:hover {
+  .hero-social-icons .social-icon:hover {
     transform: none;
   }
 
@@ -383,7 +380,7 @@
   .cat-sidebar-item,
   .custom-select-btn, .custom-option,
   .image-card, .section-nav-card,
-  .detail-thumb, .ticker-item {
+  .ticker-item {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
@@ -391,8 +388,7 @@
   /* Native momentum scrolling for sidebars */
   .cart-items,
   .favorite-sidebar-content,
-  .cat-sidebar,
-  .detail-gallery-thumbs {
+  .cat-sidebar {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
