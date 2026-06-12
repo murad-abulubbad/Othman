@@ -74,6 +74,7 @@ function renderCategoriesTable() {
   if (filterSel) {
     const currentVal = filterSel.value;
     filterSel.innerHTML = '<option value="">كل التصنيفات</option>' +
+      '<option value="__none__">⚠️ بدون تصنيف</option>' +
       categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     filterSel.value = currentVal;
   }
@@ -340,7 +341,9 @@ function getFilteredItems() {
   return items.filter(it => {
     if (itemsFilters.name && !String(it.name||'').toLowerCase().includes(itemsFilters.name.toLowerCase())) return false;
     // platform field removed from storage; skip platform filtering
-    if (itemsFilters.categoryID && (it.categoryID||'') !== itemsFilters.categoryID) return false;
+    if (itemsFilters.categoryID === '__none__') {
+      if (it.categoryID && it.categoryID !== '') return false;
+    } else if (itemsFilters.categoryID && (it.categoryID||'') !== itemsFilters.categoryID) return false;
     if (itemsFilters.originalPrice && !String(it.originalPrice ?? '').includes(itemsFilters.originalPrice)) return false;
     if (itemsFilters.discountPrice && !String(it.discountPrice ?? '').includes(itemsFilters.discountPrice)) return false;
     if (itemsFilters.condition && (it.condition||'') !== itemsFilters.condition) return false;

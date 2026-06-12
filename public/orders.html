@@ -87,7 +87,23 @@
   .badge-confirmed{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#4ade80;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
   .badge-done{background:rgba(150,150,150,.12);border:1px solid rgba(150,150,150,.3);color:#aaa;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
   .badge-cancelled{background:rgba(230,0,41,.12);border:1px solid rgba(255,45,85,.3);color:var(--rb);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-  @media(max-width:600px){.order-summary{gap:8px;padding:12px 14px}.os-address,.os-date{display:none}.os-name{font-size:.85rem}}
+  @media(max-width:600px){
+    .order-summary{gap:8px;padding:11px 12px}
+    .os-address,.os-date{display:none}
+    .os-name{font-size:.85rem;min-width:0}
+    .os-phone{font-size:.78rem}
+    .os-total{font-size:.82rem}
+    .order-details{padding:0 12px 14px}
+    .order-item-row{flex-wrap:wrap;gap:7px}
+    .order-item-name{font-size:.78rem;min-width:0;flex-basis:100%}
+    .order-item-img{width:30px;height:30px}
+    .detail-row{font-size:.78rem;flex-wrap:wrap;gap:4px}
+    .detail-row strong{word-break:break-all}
+    .order-total-bar span:last-child{font-size:.95rem}
+    .order-actions{flex-direction:column;align-items:stretch}
+    .status-select{width:100%}
+    .order-items-list{padding:8px 10px}
+  }
 </style>
 </head>
 <body>

@@ -193,3 +193,16 @@ select.filter-input option{background:var(--dk2);color:var(--w)}
   padding:14px 0 4px;flex-wrap:wrap}
 .pagination .pg-info{font-size:.85rem;opacity:.75;min-width:80px;text-align:center}
 .pagination .btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── MOBILE RESPONSIVE ───────────────── */
+@media(max-width:600px){
+  html,body{overflow-x:clip}
+  .admin-nav{padding:11px 14px}
+  .admin-nav .brand span{font-size:.88rem}
+  .admin-main{padding:14px 12px}
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat-card{padding:14px 12px}
+  .section-box-head{padding:13px 14px}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .login-card{padding:28px 18px}
+}
