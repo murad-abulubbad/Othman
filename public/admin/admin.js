@@ -9,6 +9,8 @@ import { initGenres, loadGenres, renderGenreTags } from './genres.js';
 let categories = [];
 let items      = [];
 let selectedItemIds = new Set();
+let currentRole = 'viewer'; // 'viewer' | 'editor' | 'admin'
+let staffList   = [];
 
 // ── HELPERS ────────────────────────────────────────────
 function toast(msg, isErr = false) {
@@ -198,25 +200,67 @@ function logout() {
 }
 
 // Listen for auth state changes
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   const loader = $('page-loader');
   if (loader) loader.style.display = 'none';
   if (user) {
-    // User is signed in
+    // Fetch role from Staff collection
+    try {
+      const staffDoc = await getDocs(query(collection(db, 'Staff'), where('email', '==', user.email)));
+      if (!staffDoc.empty) {
+        currentRole = staffDoc.docs[0].data().role || 'viewer';
+      } else {
+        // Not in Staff — check if it's the owner email
+        const ownerEmail = 'abulubbadmorad@gmail.com';
+        if (user.email === ownerEmail) {
+          currentRole = 'admin';
+        } else {
+          // Not authorized — sign out immediately
+          await signOut(auth);
+          $('login-err').textContent = 'ليس لديك صلاحية للدخول';
+          return;
+        }
+      }
+    } catch { currentRole = 'admin'; }
     $('login-overlay').style.display = 'none';
     $('dashboard').style.display     = 'block';
+    applyRolePermissions();
     init();
   } else {
-    // User is signed out
+    currentRole = 'viewer';
     $('dashboard').style.display     = 'none';
     $('login-overlay').style.display = 'flex';
     $('admin-pass').value = '';
   }
 });
 
+function applyRolePermissions() {
+  const isAdmin  = currentRole === 'admin';
+  const canEdit  = currentRole === 'editor' || isAdmin;
+  // Show/hide write buttons
+  ['add-item-btn','cat-add-btn','genre-add-btn'].forEach(id => {
+    const el = $(id); if (el) el.style.display = (canEdit ? '' : 'none');
+  });
+  // Delete selected — admin/owner only
+  const delBtn = $('delete-selected-items');
+  if (delBtn) delBtn.style.display = (isAdmin ? '' : 'none');
+  // Staff tab + section — owner only
+  const isOwner = auth.currentUser?.email === 'abulubbadmorad@gmail.com';
+  const staffTabBtn = $('staff-tab-btn');
+  if (staffTabBtn) staffTabBtn.style.display = (isOwner ? '' : 'none');
+  const staffAddRow = $('staff-add-row');
+  if (staffAddRow) staffAddRow.style.display = (isOwner ? '' : 'none');
+  // Show role badge in nav
+  const badge = $('role-badge');
+  if (badge) {
+    badge.textContent = isOwner ? '👑 مدير' : isAdmin ? '👑 أدمن' : canEdit ? '✏️ محرر' : '👁 مشاهد';
+    badge.style.color = isAdmin ? '#fbbf24' : canEdit ? '#60a5fa' : '#aaa';
+  }
+}
+
 // ── INIT ───────────────────────────────────────────────
 async function init() {
-  await Promise.all([ loadCategories(), loadItems(), loadGenres() ]);
+  await Promise.all([ loadCategories(), loadItems(), loadGenres(), loadStaff() ]);
 }
 
 // ── CATEGORIES ─────────────────────────────────────────
@@ -375,7 +419,7 @@ function renderItemsTable() {
         const categoryName = category ? category.name : '—';
         return `
         <tr class="${selectedItemIds.has(it.id) ? 'row-selected' : ''}">
-          <td class="td-select"><input type="checkbox" class="row-select" data-item-select="${it.id}" ${selectedItemIds.has(it.id) ? 'checked' : ''}></td>
+          <td class="td-select">${currentRole !== 'viewer' ? `<input type="checkbox" class="row-select" data-item-select="${it.id}" ${selectedItemIds.has(it.id) ? 'checked' : ''}>` : ''}</td>
           <td><img class="item-img" src="${it.imageUrl||''}" alt="${it.name}"
                onerror="this.style.opacity='.25'"></td>
           <td>${it.name}</td>
@@ -386,8 +430,8 @@ function renderItemsTable() {
           <td>${Array.isArray(it.genre) ? (it.genre.join('، ') || '—') : (it.genre || '—')}</td>
           <td>${qtyBadge}</td>
           <td class="td-actions">
-            <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>
-            <button class="btn btn-danger btn-sm" data-item-del="${it.id}">🗑 حذف</button>
+            ${currentRole !== 'viewer' ? `<button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>` : ''}
+            ${currentRole === 'admin'  ? `<button class="btn btn-danger btn-sm" data-item-del="${it.id}">🗑 حذف</button>` : ''}
           </td>
         </tr>`;
       }).join('')
@@ -869,3 +913,88 @@ $('item-modal').addEventListener('click', e => {
 });
 
 // Auth state is handled by onAuthStateChanged listener above
+
+// ── STAFF MANAGEMENT ───────────────────────────────────
+const ROLE_LABELS = { admin: '👑 أدمن', editor: '✏️ محرر', viewer: '👁 مشاهد' };
+
+async function loadStaff() {
+  try {
+    const snap = await getDocs(collection(db, 'Staff'));
+    staffList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderStaffTable();
+  } catch (e) { toast('خطأ في تحميل الموظفين: ' + e.message, true); }
+}
+
+function renderStaffTable() {
+  const tbody = $('staff-tbody');
+  if (!tbody) return;
+  if (!staffList.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="3">لا يوجد موظفون مضافون</td></tr>';
+    return;
+  }
+  const isAdmin = currentRole === 'admin';
+  tbody.innerHTML = staffList.map(s => `
+    <tr>
+      <td>${s.email || '—'}</td>
+      <td>
+        ${isAdmin ? `
+          <select class="filter-input staff-role-select" data-staff-id="${s.id}" style="width:auto">
+            <option value="viewer" ${s.role==='viewer'?'selected':''}>👁 مشاهد</option>
+            <option value="editor" ${s.role==='editor'?'selected':''}>✏️ محرر</option>
+            <option value="admin"  ${s.role==='admin' ?'selected':''}>👑 أدمن</option>
+          </select>` : `<span>${ROLE_LABELS[s.role] || s.role}</span>`}
+      </td>
+      <td>
+        ${isAdmin ? `<button class="btn btn-danger btn-sm" data-staff-del="${s.id}">حذف</button>` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function addStaff() {
+  const email = $('staff-email-input')?.value.trim();
+  const role  = $('staff-role-input')?.value || 'viewer';
+  if (!email) { toast('أدخل البريد الإلكتروني', true); return; }
+  if (staffList.some(s => s.email === email)) { toast('الموظف مضاف مسبقاً', true); return; }
+  try {
+    const ref = await addDoc(collection(db, 'Staff'), { email, role });
+    staffList.push({ id: ref.id, email, role });
+    renderStaffTable();
+    $('staff-email-input').value = '';
+    toast('✅ تمت إضافة الموظف');
+  } catch (e) { toast('خطأ: ' + e.message, true); }
+}
+
+async function deleteStaff(id) {
+  if (!confirm('حذف هذا الموظف؟')) return;
+  try {
+    await deleteDoc(doc(db, 'Staff', id));
+    staffList = staffList.filter(s => s.id !== id);
+    renderStaffTable();
+    toast('🗑 تم حذف الموظف');
+  } catch (e) { toast('خطأ: ' + e.message, true); }
+}
+
+async function updateStaffRole(id, role) {
+  try {
+    await updateDoc(doc(db, 'Staff', id), { role });
+    const s = staffList.find(s => s.id === id);
+    if (s) s.role = role;
+    toast('✅ تم تحديث الصلاحية');
+  } catch (e) { toast('خطأ: ' + e.message, true); }
+}
+
+// Wire staff buttons
+document.addEventListener('click', e => {
+  const delBtn = e.target.closest('[data-staff-del]');
+  if (delBtn) { deleteStaff(delBtn.dataset.staffDel); return; }
+});
+document.addEventListener('change', e => {
+  const sel = e.target.closest('.staff-role-select');
+  if (sel) { updateStaffRole(sel.dataset.staffId, sel.value); return; }
+});
+document.addEventListener('DOMContentLoaded', () => {
+  $('staff-add-btn')?.addEventListener('click', addStaff);
+  $('staff-email-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') addStaff(); });
+});
+
+// Staff is loaded as part of init()
