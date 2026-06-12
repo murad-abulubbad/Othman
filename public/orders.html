@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الطلبات | عثمان للألعاب</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin/admin.css">
+<style>
+  .orders-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+  .orders-header h2{font-size:1.3rem;color:var(--bb);margin:0}
+  /* ── FILTERS ── */
+  .filters-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+  .filter-btn{padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.65);font-family:inherit;font-size:.8rem;cursor:pointer;transition:all .2s}
+  .filter-btn.active{background:rgba(42,140,255,.2);border-color:rgba(42,140,255,.5);color:var(--bb)}
+  .order-count-badge{background:var(--rb);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900;margin-right:5px}
+  #orders-list .empty-msg{text-align:center;padding:60px 20px;opacity:.4;font-size:1rem}
+  .stat-new .s-num{color:#60a5fa}
+  .loading-spinner{text-align:center;padding:50px;font-size:1.5rem;opacity:.4}
+
+  /* ── ORDER ROW (collapsed) ── */
+  .order-row{
+    background:var(--dk2); border:1px solid rgba(255,255,255,.07);
+    border-radius:12px; margin-bottom:10px;
+    transition:border-color .2s, box-shadow .2s;
+    overflow:hidden;
+  }
+  .order-row:hover{border-color:rgba(42,140,255,.25);box-shadow:0 2px 12px rgba(0,0,0,.3)}
+  .order-row.status-new   {border-right:4px solid var(--bb)}
+  .order-row.status-confirmed{border-right:4px solid #22c55e}
+  .order-row.status-done  {border-right:4px solid #888}
+  .order-row.status-cancelled{border-right:4px solid var(--rb)}
+
+  /* collapsed summary bar */
+  .order-summary{
+    display:flex; align-items:center; gap:14px;
+    padding:14px 18px; cursor:pointer; user-select:none;
+    flex-wrap:wrap;
+  }
+  .order-summary:hover .order-expand-btn{color:#fff}
+  .os-status{flex-shrink:0}
+  .os-name{font-size:.92rem;font-weight:700;flex:1;min-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .os-phone{font-size:.82rem;color:var(--bb);direction:ltr;white-space:nowrap}
+  .os-address{font-size:.78rem;opacity:.5;flex:1;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .os-total{font-size:.9rem;font-weight:900;color:#fff;white-space:nowrap}
+  .os-date{font-size:.72rem;opacity:.38;white-space:nowrap}
+  .order-expand-btn{
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1);
+    border-radius:7px; width:30px; height:30px; flex-shrink:0;
+    color:rgba(255,255,255,.45); cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s; font-size:.85rem;
+  }
+  .order-row.expanded .order-expand-btn{background:rgba(42,140,255,.15);border-color:rgba(42,140,255,.4);color:var(--bb);transform:rotate(180deg)}
+
+  /* expanded details */
+  .order-details{
+    display:none; padding:0 18px 18px;
+    border-top:1px solid rgba(255,255,255,.06);
+  }
+  .order-row.expanded .order-details{display:block}
+  .order-id{font-size:.68rem;opacity:.3;font-family:monospace;margin-bottom:10px;padding-top:12px}
+  .order-items-list{background:rgba(255,255,255,.03);border-radius:9px;padding:10px 14px;margin-bottom:10px}
+  .order-item-row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .order-item-row:last-child{border-bottom:none}
+  .order-item-img{width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;background:rgba(255,255,255,.06)}
+  .order-item-name{flex:1;font-size:.83rem}
+  .order-item-badge{font-size:.62rem;padding:1px 6px;border-radius:8px;font-weight:700}
+  .order-item-qty{font-size:.76rem;opacity:.45;white-space:nowrap}
+  .order-item-price{font-size:.83rem;color:var(--bb);white-space:nowrap;font-weight:700}
+  .order-note{background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.15);border-radius:7px;padding:8px 12px;font-size:.82rem;margin-bottom:10px;color:rgba(255,255,255,.7)}
+  .order-note-label{font-weight:700;color:#fbbf24;margin-bottom:3px;font-size:.78rem}
+  .detail-row{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.6)}
+  .detail-row:last-child{border-bottom:none}
+  .detail-row strong{color:#fff;font-weight:700}
+  .order-total-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 0 6px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px}
+  .order-total-bar span:first-child{font-size:.82rem;opacity:.5}
+  .order-total-bar span:last-child{font-size:1.1rem;font-weight:900;color:#fff}
+  .order-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .status-select{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:6px 10px;font-family:inherit;font-size:.82rem;cursor:pointer}
+  .status-select option{background:#15152c;color:#fff}
+  .badge-new{background:rgba(42,140,255,.18);border:1px solid rgba(42,140,255,.4);color:var(--bb);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+  .badge-confirmed{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#4ade80;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+  .badge-done{background:rgba(150,150,150,.12);border:1px solid rgba(150,150,150,.3);color:#aaa;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+  .badge-cancelled{background:rgba(230,0,41,.12);border:1px solid rgba(255,45,85,.3);color:var(--rb);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+  @media(max-width:600px){.order-summary{gap:8px;padding:12px 14px}.os-address,.os-date{display:none}.os-name{font-size:.85rem}}
+</style>
+</head>
+<body>
+
+<!-- ════ LOGIN OVERLAY ════ -->
+<div id="login-overlay" style="display:none">
+  <div class="login-card">
+    <div class="logo">📦</div>
+    <h2>الطلبات</h2>
+    <p>عثمان للألعاب — OFG Admin</p>
+    <div class="field">
+      <label>البريد الإلكتروني</label>
+      <input id="admin-user" type="email" placeholder="email@example.com" autocomplete="email" autofocus>
+    </div>
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input id="admin-pass" type="password" placeholder="••••••••">
+    </div>
+    <div class="err-msg" id="login-err"></div>
+    <button class="btn btn-primary btn-block" id="login-btn">تسجيل الدخول</button>
+    <div style="margin-top:18px">
+      <a href="index.html" style="font-size:.78rem;opacity:.4;color:inherit;text-decoration:none">← العودة إلى المتجر</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DASHBOARD ════ -->
+<div id="page-loader" style="position:fixed;inset:0;background:#0c1245;display:flex;align-items:center;justify-content:center;z-index:9999;font-size:1.5rem;opacity:.6">⏳</div>
+<div id="dashboard" style="display:none">
+  <nav class="admin-nav">
+    <div class="brand">
+      <span>📦 الطلبات</span>
+      <small>عثمان للألعاب</small>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a href="admin.html" class="btn btn-edit btn-sm">← الإدارة</a>
+      <a href="index.html" class="btn btn-edit btn-sm">المتجر</a>
+      <button class="btn btn-danger btn-sm" id="logout-btn">خروج</button>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+
+    <!-- Stats -->
+    <div class="stats-row" id="orders-stats">
+      <div class="stat-card stat-card-total stat-new">
+        <div class="s-num" id="stat-new-count">—</div>
+        <div class="s-lbl">طلبات جديدة</div>
+      </div>
+      <div class="stat-card stat-card-total">
+        <div class="s-num" id="stat-total-count">—</div>
+        <div class="s-lbl">إجمالي الطلبات</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-num" id="stat-confirmed-count">—</div>
+        <div class="s-lbl">مؤكدة</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-num" id="stat-done-count">—</div>
+        <div class="s-lbl">منجزة</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-num" id="stat-cancelled-count">—</div>
+        <div class="s-lbl">ملغاة</div>
+      </div>
+    </div>
+
+    <div class="orders-header">
+      <h2>قائمة الطلبات</h2>
+      <button class="btn btn-edit btn-sm" id="refresh-btn">🔄 تحديث</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <button class="filter-btn active" data-status="">الكل</button>
+      <button class="filter-btn" data-status="جديد">
+        <span id="filter-new-badge"></span> جديد
+      </button>
+      <button class="filter-btn" data-status="مؤكد">مؤكد</button>
+      <button class="filter-btn" data-status="منجز">منجز</button>
+      <button class="filter-btn" data-status="ملغي">ملغي</button>
+    </div>
+
+    <!-- Orders List -->
+    <div id="orders-list">
+      <div class="loading-spinner">⏳ جاري تحميل الطلبات...</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { app, db, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from './firebase.js';
+import {
+  collection, getDocs, updateDoc, doc, query, orderBy, onSnapshot
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const $ = id => document.getElementById(id);
+
+let allOrders = [];
+let currentFilter = '';
+let unsubscribe = null;
+
+// ── TOAST ──
+function toast(msg, isErr = false) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.toggle('err', isErr);
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── AUTH ──
+$('login-btn').addEventListener('click', login);
+$('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+$('logout-btn').addEventListener('click', () => signOut(auth));
+
+async function login() {
+  const email = $('admin-user').value.trim();
+  const password = $('admin-pass').value;
+  const errEl = $('login-err');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'الرجاء إدخال الإيميل وكلمة المرور'; return; }
+  const btn = $('login-btn');
+  btn.disabled = true; btn.textContent = 'جاري التحقق...';
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (e) {
+    errEl.textContent = 'الإيميل أو كلمة المرور غير صحيحة';
+    btn.disabled = false; btn.textContent = 'تسجيل الدخول';
+  }
+}
+
+onAuthStateChanged(auth, user => {
+  const loader = $('page-loader');
+  if (loader) loader.style.display = 'none';
+  if (user) {
+    $('login-overlay').style.display = 'none';
+    $('dashboard').style.display = 'block';
+    subscribeOrders();
+  } else {
+    $('dashboard').style.display = 'none';
+    $('login-overlay').style.display = 'flex';
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+  }
+});
+
+// ── REAL-TIME ORDERS ──
+function subscribeOrders() {
+  if (unsubscribe) unsubscribe();
+  const q = query(collection(db, 'Orders'), orderBy('createdAt', 'desc'));
+  unsubscribe = onSnapshot(q, snap => {
+    allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderStats();
+    renderOrders();
+  }, err => {
+    $('orders-list').innerHTML = `<div class="empty-msg">❌ خطأ في تحميل الطلبات: ${err.message}</div>`;
+  });
+}
+
+// ── STATS ──
+function renderStats() {
+  const newCount = allOrders.filter(o => (o.status || 'جديد') === 'جديد').length;
+  const confirmedCount = allOrders.filter(o => o.status === 'مؤكد').length;
+  const doneCount = allOrders.filter(o => o.status === 'منجز').length;
+  const cancelledCount = allOrders.filter(o => o.status === 'ملغي').length;
+  $('stat-new-count').textContent = newCount;
+  $('stat-total-count').textContent = allOrders.length;
+  $('stat-confirmed-count').textContent = confirmedCount;
+  $('stat-done-count').textContent = doneCount;
+  $('stat-cancelled-count').textContent = cancelledCount;
+
+  const badge = $('filter-new-badge');
+  if (newCount > 0) {
+    badge.innerHTML = `<span class="order-count-badge">${newCount}</span>`;
+  } else {
+    badge.innerHTML = '';
+  }
+}
+
+// ── RENDER ──
+function renderOrders() {
+  const list = $('orders-list');
+  const filtered = currentFilter
+    ? allOrders.filter(o => (o.status || 'جديد') === currentFilter)
+    : allOrders;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-msg">📭 لا توجد طلبات${currentFilter ? ' بهذه الحالة' : ' بعد'}</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(order => renderOrderCard(order)).join('');
+
+  // Wire status selects
+  list.querySelectorAll('.status-select').forEach(sel => {
+    sel.addEventListener('change', async e => {
+      const orderId = e.target.dataset.orderId;
+      const newStatus = e.target.value;
+      try {
+        await updateDoc(doc(db, 'Orders', orderId), { status: newStatus });
+        toast('✅ تم تحديث حالة الطلب');
+      } catch (err) {
+        toast('خطأ: ' + err.message, true);
+      }
+    });
+  });
+}
+
+function renderOrderCard(order) {
+  const status    = order.status || 'جديد';
+  const statusClass = { 'جديد':'new', 'مؤكد':'confirmed', 'منجز':'done', 'ملغي':'cancelled' }[status] || 'new';
+  const badgeClass  = { 'جديد':'badge-new', 'مؤكد':'badge-confirmed', 'منجز':'badge-done', 'ملغي':'badge-cancelled' }[status] || 'badge-new';
+
+  const date = order.createdAt?.toDate
+    ? order.createdAt.toDate().toLocaleString('ar-EG', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+    : '—';
+
+  const items = Array.isArray(order.items) ? order.items : [];
+  const total = (order.total ?? items.reduce((s, it) => s + (it.price||0)*(it.qty||1), 0));
+  const deliveryFee = order.deliveryFee || 0;
+
+  const itemsHtml = items.map(it => {
+    const condClass = it.condition === 'جديد' ? 'background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25)'
+                    : it.condition === 'مستعمل' ? 'background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.25)' : '';
+    return `
+    <div class="order-item-row">
+      <img class="order-item-img" src="${it.imageUrl||''}" alt="${it.name||''}" onerror="this.style.opacity='.15'">
+      <span class="order-item-name">${it.name||'—'}</span>
+      ${it.condition ? `<span class="order-item-badge" style="${condClass}">${it.condition}</span>` : ''}
+      ${it.platform  ? `<span class="order-item-badge" style="background:rgba(42,140,255,.12);color:#60a5fa;border:1px solid rgba(42,140,255,.2)">${it.platform}</span>` : ''}
+      <span class="order-item-qty">× ${it.qty||1}</span>
+      <span class="order-item-price">${((it.price||0)*(it.qty||1)).toFixed(2)} JOD</span>
+    </div>`;
+  }).join('');
+
+  const noteHtml = order.note
+    ? `<div class="order-note"><div class="order-note-label">ملاحظة</div>${order.note}</div>` : '';
+
+  const emailRow   = order.email   ? `<div class="detail-row"><span>البريد</span><strong>${order.email}</strong></div>` : '';
+  const addressRow = order.address ? `<div class="detail-row"><span>العنوان</span><strong>${order.address}</strong></div>` : '';
+  const deliveryRow = order.deliveryMethod ? `<div class="detail-row"><span>طريقة الاستلام</span><strong>${order.deliveryMethod}</strong></div>` : '';
+  const deliveryFeeRow = deliveryFee > 0 ? `<div class="detail-row"><span>رسوم التوصيل</span><strong>${deliveryFee.toFixed(2)} JOD</strong></div>` : '';
+
+  return `
+  <div class="order-row status-${statusClass}" id="row-${order.id}">
+
+    <!-- COLLAPSED SUMMARY BAR -->
+    <div class="order-summary" onclick="toggleOrder('${order.id}')">
+      <div class="os-status"><span class="${badgeClass}">${status}</span></div>
+      <div class="os-name">${order.customerName || 'غير محدد'}</div>
+      <div class="os-phone">${order.phone || '—'}</div>
+      <div class="os-address">${order.address || order.deliveryMethod || '—'}</div>
+      <div class="os-total">${total.toFixed(2)} JOD</div>
+      <div class="os-date">${date}</div>
+      <button class="order-expand-btn" title="التفاصيل">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+
+    <!-- EXPANDED DETAILS -->
+    <div class="order-details">
+      <div class="order-id">#${order.id}</div>
+
+      <div style="background:rgba(255,255,255,.03);border-radius:9px;padding:10px 14px;margin-bottom:12px">
+        <div class="detail-row"><span>الاسم</span><strong>${order.customerName||'—'}</strong></div>
+        <div class="detail-row"><span>الهاتف</span><strong style="direction:ltr">${order.phone||'—'}</strong></div>
+        ${emailRow}${addressRow}${deliveryRow}${deliveryFeeRow}
+      </div>
+
+      <div class="order-items-list">
+        ${itemsHtml || '<div style="opacity:.4;font-size:.83rem;text-align:center;padding:8px">لا توجد منتجات</div>'}
+      </div>
+
+      ${noteHtml}
+
+      <div class="order-total-bar">
+        <span>الإجمالي</span>
+        <span>${total.toFixed(2)} JOD</span>
+      </div>
+
+      <div class="order-actions">
+        <label style="font-size:.8rem;opacity:.5">تغيير الحالة:</label>
+        <select class="status-select" data-order-id="${order.id}">
+          <option value="جديد" ${status==='جديد'?'selected':''}>جديد</option>
+          <option value="مؤكد" ${status==='مؤكد'?'selected':''}>مؤكد</option>
+          <option value="منجز" ${status==='منجز'?'selected':''}>منجز</option>
+          <option value="ملغي" ${status==='ملغي'?'selected':''}>ملغي</option>
+        </select>
+      </div>
+    </div>
+  </div>`;
+}
+
+window.toggleOrder = function(id) {
+  const row = document.getElementById('row-' + id);
+  if (row) row.classList.toggle('expanded');
+};
+
+// ── FILTERS ──
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.status;
+    renderOrders();
+  });
+});
+
+// ── REFRESH ──
+$('refresh-btn').addEventListener('click', () => {
+  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+  $('orders-list').innerHTML = '<div class="loading-spinner">⏳ جاري التحديث...</div>';
+  subscribeOrders();
+  toast('🔄 تم التحديث');
+});
+</script>
+</body>
+</html>

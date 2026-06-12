@@ -198,6 +198,8 @@ function logout() {
 
 // Listen for auth state changes
 onAuthStateChanged(auth, (user) => {
+  const loader = $('page-loader');
+  if (loader) loader.style.display = 'none';
   if (user) {
     // User is signed in
     $('login-overlay').style.display = 'none';

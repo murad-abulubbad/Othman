@@ -7,6 +7,8 @@
 import { cart, saveCart, PAGE_TITLES } from './state.js';
 import { decodeOnclick } from './utils.js';
 import { showCartToast, showToast } from './toast.js';
+import { db } from '../../firebase.js';
+import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -167,75 +169,96 @@ export function updateCartUI() {
   footer.style.display = 'block';
 }
 
-// ── WhatsApp checkout ──────────────────────────────────────────────
 
-// Symbols for WhatsApp messages (using text for compatibility)
-const EMOJI = {
-  game: "🎮",
-  sparkle: "✨",
-  wave: "👋",
-  product: "🛒",
-  qty: "🔢",
-  price: "💰",
-  box: "📦",
-  money: "💵",
-  check: "✅",
-  truck: "🚚",
-  heart: "❤️"
-};
+// ── Order Modal (Firestore) ─────────────────────────────────────────
 
-function formatLinePrice(item, lineTotal) {
-  if (item.priceLabel && item.originalPrice && item.discountPrice) {
-    return `~${item.originalPrice}~ ${item.discountPrice} JOD`;
+export function openOrderModal() {
+  if (!cart.length) { showToast('السلة فارغة', '🛒'); return; }
+  const overlay = document.getElementById('order-modal-overlay');
+  const itemsEl = document.getElementById('order-modal-items');
+  const errEl   = document.getElementById('order-modal-err');
+  if (!overlay) return;
+
+  if (errEl) errEl.textContent = '';
+  const nameEl  = document.getElementById('order-name');
+  const phoneEl = document.getElementById('order-phone');
+  const addrEl  = document.getElementById('order-address');
+  const noteEl  = document.getElementById('order-note');
+  if (nameEl)  nameEl.value  = '';
+  if (phoneEl) phoneEl.value = '';
+  if (addrEl)  addrEl.value  = '';
+  if (noteEl)  noteEl.value  = '';
+
+  if (itemsEl) {
+    const total = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+    itemsEl.innerHTML = cart.map(i => `
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        ${i.img ? `<img src="${i.img}" style="width:32px;height:32px;object-fit:cover;border-radius:5px;flex-shrink:0" onerror="this.style.display='none'">` : ''}
+        <span style="flex:1;color:#e2e8f0">${i.name}</span>
+        <span style="color:rgba(255,255,255,.4)">×${i.qty || 1}</span>
+        <span style="color:#60a5fa;font-weight:700">${(i.price * (i.qty || 1)).toFixed(2)} JOD</span>
+      </div>
+    `).join('') + `<div style="display:flex;justify-content:space-between;margin-top:9px;font-weight:700"><span>المجموع</span><span style="color:#fff">${total.toFixed(2)} JOD</span></div>`;
   }
-  if (item.priceLabel && item.originalPrice) {
-    return `${item.originalPrice} JOD`;
-  }
-  return `${lineTotal.toFixed(2)} JOD`;
+
+  overlay.style.display = 'flex';
+  if (nameEl) nameEl.focus();
 }
 
-export function sendCartToWhatsApp() {
-  if (!cart.length) {
-    showToast('السلة فارغة', '🛒');
-    return;
-  }
-  const total = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-  const count = cart.reduce((s, i) => s + (i.qty || 1), 0);
-  const orderLines = cart.map((item, index) => {
-    const qty = item.qty || 1;
-    const lineTotal = item.price * qty;
-    const platform = item.platform ? `\n   ${EMOJI.game} النوع: ${item.platform}` : '';
-    const condition = item.condition ? `\n   ${EMOJI.check} الحالة: ${item.condition}` : '';
-    const priceText = formatLinePrice(item, lineTotal);
-    return `#${index + 1}
-   ${EMOJI.product} المنتج: ${item.name}${platform}${condition}
-   ${EMOJI.qty} الكمية: ${qty}
-   ${EMOJI.price} السعر: ${priceText}`;
-  }).join('\n────────────────\n');
+export function closeOrderModal() {
+  const overlay = document.getElementById('order-modal-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
 
-  const message = `${EMOJI.game}${EMOJI.sparkle} طلب جديد من موقع Othman For Gaming ${EMOJI.sparkle}${EMOJI.game}
+export async function submitOrder() {
+  const nameEl   = document.getElementById('order-name');
+  const phoneEl  = document.getElementById('order-phone');
+  const addrEl   = document.getElementById('order-address');
+  const noteEl   = document.getElementById('order-note');
+  const errEl    = document.getElementById('order-modal-err');
+  const submitBtn = document.getElementById('order-submit-btn');
 
-السلام عليكم ${EMOJI.wave}
-حبيت أطلب المنتجات التالية:
+  const customerName = nameEl?.value.trim() || '';
+  const phone        = phoneEl?.value.trim() || '';
+  const address      = addrEl?.value.trim() || '';
+  const note         = noteEl?.value.trim() || '';
 
-────────────────
-${orderLines}
-────────────────
+  if (errEl) errEl.textContent = '';
+  if (!customerName) { if (errEl) errEl.textContent = 'الرجاء إدخال الاسم الكامل'; nameEl?.focus(); return; }
+  if (!phone)        { if (errEl) errEl.textContent = 'الرجاء إدخال رقم الهاتف';   phoneEl?.focus(); return; }
 
-${EMOJI.box} عدد القطع: ${count}
-${EMOJI.money} المجموع الكلي: ${total.toFixed(2)} JOD
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ جاري الإرسال...'; }
 
-${EMOJI.check} يرجى تأكيد توفر الطلب
-${EMOJI.truck} وطريقة الاستلام أو التوصيل
+  try {
+    const orderItems = cart.map(i => ({
+      name: i.name,
+      price: i.price || 0,
+      qty: i.qty || 1,
+      imageUrl: i.img || '',
+      condition: i.condition || '',
+      platform: i.platform || ''
+    }));
+    const total = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
 
-شكراً لكم ${EMOJI.heart}`;
+    await addDoc(collection(db, 'Orders'), {
+      customerName,
+      phone,
+      address,
+      note,
+      items: orderItems,
+      total,
+      status: 'جديد',
+      createdAt: serverTimestamp()
+    });
 
-  // Use encodeURI for better emoji support in WhatsApp
-  const encoded = encodeURIComponent(message);
-  const url = `https://wa.me/962775560404?text=${encoded}`;
-  if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    location.href = url;
-  } else {
-    window.open(url, '_blank', 'noopener');
+    closeOrderModal();
+    cart.splice(0, cart.length);
+    saveCart();
+    updateCartUI();
+    showToast('تم إرسال طلبك بنجاح! سنتواصل معك قريباً 🎮', '✅');
+  } catch (err) {
+    if (errEl) errEl.textContent = 'خطأ في إرسال الطلب: ' + err.message;
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✅ إرسال الطلب'; }
   }
 }

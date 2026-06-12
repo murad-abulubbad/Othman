@@ -158,15 +158,16 @@
 .cart-checkout-buttons {
   display: flex;
   gap: 10px;
-  flex-direction: column;
+  flex-direction: row;
 }
 
-/* WhatsApp button */
-.cart-checkout-btn.whatsapp {
-  background: linear-gradient(135deg, #25d366, #128c7e);
+/* Order button */
+.cart-checkout-btn.order-btn {
+  background: linear-gradient(135deg, #0066e6, #2a8cff);
+  flex: 1;
 }
-.cart-checkout-btn.whatsapp:hover {
-  box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+.cart-checkout-btn.order-btn:hover {
+  box-shadow: 0 0 15px rgba(42, 140, 255, 0.5);
 }
 
 /* ═══════════════════════════════════════════════════════════════════

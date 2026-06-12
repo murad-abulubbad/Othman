@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إتمام الطلب | عثمان للألعاب</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<!-- Lucide icons CDN -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+:root {
+  --blue: #0066E6; --blue-bright: #2A8CFF; --blue-glow: rgba(42,140,255,.5);
+  --red: #E60029;  --red-bright:  #FF2D55;
+  --green: #00d65a; --amber: #fbbf24;
+  --glass: rgba(255,255,255,.04);
+  --glass-border: rgba(255,255,255,.09);
+  --text-dim: rgba(255,255,255,.45);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+
+body {
+  background: #060614;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 15% 10%,  rgba(0,80,255,.35)  0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 90%,  rgba(230,0,41,.28)  0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 50%,  rgba(80,0,180,.18)  0%, transparent 70%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: #e8eaf6;
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  overflow-x: hidden;
+}
+
+/* ══ ANIMATED BG ORBS ══ */
+body::before, body::after {
+  content: '';
+  position: fixed; border-radius: 50%; filter: blur(80px);
+  pointer-events: none; z-index: 0; animation: floatOrb 12s ease-in-out infinite alternate;
+}
+body::before {
+  width: 500px; height: 500px; top: -100px; left: -100px;
+  background: radial-gradient(circle, rgba(0,102,230,.22), transparent 70%);
+}
+body::after {
+  width: 400px; height: 400px; bottom: -80px; right: -80px;
+  background: radial-gradient(circle, rgba(255,45,85,.18), transparent 70%);
+  animation-delay: -6s;
+}
+@keyframes floatOrb {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(40px,30px) scale(1.1); }
+}
+
+/* ══ NAV ══ */
+.co-nav {
+  position: sticky; top: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 clamp(12px, 4vw, 28px);
+  height: clamp(44px, 7vw, 58px);
+  background: rgba(6,6,20,.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.co-nav-brand {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(.65rem, 2.2vw, .92rem);
+  color: #fff;
+  letter-spacing: clamp(1px, .5vw, 3px);
+  display: flex; align-items: center;
+  gap: clamp(5px, 1.2vw, 9px);
+}
+.co-nav-brand svg {
+  color: var(--red-bright);
+  width: clamp(14px, 3vw, 18px);
+  height: clamp(14px, 3vw, 18px);
+}
+.co-nav-back {
+  display: flex; align-items: center;
+  gap: clamp(4px, 1vw, 7px);
+  color: rgba(255,255,255,.5); text-decoration: none;
+  font-size: clamp(.65rem, 2vw, .82rem); font-weight: 600;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 30px;
+  padding: clamp(5px, 1.2vw, 7px) clamp(10px, 3vw, 16px);
+  transition: all .25s;
+  white-space: nowrap;
+}
+.co-nav-back svg {
+  width: clamp(11px, 2.5vw, 15px);
+  height: clamp(11px, 2.5vw, 15px);
+  flex-shrink: 0;
+}
+.co-nav-back:hover {
+  color: #fff;
+  background: rgba(42,140,255,.15);
+  border-color: rgba(42,140,255,.4);
+  box-shadow: 0 0 16px rgba(42,140,255,.2);
+}
+
+/* ══ PAGE TITLE ══ */
+.co-page-title {
+  text-align: center; padding: 32px 16px 8px;
+  position: relative; z-index: 1;
+}
+.co-page-title h1 {
+  font-size: 1.6rem; font-weight: 900;
+  background: linear-gradient(135deg, #fff 0%, rgba(42,140,255,.9) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: .5px;
+}
+.co-page-title p {
+  font-size: .82rem; color: var(--text-dim); margin-top: 6px;
+}
+
+/* ══ LAYOUT ══ */
+.co-wrap {
+  max-width: 1020px; margin: 0 auto;
+  padding: 20px clamp(10px, 3vw, 20px) 80px;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 22px;
+  align-items: start;
+  position: relative; z-index: 1;
+}
+.co-col-sticky { position: sticky; top: 70px; }
+@media (max-width: 720px) {
+  .co-wrap { grid-template-columns: 1fr; padding: 16px 12px 60px; }
+  .co-col-sticky { position: static; }
+  .co-page-title h1 { font-size: 1.3rem; }
+}
+
+/* ══ GLASS CARD ══ */
+.co-card {
+  background: rgba(14,14,35,.6);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 20px;
+  padding: clamp(14px, 4vw, 24px) clamp(14px, 4vw, 24px);
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s;
+  min-width: 0;
+}
+.co-card::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: 20px;
+  background: linear-gradient(135deg, rgba(42,140,255,.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+.co-card:hover { border-color: rgba(42,140,255,.18); }
+
+.co-card-title {
+  font-size: .82rem; font-weight: 700;
+  color: rgba(255,255,255,.5);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 9px;
+}
+.co-card-title svg { color: var(--blue-bright); opacity: .8; }
+
+/* ══ ORDER ITEMS ══ */
+.co-item {
+  display: flex; align-items: center; gap: clamp(8px, 2vw, 13px);
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  transition: background .2s;
+  min-width: 0; overflow: hidden;
+}
+.co-item:last-child { border-bottom: none; }
+.co-item-img {
+  width: clamp(38px, 10vw, 52px); height: clamp(38px, 10vw, 52px); object-fit: cover;
+  border-radius: 12px; flex-shrink: 0;
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.co-item-info { flex: 1; min-width: 0; }
+.co-item-name {
+  font-size: .88rem; font-weight: 700; color: #e8eaf6;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.co-item-meta { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+.co-badge {
+  font-size: .62rem; padding: 2px 8px; border-radius: 20px;
+  font-weight: 800; letter-spacing: .3px;
+}
+.co-badge.new  { background: rgba(0,214,90,.12);  color: #34d399; border: 1px solid rgba(52,211,153,.25); }
+.co-badge.used { background: rgba(251,191,36,.1);  color: #fbbf24; border: 1px solid rgba(251,191,36,.25); }
+.co-badge.qty  { background: rgba(42,140,255,.12); color: #60a5fa; border: 1px solid rgba(96,165,250,.25); }
+.co-item-price {
+  font-size: clamp(.75rem, 2.5vw, .95rem); font-weight: 900;
+  color: #fff; white-space: nowrap; flex-shrink: 0;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.co-empty { text-align: center; padding: 40px 16px; color: var(--text-dim); font-size: .9rem; }
+
+/* ══ SUMMARY ══ */
+.co-summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .85rem; padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  color: rgba(255,255,255,.5);
+}
+.co-summary-row:last-child { border-bottom: none; }
+.co-summary-total {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 0 0; margin-top: 6px;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+.co-summary-total span:first-child { font-size: .9rem; color: rgba(255,255,255,.6); font-weight: 600; }
+.co-summary-total span:last-child {
+  font-size: 1.3rem; font-weight: 900;
+  background: linear-gradient(135deg, #fff 0%, #60a5fa 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ══ DELIVERY OPTIONS ══ */
+.delivery-options { display: flex; flex-direction: column; gap: 9px; }
+.delivery-option {
+  display: flex; align-items: center; gap: 13px;
+  background: rgba(255,255,255,.03);
+  border: 1.5px solid rgba(255,255,255,.07);
+  border-radius: 14px; padding: 13px 16px;
+  cursor: pointer;
+  transition: all .22s cubic-bezier(.4,0,.2,1);
+  user-select: none; position: relative; overflow: hidden;
+}
+.delivery-option::before {
+  content: ''; position: absolute; inset: 0; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(42,140,255,.0), rgba(42,140,255,.0));
+  transition: background .22s;
+}
+.delivery-option:hover {
+  border-color: rgba(42,140,255,.3);
+  background: rgba(42,140,255,.06);
+  transform: translateX(-2px);
+}
+.delivery-option:hover::before { background: linear-gradient(135deg, rgba(42,140,255,.06), transparent); }
+.delivery-option.selected {
+  border-color: var(--blue-bright);
+  background: rgba(42,140,255,.09);
+  box-shadow: 0 0 0 1px rgba(42,140,255,.2), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.delivery-option.selected::before { background: linear-gradient(135deg, rgba(42,140,255,.1), transparent); }
+.delivery-option input[type=radio] { display: none; }
+
+.delivery-radio-dot {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.2);
+  transition: all .2s;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.03);
+}
+.delivery-option.selected .delivery-radio-dot {
+  border-color: var(--blue-bright);
+  background: var(--blue-bright);
+  box-shadow: 0 0 10px rgba(42,140,255,.6);
+}
+.delivery-option.selected .delivery-radio-dot::after {
+  content: ''; width: 7px; height: 7px; background: #fff; border-radius: 50%;
+}
+
+.delivery-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(42,140,255,.1); border: 1px solid rgba(42,140,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--blue-bright);
+}
+.delivery-option.selected .delivery-icon {
+  background: rgba(42,140,255,.2);
+  box-shadow: 0 0 12px rgba(42,140,255,.3);
+}
+
+.delivery-info { flex: 1; min-width: 0; }
+.delivery-label { font-size: .88rem; font-weight: 700; color: #e8eaf6; }
+.delivery-desc { font-size: .72rem; color: var(--text-dim); margin-top: 2px; }
+.delivery-price {
+  font-size: .9rem; font-weight: 900; white-space: nowrap;
+  color: #34d399;
+}
+.delivery-price.paid {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ══ NOTICE ══ */
+.co-notice {
+  display: flex; align-items: flex-start; gap: 9px;
+  background: rgba(251,191,36,.06);
+  border: 1px solid rgba(251,191,36,.18);
+  border-radius: 12px; padding: 11px 14px;
+  font-size: .78rem; color: rgba(255,255,255,.55);
+  margin-top: 13px; line-height: 1.7;
+}
+.co-notice svg { color: var(--amber); flex-shrink: 0; margin-top: 1px; }
+.co-notice strong { color: #fbbf24; }
+
+/* ══ FORM ══ */
+.co-field { margin-bottom: 16px; }
+.co-field label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .75rem; font-weight: 700;
+  color: rgba(255,255,255,.45);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 7px;
+}
+.co-field input,
+.co-field textarea {
+  width: 100%;
+  background: rgba(255,255,255,.05);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 12px; color: #fff;
+  padding: 12px 16px;
+  font-family: 'Cairo', sans-serif; font-size: .9rem;
+  outline: none;
+  transition: all .22s;
+  backdrop-filter: blur(8px);
+}
+.co-field input::placeholder,
+.co-field textarea::placeholder { color: rgba(255,255,255,.2); }
+.co-field input:focus,
+.co-field textarea:focus {
+  border-color: var(--blue-bright);
+  background: rgba(42,140,255,.07);
+  box-shadow: 0 0 0 3px rgba(42,140,255,.12);
+}
+.co-field textarea { resize: vertical; min-height: 75px; }
+
+/* ══ SUBMIT ══ */
+.co-submit {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, #0052cc 0%, #2A8CFF 50%, #5b6cf5 100%);
+  background-size: 200% auto;
+  border: none; border-radius: 14px;
+  color: #fff; font-family: 'Cairo', sans-serif;
+  font-size: 1rem; font-weight: 800; cursor: pointer;
+  transition: all .3s; margin-top: 18px;
+  letter-spacing: .3px;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  box-shadow: 0 4px 24px rgba(42,140,255,.35);
+  position: relative; overflow: hidden;
+}
+.co-submit::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.1), transparent);
+  opacity: 0; transition: opacity .2s;
+}
+.co-submit:hover {
+  background-position: right center;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(42,140,255,.5);
+}
+.co-submit:hover::before { opacity: 1; }
+.co-submit:active { transform: translateY(0); }
+.co-submit:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ══ ERR ══ */
+.co-err {
+  color: #f87171; font-size: .82rem;
+  margin-top: 10px; min-height: 18px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ══ SUCCESS ══ */
+.co-success {
+  display: none; text-align: center;
+  padding: 80px 20px; position: relative; z-index: 1;
+}
+.co-success-icon {
+  margin-bottom: 20px;
+  animation: popIn .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+.co-success h2 {
+  font-size: 1.5rem; font-weight: 900; color: #34d399; margin-bottom: 10px;
+}
+.co-success p { font-size: .88rem; color: var(--text-dim); line-height: 1.8; }
+.co-success .back-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 28px; padding: 13px 32px; border-radius: 30px;
+  background: linear-gradient(135deg, #0066E6, #2A8CFF);
+  color: #fff; text-decoration: none; font-weight: 700; font-size: .9rem;
+  box-shadow: 0 4px 20px rgba(42,140,255,.4);
+  transition: all .2s;
+}
+.co-success .back-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(42,140,255,.5); }
+
+/* ══ SECTION DIVIDER ══ */
+.co-section-gap { margin-top: 16px; }
+
+/* ══ BOTTOM SHEET ══ */
+#contact-sheet {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 901;
+  background: rgba(10,8,28,.98);
+  border-top: 1px solid rgba(42,140,255,.25);
+  border-radius: 24px 24px 0 0;
+  padding: 0 20px calc(env(safe-area-inset-bottom, 0px) + 28px);
+  max-height: 92dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  transform: translateY(100%);
+  transition: transform .38s cubic-bezier(.4,0,.2,1);
+}
+#contact-sheet.open { transform: translateY(0); }
+.cs-handle-wrap { text-align: center; padding: 14px 0 6px; }
+.cs-handle {
+  width: 42px; height: 4px;
+  background: rgba(255,255,255,.14);
+  border-radius: 4px; display: inline-block;
+}
+.cs-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.cs-title {
+  font-size: 1rem; font-weight: 800; color: #fff;
+  display: flex; align-items: center; gap: 9px;
+}
+.cs-close {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 50%; width: 34px; height: 34px;
+  color: rgba(255,255,255,.55); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.cs-close:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+/* Two-column on tablet+, single column on mobile */
+.cs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+@media (max-width: 520px) {
+  .cs-grid { grid-template-columns: 1fr; gap: 0; }
+  #contact-sheet { padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 24px); border-radius: 20px 20px 0 0; }
+  .co-field input, .co-field textarea { font-size: 1rem; padding: 13px 15px; }
+  .co-submit { padding: 16px; font-size: 1rem; }
+}
+@media (min-width: 680px) {
+  #contact-sheet { left: 50%; right: auto; transform: translate(-50%, 100%); width: 560px; border-radius: 24px 24px 0 0; }
+  #contact-sheet.open { transform: translate(-50%, 0); }
+}
+</style>
+</head>
+<body>
+
+<nav class="co-nav">
+  <span class="co-nav-brand">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-left:6px"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+    OFG
+  </span>
+  <a href="index.html" class="co-nav-back">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    العودة للمتجر
+  </a>
+</nav>
+
+<!-- PAGE TITLE -->
+<div class="co-page-title">
+  <h1>إتمام الطلب</h1>
+  <p>راجع طلبك واختر طريقة الاستلام</p>
+</div>
+
+<!-- SUCCESS STATE -->
+<div class="co-success" id="co-success">
+  <div class="co-success-icon">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+  </div>
+  <h2>تم إرسال طلبك بنجاح!</h2>
+  <p>سنتواصل معك على رقم الهاتف الذي أدخلته<br>خلال أقل من 48 ساعة لتأكيد الطلب والتوصيل.</p>
+  <a href="index.html" class="back-btn">العودة للمتجر</a>
+</div>
+
+<!-- CHECKOUT FORM -->
+<div class="co-wrap" id="co-main">
+
+  <!-- RIGHT COL: Order summary (scrollable) -->
+  <div>
+    <div class="co-card">
+      <div class="co-card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg>
+        المنتجات المطلوبة
+      </div>
+      <div id="co-items-list"><div class="co-empty">السلة فارغة</div></div>
+    </div>
+
+    <!-- Summary totals -->
+    <div class="co-card" style="margin-top:16px" id="co-totals-card">
+      <div class="co-card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        ملخص الطلب
+      </div>
+      <div class="co-summary-row"><span>إجمالي المنتجات</span><span id="sum-items">0.00 JOD</span></div>
+      <div class="co-summary-row"><span>رسوم التوصيل</span><span id="sum-delivery">—</span></div>
+      <div class="co-summary-total">
+        <span>المجموع الكلي</span>
+        <span id="sum-total">0.00 JOD</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEFT COL: Delivery + form (sticky) -->
+  <div class="co-col-sticky">
+
+    <!-- Delivery method -->
+    <div class="co-card">
+      <div class="co-card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        طريقة الاستلام
+      </div>
+      <div class="delivery-options" id="delivery-options">
+
+        <label class="delivery-option" data-fee="0">
+          <input type="radio" name="delivery" value="pickup">
+          <div class="delivery-radio-dot"></div>
+          <div class="delivery-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="delivery-info">
+            <div class="delivery-label">استلام شخصي</div>
+            <div class="delivery-desc">تستلم من المحل مباشرة</div>
+          </div>
+          <div class="delivery-price">مجاني</div>
+        </label>
+
+        <label class="delivery-option" data-fee="2">
+          <input type="radio" name="delivery" value="jarash">
+          <div class="delivery-radio-dot"></div>
+          <div class="delivery-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="delivery-info">
+            <div class="delivery-label">داخل جرش</div>
+            <div class="delivery-desc">توصيل داخل جرش</div>
+          </div>
+          <div class="delivery-price paid">2.00 JOD</div>
+        </label>
+
+        <label class="delivery-option" data-fee="3.5">
+          <input type="radio" name="delivery" value="north">
+          <div class="delivery-radio-dot"></div>
+          <div class="delivery-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="delivery-info">
+            <div class="delivery-label">الشمال</div>
+            <div class="delivery-desc">عمّان · إربد · الزرقاء</div>
+          </div>
+          <div class="delivery-price paid">3.50 JOD</div>
+        </label>
+
+        <label class="delivery-option" data-fee="5">
+          <input type="radio" name="delivery" value="south">
+          <div class="delivery-radio-dot"></div>
+          <div class="delivery-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          </div>
+          <div class="delivery-info">
+            <div class="delivery-label">الجنوب</div>
+            <div class="delivery-desc">السلط · الكرك · معان · العقبة · البحر الميت</div>
+          </div>
+          <div class="delivery-price paid">5.00 JOD</div>
+        </label>
+
+      </div>
+      <div class="co-notice">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:5px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <strong>مدة التوصيل:</strong> خلال 48 ساعة كحد أقصى من تأكيد الطلب.
+      </div>
+    </div>
+
+    <!-- Trigger button -->
+    <button class="co-submit" style="margin-top:16px" onclick="openContactSheet()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      متابعة وإرسال الطلب
+    </button>
+
+  </div>
+</div>
+
+<!-- ══ CONTACT BOTTOM SHEET ══ -->
+<div id="contact-overlay" onclick="closeContactSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;backdrop-filter:blur(4px)"></div>
+<div id="contact-sheet">
+  <!-- Handle -->
+  <div class="cs-handle-wrap">
+    <div class="cs-handle"></div>
+  </div>
+  <!-- Header -->
+  <div class="cs-header">
+    <div class="cs-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      بيانات التواصل
+    </div>
+    <button class="cs-close" onclick="closeContactSheet()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="cs-grid">
+    <div class="co-field">
+      <label>الاسم الكامل *</label>
+      <input id="co-name" type="text" placeholder="محمد عثمان" autocomplete="name">
+    </div>
+    <div class="co-field">
+      <label>رقم الهاتف *</label>
+      <input id="co-phone" type="tel" placeholder="07XXXXXXXX" dir="ltr" autocomplete="tel">
+    </div>
+    <div class="co-field">
+      <label>البريد الإلكتروني</label>
+      <input id="co-email" type="email" placeholder="example@email.com" dir="ltr" autocomplete="email">
+    </div>
+    <div class="co-field" id="address-field" style="display:none">
+      <label>العنوان التفصيلي *</label>
+      <input id="co-address" type="text" placeholder="المنطقة / الشارع / أقرب معلم...">
+    </div>
+  </div>
+
+  <div class="co-field">
+    <label>ملاحظات إضافية</label>
+    <textarea id="co-note" placeholder="أي تفاصيل تريد إضافتها..."></textarea>
+  </div>
+
+  <div class="co-err" id="co-err"></div>
+
+  <button class="co-submit" id="co-submit-btn" onclick="placeOrder()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    تأكيد وإرسال الطلب
+  </button>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCslThkqYCCNWRnp81P5_l2AY3gZkvFAgA",
+  authDomain: "othmanforgaming.firebaseapp.com",
+  projectId: "othmanforgaming",
+  storageBucket: "othmanforgaming.firebasestorage.app",
+  messagingSenderId: "373163148442",
+  appId: "1:373163148442:web:1cb9617e58e6db0c2b8b23"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── Read cart from localStorage ──
+const CART_KEY = 'ofg-cart';
+let cart = [];
+try { cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch {}
+
+// ── Delivery state ──
+let deliveryFee = 0;
+let deliveryLabel = '';
+
+// ── Render items ──
+function renderItems() {
+  const list = document.getElementById('co-items-list');
+  if (!cart.length) {
+    list.innerHTML = '<div class="co-empty">السلة فارغة — <a href="index.html" style="color:#2a8cff">ارجع للمتجر</a></div>';
+    updateTotals();
+    return;
+  }
+  list.innerHTML = cart.map(item => {
+    const condClass = item.condition === 'جديد' ? 'new' : 'used';
+    const condLabel = item.condition || '';
+    const lineTotal = (item.price || 0) * (item.qty || 1);
+    return `
+    <div class="co-item">
+      ${item.img ? `<img class="co-item-img" src="${item.img}" alt="${item.name}" onerror="this.style.opacity='.2'">` : ''}
+      <div class="co-item-info">
+        <div class="co-item-name">${item.name}</div>
+        <div class="co-item-meta">
+          ${condLabel ? `<span class="co-badge ${condClass}">${condLabel}</span>` : ''}
+          ${item.platform ? `<span class="co-badge qty">${item.platform}</span>` : ''}
+          <span class="co-badge qty">× ${item.qty || 1}</span>
+        </div>
+      </div>
+      <div class="co-item-price">${lineTotal.toFixed(2)} JOD</div>
+    </div>`;
+  }).join('');
+  updateTotals();
+}
+
+function updateTotals() {
+  const itemsTotal = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  document.getElementById('sum-items').textContent    = itemsTotal.toFixed(2) + ' JOD';
+  document.getElementById('sum-delivery').textContent = deliveryFee > 0 ? deliveryFee.toFixed(2) + ' JOD' : (deliveryLabel ? 'مجاني' : '—');
+  document.getElementById('sum-total').textContent    = (itemsTotal + deliveryFee).toFixed(2) + ' JOD';
+}
+
+// ── Delivery options ──
+document.querySelectorAll('.delivery-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.delivery-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    const radio = opt.querySelector('input[type=radio]');
+    if (radio) radio.checked = true;
+    deliveryFee   = parseFloat(opt.dataset.fee) || 0;
+    deliveryLabel = opt.querySelector('.delivery-label')?.textContent || '';
+    updateTotals();
+
+    // Show/hide address field
+    const addrField = document.getElementById('address-field');
+    if (radio && radio.value !== 'pickup') {
+      addrField.style.display = 'block';
+    } else {
+      addrField.style.display = 'none';
+      document.getElementById('co-address').value = '';
+    }
+  });
+});
+
+// ── Bottom sheet ──
+window.openContactSheet = function() {
+  const selectedOpt = document.querySelector('.delivery-option.selected');
+  const errEl = document.getElementById('co-err');
+  if (!selectedOpt) {
+    // flash delivery section
+    document.querySelector('.delivery-options').style.outline = '2px solid #f87171';
+    setTimeout(() => document.querySelector('.delivery-options').style.outline = '', 1800);
+    return;
+  }
+  // Show/hide address field based on selection
+  const val = selectedOpt.querySelector('input').value;
+  const addrField = document.getElementById('address-field');
+  addrField.style.display = val !== 'pickup' ? 'block' : 'none';
+  if (val === 'pickup') document.getElementById('co-address').value = '';
+
+  const sheet = document.getElementById('contact-sheet');
+  const overlay = document.getElementById('contact-overlay');
+  sheet.style.display = 'block'; overlay.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => { requestAnimationFrame(() => sheet.classList.add('open')); });
+  setTimeout(() => document.getElementById('co-name').focus(), 400);
+};
+window.closeContactSheet = function() {
+  const sheet = document.getElementById('contact-sheet');
+  const overlay = document.getElementById('contact-overlay');
+  sheet.classList.remove('open');
+  setTimeout(() => { sheet.style.display='none'; overlay.style.display='none'; }, 380);
+  document.body.style.overflow = '';
+};
+
+// ── Submit ──
+window.placeOrder = async function() {
+  const name    = document.getElementById('co-name').value.trim();
+  const phone   = document.getElementById('co-phone').value.trim();
+  const email   = document.getElementById('co-email').value.trim();
+  const address = document.getElementById('co-address').value.trim();
+  const note    = document.getElementById('co-note').value.trim();
+  const errEl   = document.getElementById('co-err');
+  const btn     = document.getElementById('co-submit-btn');
+  const selectedOpt = document.querySelector('.delivery-option.selected');
+
+  errEl.textContent = '';
+
+  if (!cart.length) { errEl.textContent = 'السلة فارغة'; return; }
+  if (!name)        { errEl.textContent = 'الرجاء إدخال الاسم الكامل'; return; }
+  if (!phone)       { errEl.textContent = 'الرجاء إدخال رقم الهاتف'; return; }
+  if (!selectedOpt) { errEl.textContent = 'الرجاء اختيار طريقة الاستلام'; return; }
+
+  const delivery = selectedOpt.querySelector('input').value;
+  if (delivery !== 'pickup' && !address) {
+    errEl.textContent = 'الرجاء إدخال العنوان التفصيلي';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'جاري الإرسال...';
+
+  try {
+    const itemsTotal = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+    const total      = itemsTotal + deliveryFee;
+
+    await addDoc(collection(db, 'Orders'), {
+      customerName: name,
+      phone,
+      email,
+      address,
+      note,
+      deliveryMethod: deliveryLabel,
+      deliveryFee,
+      items: cart.map(i => ({
+        name:      i.name,
+        price:     i.price || 0,
+        qty:       i.qty || 1,
+        imageUrl:  i.img || '',
+        condition: i.condition || '',
+        platform:  i.platform || ''
+      })),
+      itemsTotal,
+      total,
+      status: 'جديد',
+      createdAt: serverTimestamp()
+    });
+
+    // Clear cart
+    localStorage.setItem(CART_KEY, '[]');
+
+    // Close sheet + show success
+    closeContactSheet();
+    document.getElementById('co-main').style.display    = 'none';
+    document.getElementById('co-success').style.display = 'block';
+
+  } catch (err) {
+    errEl.textContent = 'خطأ في إرسال الطلب: ' + err.message;
+    btn.disabled = false; btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:7px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> إرسال الطلب';
+  }
+};
+
+// ── Boot ──
+renderItems();
+</script>
+</body>
+</html>

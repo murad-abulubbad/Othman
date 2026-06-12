@@ -10,8 +10,9 @@
 import {
   addToCart, removeFromCart, increaseQty, decreaseQty,
   addGameToCartFromEncoded, openCart, closeCart,
-  sendCartToWhatsApp, updateCartUI
-} from './modules/cart.js';
+  updateCartUI,
+  openOrderModal, closeOrderModal, submitOrder
+} from './modules/cart.js?v=2';
 
 import {
   toggleFavorite, removeFavorite, renderFavorites,
@@ -54,7 +55,9 @@ Object.assign(window, {
   addGameToCartFromEncoded,
   openCart,
   closeCart,
-  sendCartToWhatsApp,
+  openOrderModal,
+  closeOrderModal,
+  submitOrder,
 
   // Favorites
   toggleFavorite,
