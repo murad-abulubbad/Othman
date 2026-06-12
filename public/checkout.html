@@ -840,8 +840,9 @@ window.placeOrder = async function() {
 
     // Close sheet + show success
     closeContactSheet();
-    document.getElementById('co-main').style.display    = 'none';
-    document.getElementById('co-success').style.display = 'block';
+    document.getElementById('co-main').style.display       = 'none';
+    document.querySelector('.co-page-title').style.display = 'none';
+    document.getElementById('co-success').style.display    = 'block';
 
   } catch (err) {
     errEl.textContent = 'خطأ في إرسال الطلب: ' + err.message;
