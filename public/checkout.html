@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إتمام الطلب | عثمان للألعاب</title>
+<link rel="shortcut icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192x192.png">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <!-- Lucide icons CDN -->
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -17,7 +21,9 @@
   --text-dim: rgba(255,255,255,.45);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; overflow-x: hidden; }
+html, body { overflow-x: clip; scroll-behavior: smooth; }
+body { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+input, textarea { -webkit-user-select: text; -moz-user-select: text; user-select: text; }
 
 body {
   background: #060614;
@@ -30,27 +36,27 @@ body {
   color: #e8eaf6;
   font-family: 'Cairo', sans-serif;
   direction: rtl;
-  overflow-x: hidden;
 }
 
 /* ══ ANIMATED BG ORBS ══ */
-body::before, body::after {
-  content: '';
+.bg-orb {
   position: fixed; border-radius: 50%; filter: blur(80px);
-  pointer-events: none; z-index: 0; animation: floatOrb 12s ease-in-out infinite alternate;
+  pointer-events: none; z-index: 0;
+  animation: floatOrb 12s ease-in-out infinite alternate;
+  max-width: 60vw; max-height: 60vw;
 }
-body::before {
-  width: 500px; height: 500px; top: -100px; left: -100px;
+.bg-orb-1 {
+  width: 500px; height: 500px; top: -100px; right: -100px;
   background: radial-gradient(circle, rgba(0,102,230,.22), transparent 70%);
 }
-body::after {
-  width: 400px; height: 400px; bottom: -80px; right: -80px;
+.bg-orb-2 {
+  width: 400px; height: 400px; bottom: -80px; left: -80px;
   background: radial-gradient(circle, rgba(255,45,85,.18), transparent 70%);
   animation-delay: -6s;
 }
 @keyframes floatOrb {
   from { transform: translate(0,0) scale(1); }
-  to   { transform: translate(40px,30px) scale(1.1); }
+  to   { transform: translate(30px,20px) scale(1.08); }
 }
 
 /* ══ NAV ══ */
@@ -120,16 +126,19 @@ body::after {
 /* ══ LAYOUT ══ */
 .co-wrap {
   max-width: 1020px; margin: 0 auto;
-  padding: 20px clamp(10px, 3vw, 20px) 80px;
+  padding: 20px clamp(10px, 4vw, 20px) 80px;
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
+  grid-template-columns: minmax(0,1.15fr) minmax(0,1fr);
   gap: 22px;
   align-items: start;
   position: relative; z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
 }
+.co-wrap > * { min-width: 0; width: 100%; }
 .co-col-sticky { position: sticky; top: 70px; }
 @media (max-width: 720px) {
-  .co-wrap { grid-template-columns: 1fr; padding: 16px 12px 60px; }
+  .co-wrap { grid-template-columns: minmax(0,1fr); padding: 14px 12px 60px; }
   .co-col-sticky { position: static; }
   .co-page-title h1 { font-size: 1.3rem; }
 }
@@ -141,11 +150,14 @@ body::after {
   -webkit-backdrop-filter: blur(24px) saturate(150%);
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 20px;
-  padding: clamp(14px, 4vw, 24px) clamp(14px, 4vw, 24px);
+  padding: clamp(14px, 4vw, 24px);
   position: relative;
   overflow: hidden;
   transition: border-color .3s;
   min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  contain: layout;
 }
 .co-card::before {
   content: '';
@@ -170,7 +182,9 @@ body::after {
   padding: 11px 0;
   border-bottom: 1px solid rgba(255,255,255,.04);
   transition: background .2s;
-  min-width: 0; overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 .co-item:last-child { border-bottom: none; }
 .co-item-img {
@@ -209,13 +223,20 @@ body::after {
   font-size: .85rem; padding: 9px 0;
   border-bottom: 1px solid rgba(255,255,255,.04);
   color: rgba(255,255,255,.5);
+  min-width: 0; width: 100%; box-sizing: border-box;
+  gap: 8px;
 }
+.co-summary-row span { min-width: 0; }
+.co-summary-row span:last-child { white-space: nowrap; flex-shrink: 0; }
 .co-summary-row:last-child { border-bottom: none; }
 .co-summary-total {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 0 0; margin-top: 6px;
   border-top: 1px solid rgba(255,255,255,.1);
+  min-width: 0; width: 100%; box-sizing: border-box;
+  gap: 8px;
 }
+.co-summary-total span:last-child { white-space: nowrap; flex-shrink: 0; }
 .co-summary-total span:first-child { font-size: .9rem; color: rgba(255,255,255,.6); font-weight: 600; }
 .co-summary-total span:last-child {
   font-size: 1.3rem; font-weight: 900;
@@ -462,6 +483,8 @@ body::after {
 </style>
 </head>
 <body>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
 
 <nav class="co-nav">
   <span class="co-nav-brand">
