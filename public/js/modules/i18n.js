@@ -38,8 +38,6 @@ const translations = {
     'social.facebook':       'فيسبوك',
     'social.tiktok':         'تيك توك',
     // Product card / modal
-    'product.used':          'مستعمل',
-    'product.new':           'جديد',
     'product.addcart':       'أضف للسلة',
     'product.addfav':        'المفضلة',
     'product.outofstock':    'نفد المخزون',
@@ -47,7 +45,6 @@ const translations = {
     'product.condition':     'الحالة',
     'product.platform':      'المنصة',
     'product.desc':          'الوصف',
-    'product.trailer':       'شاهد التريلر',
     'product.price.request': 'حسب الطلب',
     // Checkout
     'checkout.title':        'إتمام الطلب',
@@ -136,8 +133,6 @@ const translations = {
     'social.facebook':       'Facebook',
     'social.tiktok':         'TikTok',
     // Product card / modal
-    'product.used':          'Used',
-    'product.new':           'New',
     'product.addcart':       'Add to Cart',
     'product.addfav':        'Favorite',
     'product.outofstock':    'Out of Stock',
@@ -145,7 +140,6 @@ const translations = {
     'product.condition':     'Condition',
     'product.platform':      'Platform',
     'product.desc':          'Description',
-    'product.trailer':       'Watch Trailer',
     'product.price.request': 'On Request',
     // Checkout
     'checkout.title':        'Checkout',

@@ -165,7 +165,7 @@ export function goToFavoriteItem(name) {
     if (!targetCard) return;
     targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
     targetCard.style.transition = 'box-shadow 0.3s';
-    targetCard.style.boxShadow = '0 0 35px rgba(0,255,136,0.8)';
+    targetCard.style.boxShadow = '0 0 35px rgba(204,0,0,0.8)';
     setTimeout(() => { targetCard.style.boxShadow = ''; }, 1800);
   }, 1400);
 }
