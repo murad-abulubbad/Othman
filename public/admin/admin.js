@@ -1252,11 +1252,11 @@ function renderBrowseItems() {
         ? `<img src="${cat.imageUrl}" style="width:100%;height:90px;object-fit:cover;display:block" onerror="this.style.display='none'">`
         : `<div style="height:90px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:2.2rem">🎮</div>`;
       return `
-        <div onclick="setBrowseCat('${cat.id}')" style="background:rgba(255,255,255,.04);border:1px solid ${color}33;border-radius:14px;overflow:hidden;cursor:pointer;transition:all .18s" onmouseover="this.style.borderColor='${color}99'" onmouseout="this.style.borderColor='${color}33'">
-          ${img}
-          <div style="padding:10px 12px">
-            <div style="font-weight:700;font-size:.85rem;color:${color}">${cat.name}</div>
-            <div style="font-size:.7rem;opacity:.4;margin-top:2px">${count} عنصر</div>
+        <div onclick="setBrowseCat('${cat.id}')" style="background:rgba(255,255,255,.04);border:1px solid ${color}33;border-radius:14px;cursor:pointer;transition:all .18s;display:flex;flex-direction:column" onmouseover="this.style.borderColor='${color}99'" onmouseout="this.style.borderColor='${color}33'">
+          <div style="border-radius:14px 14px 0 0;overflow:hidden;flex-shrink:0">${img}</div>
+          <div style="padding:10px 12px;flex:1">
+            <div style="font-weight:700;font-size:.85rem;color:${color};word-break:break-word;line-height:1.3">${cat.name}</div>
+            <div style="font-size:.7rem;opacity:.4;margin-top:3px">${count} عنصر</div>
           </div>
         </div>`;
     }).join('');

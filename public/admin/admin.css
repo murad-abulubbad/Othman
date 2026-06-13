@@ -181,9 +181,10 @@ tr.row-selected td{background:rgba(42,140,255,.08)}
 select.filter-input option{background:var(--dk2);color:var(--w)}
 
 /* ── GENRE TAGS ─────────────────────── */
-.genre-tag{padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:600;
+.genre-tag{padding:5px 10px;border-radius:20px;font-size:.78rem;font-weight:600;
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
-  color:var(--w);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+  color:var(--w);cursor:pointer;transition:all .15s;font-family:inherit;
+  text-align:center;word-break:break-word;line-height:1.3}
 .genre-tag:hover{border-color:rgba(42,140,255,.5)}
 .genre-tag.active{background:rgba(42,140,255,.25);border-color:var(--bb);color:var(--bb)}
 
@@ -219,14 +220,86 @@ select.filter-input option{background:var(--dk2);color:var(--w)}
 }
 
 /* ── MOBILE RESPONSIVE ───────────────── */
-@media(max-width:600px){
+@media(max-width:768px){
   html,body{overflow-x:clip}
-  .admin-nav{padding:11px 14px}
-  .admin-nav .brand span{font-size:.88rem}
-  .admin-main{padding:14px 12px}
-  .stats-row{grid-template-columns:repeat(2,1fr);gap:10px}
-  .stat-card{padding:14px 12px}
-  .section-box-head{padding:13px 14px}
+
+  /* Nav */
+  .admin-nav{padding:10px 14px;flex-wrap:wrap;gap:6px}
+  .admin-nav .brand span{font-size:.82rem}
+  .admin-nav .btn{font-size:.75rem;padding:5px 10px}
+
+  /* Tabs */
+  .admin-tabs{padding:6px 10px 0;gap:2px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  .admin-tabs::-webkit-scrollbar{display:none}
+  .admin-tab{padding:6px 11px;font-size:.76rem;white-space:nowrap;flex-shrink:0}
+
+  /* Main padding */
+  .admin-main{padding:12px 10px}
+
+  /* Analytics KPI cards — 2 per row */
+  #analytics-kpis{grid-template-columns:repeat(2,1fr) !important;gap:8px}
+
+  /* Analytics charts — stack vertically */
+  #analytics-charts-row{grid-template-columns:1fr !important}
+
+  /* Stats row — 2 per row */
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat-card{padding:12px 10px}
+
+  /* Section boxes */
+  .section-box-head{padding:12px 12px}
+  .section-actions{gap:6px}
+  .section-actions .btn{font-size:.76rem;padding:5px 10px}
+
+  /* Tables — horizontal scroll */
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .login-card{padding:28px 18px}
+
+  /* Login */
+  .login-card{padding:24px 16px}
+
+  /* Browse tab */
+  #tab-browse{padding:12px 10px !important}
+
+  /* Browse pills wrap */
+  #browse-cat-pills{gap:5px}
+  #browse-cat-pills button{font-size:.72rem;padding:5px 10px}
+
+  /* Browse bulk bar — wrap */
+  #browse-bulk-bar{flex-wrap:wrap;gap:6px}
+  #browse-bulk-bar select{width:100% !important}
+  #browse-bulk-bar button{flex:1;font-size:.75rem}
+
+  /* Browse filters — scroll horizontally */
+  #browse-filters > div{overflow-x:auto;-webkit-overflow-scrolling:touch;min-width:0}
+  #browse-filters > div > div{min-width:90px}
+
+  /* Browse item rows */
+  #browse-items-grid > div{padding:8px 10px;gap:8px}
+  #browse-items-grid > div img,
+  #browse-items-grid > div > div:first-of-type{width:42px !important;height:42px !important}
+  #browse-items-grid > div .btn{padding:3px 7px !important;font-size:.68rem !important}
+
+  /* Period selector pills */
+  #period-pills{flex-wrap:wrap;gap:5px}
+  #period-pills button{font-size:.73rem;padding:4px 10px}
+
+  /* Flash modal */
+  #flash-add-modal > div{padding:20px 16px}
+
+  /* Confirm modal */
+  #confirm-modal > div{padding:22px 18px;width:92vw}
+}
+
+@media(max-width:480px){
+  /* Item rows: wrap price + buttons below */
+  #browse-items-grid > div{flex-wrap:wrap;padding:8px 10px}
+  #browse-items-grid > div > input[type=checkbox]{align-self:flex-start;margin-top:4px}
+  #browse-items-grid > div > div:nth-child(3){width:calc(100% - 120px)}
+  #browse-items-grid > div > div:nth-child(4){margin-right:auto;font-size:.75rem}
+  #browse-items-grid > div > div:last-child{width:100%;justify-content:flex-end;margin-top:4px;border-top:1px solid rgba(255,255,255,.05);padding-top:6px}
+}
+
+@media(max-width:400px){
+  .admin-tab{padding:5px 8px;font-size:.7rem}
+  #analytics-kpis{grid-template-columns:repeat(2,1fr) !important}
 }
