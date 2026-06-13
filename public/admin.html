@@ -50,7 +50,6 @@
     </div>
     <div style="display:flex;gap:10px;align-items:center">
       <span id="role-badge" style="font-size:.78rem;font-weight:700;opacity:.85"></span>
-      <a href="orders.html" class="btn btn-edit btn-sm">الطلبات</a>
       <a href="index.html" class="btn btn-edit btn-sm">← المتجر</a>
       <button class="btn btn-danger btn-sm" id="logout-btn">خروج</button>
     </div>
@@ -59,6 +58,7 @@
   <!-- TAB BAR -->
   <div class="admin-tabs">
     <button class="admin-tab active" data-tab="analytics">📊 التحليلات</button>
+    <button class="admin-tab" data-tab="orders">📦 الطلبات <span id="orders-new-badge" style="display:none;background:var(--rb);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.65rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;margin-right:4px;vertical-align:middle"></span></button>
         <button class="admin-tab" data-tab="browse">🏪 المتجر</button>
     <button class="admin-tab" data-tab="categories">🗂️ التصنيفات</button>
     <button class="admin-tab" data-tab="genres">🏷️ الأنواع</button>
@@ -196,6 +196,28 @@
     </div>
 
     </div>
+    </div>
+
+    <!-- Orders Panel -->
+    <div class="tab-panel" id="tab-orders" style="display:none;padding:20px 24px">
+      <div class="stats-row" id="orders-stats" style="margin-bottom:20px">
+        <div class="stat-card stat-new"><div class="s-num" id="stat-new-count">—</div><div class="s-lbl">جديدة</div></div>
+        <div class="stat-card"><div class="s-num" id="stat-total-count">—</div><div class="s-lbl">إجمالي</div></div>
+        <div class="stat-card"><div class="s-num" id="stat-confirmed-count">—</div><div class="s-lbl">مؤكدة</div></div>
+        <div class="stat-card"><div class="s-num" id="stat-done-count">—</div><div class="s-lbl">منجزة</div></div>
+        <div class="stat-card"><div class="s-num" id="stat-cancelled-count">—</div><div class="s-lbl">ملغاة</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div class="filters-bar" style="margin-bottom:0">
+          <button class="filter-btn active" data-order-status="">الكل</button>
+          <button class="filter-btn" data-order-status="جديد"><span id="filter-new-badge"></span> جديد</button>
+          <button class="filter-btn" data-order-status="مؤكد">مؤكد</button>
+          <button class="filter-btn" data-order-status="منجز">منجز</button>
+          <button class="filter-btn" data-order-status="ملغي">ملغي</button>
+        </div>
+        <button class="btn btn-edit btn-sm" id="orders-refresh-btn">🔄 تحديث</button>
+      </div>
+      <div id="orders-list"><div style="text-align:center;padding:50px;opacity:.4;font-size:1.2rem">⏳ جاري التحميل...</div></div>
     </div>
 
     <!-- Browse by category Panel -->

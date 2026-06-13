@@ -1,9 +1,12 @@
 import { app, db, auth, storage, signInWithEmailAndPassword, signOut, onAuthStateChanged, ref, uploadBytesResumable, getDownloadURL, deleteObject } from '../firebase.js';
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc,
-  doc, query, orderBy, where
+  doc, query, orderBy, where, onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { initGenres, loadGenres, renderGenreTags } from './genres.js';
+import { printInvoice, saveInvoicePDF } from '../js/invoice.js';
+window._printInvoice = printInvoice;
+window._saveInvoicePDF = saveInvoicePDF;
 
 // ── STATE ──────────────────────────────────────────────
 let categories = [];
@@ -1659,5 +1662,177 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-tab="coupons"]')?.addEventListener('click', () => {
     if (!coupons.length) loadCoupons();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  ORDERS MODULE
+// ═══════════════════════════════════════════════════════════
+let _allOrders = [];
+let _orderFilter = '';
+let _ordersUnsub = null;
+const _orderMap = {};
+window._orderMap = _orderMap;
+
+function subscribeOrders() {
+  if (_ordersUnsub) return;
+  const q = query(collection(db, 'Orders'), orderBy('createdAt', 'desc'));
+  _ordersUnsub = onSnapshot(q, snap => {
+    _allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _allOrders.forEach(o => { _orderMap[o.id] = o; });
+    renderOrderStats();
+    renderOrders();
+    updateOrdersBadge();
+  }, err => {
+    const el = $('orders-list');
+    if (el) el.innerHTML = `<div style="text-align:center;padding:40px;opacity:.4">❌ خطأ: ${err.message}</div>`;
+  });
+}
+
+function updateOrdersBadge() {
+  const newCount = _allOrders.filter(o => (o.status || 'جديد') === 'جديد').length;
+  const badge = $('orders-new-badge');
+  if (!badge) return;
+  if (newCount > 0) {
+    badge.textContent = newCount;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderOrderStats() {
+  const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+  set('stat-new-count',       _allOrders.filter(o => (o.status||'جديد') === 'جديد').length);
+  set('stat-total-count',     _allOrders.length);
+  set('stat-confirmed-count', _allOrders.filter(o => o.status === 'مؤكد').length);
+  set('stat-done-count',      _allOrders.filter(o => o.status === 'منجز').length);
+  set('stat-cancelled-count', _allOrders.filter(o => o.status === 'ملغي').length);
+  const newBadge = $('filter-new-badge');
+  const newCount = _allOrders.filter(o => (o.status||'جديد') === 'جديد').length;
+  if (newBadge) newBadge.innerHTML = newCount > 0 ? `<span class="order-count-badge">${newCount}</span>` : '';
+}
+
+function renderOrders() {
+  const el = $('orders-list');
+  if (!el) return;
+  const filtered = _orderFilter
+    ? _allOrders.filter(o => (o.status || 'جديد') === _orderFilter)
+    : _allOrders;
+  if (!filtered.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;opacity:.4">📭 لا توجد طلبات${_orderFilter ? ' بهذه الحالة' : ''}</div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(o => renderOrderCard(o)).join('');
+  el.querySelectorAll('.status-select').forEach(sel => {
+    sel.addEventListener('change', async e => {
+      const id = e.target.dataset.orderId;
+      const newStatus = e.target.value;
+      try {
+        const upd = { status: newStatus };
+        if (newStatus === 'منجز') upd.deliveredAt = new Date();
+        await updateDoc(doc(db, 'Orders', id), upd);
+        toast('✅ تم تحديث حالة الطلب');
+      } catch(err) { toast('خطأ: ' + err.message, true); }
+    });
+  });
+}
+
+function renderOrderCard(order) {
+  const status = order.status || 'جديد';
+  const statusClass = { 'جديد':'new','مؤكد':'confirmed','منجز':'done','ملغي':'cancelled' }[status] || 'new';
+  const badgeClass  = { 'جديد':'badge-new','مؤكد':'badge-confirmed','منجز':'badge-done','ملغي':'badge-cancelled' }[status] || 'badge-new';
+  const date = order.createdAt?.toDate
+    ? order.createdAt.toDate().toLocaleString('ar-EG', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+    : '—';
+  const orderItems = Array.isArray(order.items) ? order.items : [];
+  const total = Number(order.total ?? orderItems.reduce((s, it) => s + (it.price||0)*(it.qty||1), 0));
+  const deliveryFee = Number(order.deliveryFee) || 0;
+
+  const itemsHtml = orderItems.map(it => {
+    const condClass = it.condition === 'جديد'
+      ? 'background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25)'
+      : it.condition === 'مستعمل' ? 'background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.25)' : '';
+    return `<div class="order-item-row">
+      <img class="order-item-img" src="${it.imageUrl||''}" alt="${it.name||''}" onerror="this.style.opacity='.15'">
+      <span class="order-item-name">${it.name||'—'}</span>
+      ${it.condition ? `<span class="order-item-badge" style="${condClass}">${it.condition}</span>` : ''}
+      ${it.platform  ? `<span class="order-item-badge" style="background:rgba(42,140,255,.12);color:#60a5fa;border:1px solid rgba(42,140,255,.2)">${it.platform}</span>` : ''}
+      <span class="order-item-qty">× ${it.qty||1}</span>
+      <span class="order-item-price">${((it.price||0)*(it.qty||1)).toFixed(2)} JOD</span>
+    </div>`;
+  }).join('');
+
+  const noteHtml = order.note ? `<div class="order-note"><div class="order-note-label">ملاحظة</div>${order.note}</div>` : '';
+  const emailRow    = order.email   ? `<div class="detail-row"><span>البريد</span><strong>${order.email}</strong></div>` : '';
+  const addressRow  = order.address ? `<div class="detail-row"><span>العنوان</span><strong>${order.address}</strong></div>` : '';
+  const deliveryRow = order.deliveryMethod ? `<div class="detail-row"><span>طريقة الاستلام</span><strong>${order.deliveryMethod}</strong></div>` : '';
+  const deliveryFeeRow = deliveryFee > 0 ? `<div class="detail-row"><span>رسوم التوصيل</span><strong>${deliveryFee.toFixed(2)} JOD</strong></div>` : '';
+
+  return `<div class="order-row status-${statusClass}" id="row-${order.id}">
+    <div class="order-summary" onclick="adminToggleOrder('${order.id}')">
+      <div class="os-status"><span class="${badgeClass}">${status}</span></div>
+      <div class="os-name">${order.customerName||'غير محدد'}</div>
+      <div class="os-phone">${order.phone||'—'}</div>
+      <div class="os-address">${order.address||order.deliveryMethod||'—'}</div>
+      <div class="os-total">${total.toFixed(2)} JOD</div>
+      <div class="os-date">${date}</div>
+      <button class="order-expand-btn" title="التفاصيل">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <div class="order-details">
+      <div class="order-id">#${order.id}</div>
+      <div style="background:rgba(255,255,255,.03);border-radius:9px;padding:10px 14px;margin-bottom:12px">
+        <div class="detail-row"><span>الاسم</span><strong>${order.customerName||'—'}</strong></div>
+        <div class="detail-row"><span>الهاتف</span><strong style="direction:ltr">${order.phone||'—'}</strong></div>
+        ${emailRow}${addressRow}${deliveryRow}${deliveryFeeRow}
+      </div>
+      <div class="order-items-list">${itemsHtml||'<div style="opacity:.4;text-align:center;padding:8px;font-size:.83rem">لا توجد منتجات</div>'}</div>
+      ${noteHtml}
+      <div class="order-total-bar" style="flex-direction:column;align-items:stretch;gap:6px">
+        ${order.itemsTotal != null ? `<div style="display:flex;justify-content:space-between;font-size:.82rem;opacity:.6"><span>إجمالي المنتجات</span><span>${Number(order.itemsTotal).toFixed(2)} JOD</span></div>` : ''}
+        ${order.discountAmount > 0 ? `<div style="display:flex;justify-content:space-between;font-size:.82rem;color:#34d399"><span>خصم الكوبون${order.couponCode?' ('+order.couponCode+')':''}</span><span>- ${Number(order.discountAmount).toFixed(2)} JOD</span></div>` : ''}
+        ${deliveryFee > 0 ? `<div style="display:flex;justify-content:space-between;font-size:.82rem;opacity:.6"><span>رسوم التوصيل</span><span>${deliveryFee.toFixed(2)} JOD</span></div>` : ''}
+        <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:6px;margin-top:2px"><span>الإجمالي</span><span>${total.toFixed(2)} JOD</span></div>
+      </div>
+      <div class="order-actions">
+        <label style="font-size:.8rem;opacity:.5">تغيير الحالة:</label>
+        <select class="status-select" data-order-id="${order.id}">
+          <option value="جديد" ${status==='جديد'?'selected':''}>جديد</option>
+          <option value="مؤكد" ${status==='مؤكد'?'selected':''}>مؤكد</option>
+          <option value="منجز" ${status==='منجز'?'selected':''}>منجز</option>
+          <option value="ملغي" ${status==='ملغي'?'selected':''}>ملغي</option>
+        </select>
+        <button onclick="window._printInvoice(window._orderMap['${order.id}'])" style="background:rgba(42,140,255,.15);color:#60a5fa;border:1px solid rgba(42,140,255,.3);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer">🖨️ طباعة</button>
+        <button onclick="window._saveInvoicePDF(window._orderMap['${order.id}'])" style="background:rgba(25,135,84,.15);color:#4ade80;border:1px solid rgba(25,135,84,.3);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer">💾 PDF</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+window.adminToggleOrder = function(id) {
+  const row = document.getElementById('row-' + id);
+  if (row) row.classList.toggle('expanded');
+};
+
+// Wire filter buttons + refresh
+document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-order-status]');
+    if (btn) {
+      document.querySelectorAll('[data-order-status]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      _orderFilter = btn.dataset.orderStatus;
+      renderOrders();
+    }
+  });
+  $('orders-refresh-btn')?.addEventListener('click', () => {
+    if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+    subscribeOrders();
+    toast('🔄 تم التحديث');
+  });
+  document.querySelector('[data-tab="orders"]')?.addEventListener('click', () => {
+    if (!_ordersUnsub) subscribeOrders();
   });
 });
