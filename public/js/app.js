@@ -137,6 +137,28 @@ function hideLoader() {
   setTimeout(hide, 4000);
 }
 
+// ── PWA Install prompt ────────────────────────────────────────────
+let _installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'inline-flex';
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+  _installPrompt = null;
+});
+window.triggerPWAInstall = async function() {
+  if (!_installPrompt) return;
+  _installPrompt.prompt();
+  await _installPrompt.userChoice;
+  _installPrompt = null;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+};
+
 // ── Service worker registration ────────────────────────────────────
 if ('serviceWorker' in navigator) {
   // Don't block app init — register after the first paint.

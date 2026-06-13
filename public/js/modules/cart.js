@@ -93,8 +93,28 @@ export function addGameToCartFromEncoded(encodedItem, button) {
 // ── Sidebar visibility ──────────────────────────────────────────────
 
 export function openCart() {
+  syncCartPricesWithFlash();
   document.getElementById('cart-sidebar')?.classList.add('open');
   document.getElementById('cart-overlay')?.classList.add('active');
+}
+
+function syncCartPricesWithFlash() {
+  const allItems = Object.values(window._catItems || {}).flat();
+  if (!allItems.length) return;
+  const now = Date.now();
+  let changed = false;
+  cart.forEach(cartItem => {
+    const src = allItems.find(i => i.name === cartItem.name);
+    if (!src) return;
+    const saleEndsAt = src.saleEndsAt ? Number(src.saleEndsAt) : 0;
+    const isFlashActive = src.salePrice > 0 && saleEndsAt > now;
+    const correctPrice = isFlashActive ? Number(src.salePrice) : Number(src.price);
+    if (Math.abs(cartItem.price - correctPrice) > 0.001) {
+      cartItem.price = correctPrice;
+      changed = true;
+    }
+  });
+  if (changed) saveCart();
 }
 
 export function closeCart() {
@@ -149,10 +169,11 @@ export function updateCartUI() {
       <div class="cart-item">
         ${visual}
         <div class="cart-item-info">
-          <div class="cart-item-name">${platformBadge}${item.name}</div>
+          ${platformBadge ? `<div style="margin-bottom:3px">${platformBadge}</div>` : ''}
+          <div class="cart-item-name">${item.name}</div>
           <div style="font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:4px;">القسم: ${sectionName}</div>
           ${conditionBadge}
-          <div class="cart-item-price">${item.priceLabel || `${(item.price * (item.qty || 1)).toFixed(2)} JOD`}</div>
+          <div class="cart-item-price">${item.price > 0 ? `${(item.price * (item.qty || 1)).toFixed(2)} JOD` : (item.priceLabel || 'حسب الطلب')}</div>
         </div>
         <div class="cart-item-actions">
           <button class="cart-qty-btn" onclick="decreaseQty(${i})">−</button>

@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192x192.png">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="admin/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -57,18 +58,60 @@
 
   <!-- TAB BAR -->
   <div class="admin-tabs">
-    <button class="admin-tab active" data-tab="items">📦 عناصر المتجر</button>
+    <button class="admin-tab active" data-tab="analytics">📊 التحليلات</button>
+        <button class="admin-tab" data-tab="browse">🏪 المتجر</button>
     <button class="admin-tab" data-tab="categories">🗂️ التصنيفات</button>
     <button class="admin-tab" data-tab="genres">🏷️ الأنواع</button>
     <button class="admin-tab" id="staff-tab-btn" data-tab="staff">👥 الموظفون</button>
+    <button class="admin-tab" id="coupons-tab-btn" data-tab="coupons">🎟️ الكوبونات</button>
   </div>
 
   <div class="admin-main">
 
+    <!-- Analytics Panel -->
+    <div class="tab-panel" id="tab-analytics" style="padding:20px 24px">
+
+      <!-- Header row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+        <div style="font-size:1.1rem;font-weight:700;color:#fff">📊 لوحة التحليلات</div>
+        <!-- Period pills -->
+        <div style="display:flex;gap:6px;background:rgba(255,255,255,.05);padding:4px;border-radius:10px">
+          <button class="analytics-period active" data-period="today"  style="border:none;padding:6px 14px;border-radius:7px;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;background:rgba(42,140,255,.8);color:#fff">اليوم</button>
+          <button class="analytics-period"        data-period="week"   style="border:none;padding:6px 14px;border-radius:7px;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:rgba(255,255,255,.5)">الأسبوع</button>
+          <button class="analytics-period"        data-period="month"  style="border:none;padding:6px 14px;border-radius:7px;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:rgba(255,255,255,.5)">الشهر</button>
+          <button class="analytics-period"        data-period="all"    style="border:none;padding:6px 14px;border-radius:7px;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:rgba(255,255,255,.5)">الكل</button>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div id="analytics-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px"></div>
+
+      <!-- Inventory stats -->
+      <div style="font-size:.78rem;font-weight:600;opacity:.4;margin-bottom:10px;letter-spacing:.5px">📦 إحصائيات المخزون</div>
+      <div class="stats-row" id="dashboard-stats" style="margin-bottom:24px"></div>
+
+      <!-- Revenue chart -->
+      <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:18px 20px;margin-bottom:16px">
+        <div style="font-size:.78rem;font-weight:600;opacity:.45;margin-bottom:12px;letter-spacing:.5px">إيرادات آخر 7 أيام</div>
+        <canvas id="revenue-chart" height="70"></canvas>
+      </div>
+
+      <!-- Bottom two columns -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:18px 20px">
+          <div style="font-size:.78rem;font-weight:600;opacity:.45;margin-bottom:12px;letter-spacing:.5px">🏆 أكثر المنتجات مبيعاً</div>
+          <div id="analytics-top-products"></div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:18px 20px">
+          <div style="font-size:.78rem;font-weight:600;opacity:.45;margin-bottom:12px;letter-spacing:.5px">⏰ أكثر الأوقات طلباً</div>
+          <canvas id="hourly-chart" height="110"></canvas>
+        </div>
+      </div>
+
+    </div>
+
     <!-- Items Section -->
-    <div class="tab-panel" id="tab-items">
-    <!-- Stats -->
-    <div class="stats-row" id="dashboard-stats"></div>
+    <div class="tab-panel" id="tab-items" style="display:none">
     <div class="section-box collapsed">
       <div class="section-box-head" data-collapse-toggle>
         <h3>📦 عناصر المتجر</h3>
@@ -155,6 +198,60 @@
     </div>
     </div>
 
+    <!-- Browse by category Panel -->
+    <div class="tab-panel" id="tab-browse" style="display:none;padding:20px 24px">
+
+      <!-- Category pills filter + add button -->
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+        <div id="browse-cat-pills" style="display:flex;flex-wrap:wrap;gap:8px;flex:1"></div>
+        <button class="btn btn-primary btn-sm" onclick="openItemModalForBrowse()" style="white-space:nowrap;flex-shrink:0">+ إضافة</button>
+      </div>
+
+      <!-- Bulk actions toolbar (shown only for __none__ or any category) -->
+      <div id="browse-bulk-bar" style="display:none;align-items:center;gap:8px;margin-bottom:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 14px">
+        <input type="checkbox" id="browse-select-all" onchange="browseToggleAll(this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#2a8cff">
+        <span id="browse-selected-count" style="font-size:.8rem;opacity:.6;flex:1">0 محدد</span>
+        <select id="browse-move-cat" style="display:none;background:#15152c;border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:5px 10px;color:#fff;font-size:.8rem;outline:none">
+          <option value="">— اختر تصنيفاً للتحويل —</option>
+        </select>
+        <button id="browse-move-btn" onclick="browseBulkMove()" class="btn btn-primary btn-sm" style="display:none;font-size:.78rem">↪ تحويل المحدد</button>
+        <button onclick="browseBulkDelete()" class="btn btn-danger btn-sm" style="font-size:.78rem">🗑 حذف المحدد</button>
+      </div>
+
+      <!-- Table-style filters -->
+      <div id="browse-filters" style="display:none;margin-bottom:14px;flex-direction:column">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr 1fr 0.8fr auto;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px 10px 0 0">
+          <div style="padding:8px 12px;font-size:.75rem;font-weight:700;opacity:.5;border-left:1px solid rgba(255,255,255,.06)">الاسم</div>
+          <div style="padding:8px 12px;font-size:.75rem;font-weight:700;opacity:.5;border-left:1px solid rgba(255,255,255,.06)">السعر</div>
+          <div style="padding:8px 12px;font-size:.75rem;font-weight:700;opacity:.5;border-left:1px solid rgba(255,255,255,.06)">الخصم</div>
+          <div style="padding:8px 12px;font-size:.75rem;font-weight:700;opacity:.5;border-left:1px solid rgba(255,255,255,.06)">الحالة</div>
+          <div style="padding:8px 12px;font-size:.75rem;font-weight:700;opacity:.5;border-left:1px solid rgba(255,255,255,.06)">النوع</div>
+          <div style="padding:8px 12px;font-size:.75rem;font-weight:700;opacity:.5;border-left:1px solid rgba(255,255,255,.06)">الكمية</div>
+          <div style="padding:8px 12px"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr 1fr 0.8fr auto;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-top:none;border-radius:0 0 10px 10px">
+          <div style="padding:6px 8px;border-left:1px solid rgba(255,255,255,.05)"><input id="browse-search" type="text" placeholder="🔍 بحث..." oninput="onBrowseSearch()" style="width:100%;border-radius:6px;padding:5px 9px;font-size:.8rem;outline:none;box-sizing:border-box"></div>
+          <div style="padding:6px 8px;border-left:1px solid rgba(255,255,255,.05)"><input id="browse-price" type="text" placeholder="🔍" oninput="onBrowseSearch()" style="width:100%;border-radius:6px;padding:5px 9px;font-size:.8rem;outline:none;box-sizing:border-box"></div>
+          <div style="padding:6px 8px;border-left:1px solid rgba(255,255,255,.05)"><input id="browse-discount" type="text" placeholder="🔍" oninput="onBrowseSearch()" style="width:100%;border-radius:6px;padding:5px 9px;font-size:.8rem;outline:none;box-sizing:border-box"></div>
+          <div style="padding:6px 8px;border-left:1px solid rgba(255,255,255,.05)"><select id="browse-condition" onchange="onBrowseSearch()" style="width:100%;border-radius:6px;padding:5px 6px;font-size:.8rem;outline:none;box-sizing:border-box"><option value="">الكل</option><option value="جديد">جديد</option><option value="مستعمل">مستعمل</option></select></div>
+          <div style="padding:6px 8px;border-left:1px solid rgba(255,255,255,.05)"><select id="browse-genre" onchange="onBrowseSearch()" style="width:100%;border-radius:6px;padding:5px 6px;font-size:.8rem;outline:none;box-sizing:border-box"><option value="">كل الأنواع</option></select></div>
+          <div style="padding:6px 8px;border-left:1px solid rgba(255,255,255,.05)"><input id="browse-qty" type="text" placeholder="🔍" oninput="onBrowseSearch()" style="width:100%;border-radius:6px;padding:5px 9px;font-size:.8rem;outline:none;box-sizing:border-box"></div>
+          <div style="padding:6px 8px"><button onclick="clearBrowseFilters()" style="border-radius:6px;padding:5px 10px;font-size:.78rem;cursor:pointer">✕</button></div>
+        </div>
+      </div>
+
+      <!-- Items list -->
+      <div id="browse-items-grid" style="display:flex;flex-direction:column;gap:8px"></div>
+
+      <!-- Pagination -->
+      <div style="display:flex;gap:8px;margin-top:18px;align-items:center">
+        <button class="btn btn-sm" id="browse-prev" onclick="browseChangePage(-1)">← السابق</button>
+        <span id="browse-page-info" style="font-size:.8rem;opacity:.5;flex:1;text-align:center"></span>
+        <button class="btn btn-sm" id="browse-next" onclick="browseChangePage(1)">التالي →</button>
+      </div>
+
+    </div>
+
     <!-- Genres Panel -->
     <div class="tab-panel" id="tab-genres" style="display:none">
     <div class="section-box collapsed">
@@ -210,9 +307,109 @@
     </div>
     </div>
 
+    <!-- Coupons Panel -->
+    <div class="tab-panel" id="tab-coupons" style="display:none">
+    <div class="section-box collapsed" id="coupons-section">
+      <div class="section-box-head" data-collapse-toggle>
+        <h3>🎟️ الكوبونات</h3>
+      </div>
+      <div class="section-box-body">
+        <div style="margin-bottom:16px">
+          <button class="btn btn-primary" id="coupon-open-modal-btn">+ إضافة كوبون</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الكود</th><th>النوع</th><th>القيمة</th><th>الحد الأدنى</th><th>الاستخدام</th><th>الحد</th><th>إجراءات</th></tr></thead>
+            <tbody id="coupons-tbody">
+              <tr class="empty-row"><td colspan="7">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    </div>
+
   </div>
 </div>
 
+
+<!-- ════ CUSTOM CONFIRM MODAL ════ -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:#13131f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:28px 28px 22px;width:360px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.6);text-align:center">
+    <div id="confirm-icon" style="font-size:2.2rem;margin-bottom:12px"></div>
+    <div id="confirm-title" style="font-size:1rem;font-weight:700;margin-bottom:8px"></div>
+    <div id="confirm-msg" style="font-size:.85rem;opacity:.6;line-height:1.6;margin-bottom:22px"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button id="confirm-cancel-btn" style="flex:1;padding:9px 0;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer">إلغاء</button>
+      <button id="confirm-ok-btn" style="flex:1;padding:9px 0;border-radius:9px;border:none;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ FLASH SALE MODAL ════ -->
+<div id="flash-add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:#13131f;border:1px solid rgba(251,146,60,.3);border-radius:14px;padding:28px 32px;width:380px;max-width:92vw">
+    <h3 style="margin:0 0 6px;color:#fb923c;font-size:1rem">⚡ فلاش سيل</h3>
+    <p id="flash-item-name" style="margin:0 0 18px;opacity:.55;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></p>
+    <div id="flash-current" style="display:none;background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.8rem">
+      <span id="flash-current-info" style="color:#fb923c"></span>
+      <button onclick="cancelFlashSale()" style="margin-right:10px;background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:3px 10px;font-size:.75rem;cursor:pointer">إلغاء الفلاش</button>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">سعر الفلاش (JOD) *</label>
+      <input id="flash-sale-price" class="bare" type="number" min="0.1" step="0.01" placeholder="مثال: 9.99" style="width:100%;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">المدة (بالساعات)</label>
+      <input id="flash-duration" class="bare" type="number" min="0.5" step="0.5" placeholder="مثال: 2" value="2" style="width:100%;box-sizing:border-box">
+    </div>
+    <div id="flash-modal-err" style="color:#f87171;font-size:.8rem;min-height:16px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" onclick="document.getElementById('flash-add-modal').style.display='none'" style="flex:1">إلغاء</button>
+      <button class="btn btn-primary" id="flash-save-btn" style="flex:2;background:linear-gradient(135deg,#f97316,#fb923c)">⚡ تفعيل</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ COUPON ADD MODAL ════ -->
+<div id="coupon-add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:#13131f;border:1px solid rgba(42,140,255,.25);border-radius:14px;padding:28px 32px;width:400px;max-width:92vw">
+    <h3 style="margin:0 0 20px;color:#60a5fa;font-size:1rem">🎟️ إضافة كوبون جديد</h3>
+    <div style="margin-bottom:14px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">كود الكوبون *</label>
+      <input id="coupon-code-input" class="bare" type="text" placeholder="SAVE10" style="width:100%;box-sizing:border-box;text-transform:uppercase;letter-spacing:2px">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">نوع الخصم</label>
+      <select id="coupon-type-input" class="filter-input" style="width:100%;box-sizing:border-box" onchange="updateCouponValueLabel()">
+        <option value="percent">نسبة مئوية (%)</option>
+        <option value="fixed">مبلغ ثابت (JOD)</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">قيمة الخصم *</label>
+      <div style="position:relative">
+        <input id="coupon-value-input" class="bare" type="number" min="1" placeholder="10" style="width:100%;box-sizing:border-box;padding-left:40px">
+        <span id="coupon-value-unit" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5;font-size:.85rem;pointer-events:none">%</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div>
+        <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">الحد الأدنى للطلب (JOD)</label>
+        <input id="coupon-min-input" class="bare" type="number" min="0" placeholder="0" style="width:100%;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:5px;opacity:.6;font-size:.8rem">حد الاستخدام (0 = بلا حد)</label>
+        <input id="coupon-limit-input" class="bare" type="number" min="0" placeholder="0" style="width:100%;box-sizing:border-box">
+      </div>
+    </div>
+    <div id="coupon-modal-err" style="color:#f87171;font-size:.8rem;min-height:16px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" onclick="document.getElementById('coupon-add-modal').style.display='none'" style="flex:1">إلغاء</button>
+      <button class="btn btn-primary" id="coupon-add-btn" style="flex:2">+ إضافة</button>
+    </div>
+  </div>
+</div>
 
 <!-- ════ CATEGORY ADD MODAL ════ -->
 <div id="cat-add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center">
@@ -333,11 +530,15 @@
       <!-- Platform field removed: not stored or sent to database -->
 
       <div class="form-row three-col">
-        <div class="field">
+        <div class="field" id="item-cat-field">
           <label>التصنيف</label>
           <select id="item-categoryID">
             <option value="">— اختر تصنيفاً —</option>
           </select>
+        </div>
+        <div class="field" id="item-cat-label-field" style="display:none">
+          <label>التصنيف</label>
+          <div id="item-cat-label-text" style="padding:10px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:9px;font-size:.9rem;font-weight:700"></div>
         </div>
         <div class="field">
           <label>الكمية المتاحة *</label>

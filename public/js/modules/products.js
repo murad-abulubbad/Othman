@@ -51,17 +51,9 @@ export function renderGameGrid(targetId, games, platform, color) {
       originalPrice: g.originalPrice,
       discountPrice: g.discountPrice,
       description: g.description,
-      platform
-    });
-    const cartData = encodeOnclick({
-      name: g.name,
-      price: g.price,
-      priceLabel: g.priceLabel || '',
-      img: g.img,
-      icon: '',
-      kind: 'game',
       platform,
-      condition
+      salePrice: g.salePrice || null,
+      saleEndsAt: g.saleEndsAt || null
     });
     const trailerData = encodeOnclick({
       id: g.trailer,
@@ -73,9 +65,18 @@ export function renderGameGrid(targetId, games, platform, color) {
       ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${trailerData}'); event.stopPropagation();">${PLAY_ICON_SVG} تريلر</button>`
       : '';
 
+    // Flash sale logic
+    const now = Date.now();
+    const saleEndsAt = g.saleEndsAt ? Number(g.saleEndsAt) : 0;
+    const isFlashActive = g.salePrice > 0 && saleEndsAt > now;
+    const effectivePrice = isFlashActive ? g.salePrice : g.price;
+
     const hasDiscount = g.originalPrice && g.discountPrice && g.discountPrice < g.originalPrice;
     let priceHtml;
-    if (g.priceLabel) {
+    if (isFlashActive) {
+      const normalPrice = g.discountPrice || g.originalPrice || g.price;
+      priceHtml = `<div class="image-card-price"><span style="text-decoration:line-through;opacity:.5;font-size:.8em">${Number(normalPrice).toFixed(2)}</span> <span style="color:#fb923c;font-weight:900">${Number(g.salePrice).toFixed(2)}</span> <span style="font-size:.55em;opacity:.55">JOD</span></div>`;
+    } else if (g.priceLabel) {
       priceHtml = `<div class="image-card-price image-card-price-text">${g.priceLabel}</div>`;
     } else if (hasDiscount) {
       priceHtml = `<div class="image-card-price"><span style="text-decoration:line-through;opacity:.6;font-size:.85em">${g.originalPrice}</span> <span style="color:#ff4444;font-weight:bold">${g.discountPrice}</span> <span style="font-size:.55em;opacity:.55">JOD</span></div>`;
@@ -83,7 +84,25 @@ export function renderGameGrid(targetId, games, platform, color) {
       priceHtml = `<div class="image-card-price">${g.price} <span style="font-size:.55em;opacity:.55">JOD</span></div>`;
     }
 
-    const addButton = (g.price > 0 || g.priceLabel) && !isOutOfStock
+    const flashBadge = isFlashActive
+      ? `<span class="flash-sale-badge">⚡ فلاش</span>`
+      : '';
+    const flashTimer = isFlashActive
+      ? `<div class="flash-timer" data-ends="${saleEndsAt}">00:00:00</div>`
+      : '';
+
+    const cartData = encodeOnclick({
+      name: g.name,
+      price: effectivePrice,
+      priceLabel: g.priceLabel || '',
+      img: g.img,
+      icon: '',
+      kind: 'game',
+      platform,
+      condition
+    });
+
+    const addButton = (effectivePrice > 0 || g.priceLabel) && !isOutOfStock
       ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">${CART_ICON_SVG} أضف</button>`
       : '';
 
@@ -96,9 +115,11 @@ export function renderGameGrid(targetId, games, platform, color) {
         ${showPlatformBadge ? `<span class="image-card-platform" ${platformStyle}>${platform}</span>` : ''}
         <span class="product-condition-badge${conditionClass}">${condition}</span>
         ${isOutOfStock ? '<span class="out-of-stock-badge">نفذت الكمية</span>' : ''}
+        ${flashBadge}
         <img class="image-card-img" src="${g.img}" alt="${escapeHtml(g.name)}" loading="lazy" decoding="async" fetchpriority="low" onerror="${NO_IMAGE_FALLBACK}"/>
       </div>
       <div class="image-card-body">
+        ${flashTimer}
         <div class="image-card-title">${escapeHtml(g.name)}</div>
         <div class="image-card-genre">${escapeHtml(genreText)}</div>
         <div class="image-card-bottom">
@@ -120,6 +141,27 @@ export function renderGameGrid(targetId, games, platform, color) {
       el.classList.add('visible');
     });
   });
+
+  // Start flash sale countdown timers
+  startFlashTimers();
+}
+
+function startFlashTimers() {
+  if (window._flashInterval) clearInterval(window._flashInterval);
+  window._flashInterval = setInterval(() => {
+    document.querySelectorAll('.flash-timer').forEach(el => {
+      const ends = parseInt(el.dataset.ends);
+      const diff = ends - Date.now();
+      if (diff <= 0) {
+        el.closest('.image-card')?.remove();
+        return;
+      }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    });
+  }, 1000);
 }
 
 // ── Detail-modal gallery ───────────────────────────────────────────
@@ -164,9 +206,21 @@ export function openGameDetails(game) {
   const box = document.getElementById('game-detail-box');
   if (!modal || !box) return;
 
-  const hasNumericPrice = Number(game.price || 0) > 0;
-  const priceText = game.priceText || game.priceLabel
-    || (hasNumericPrice ? `${Number(game.price || 0).toFixed(2)} JOD` : 'حسب الطلب');
+  // Flash sale in modal
+  const modalNow = Date.now();
+  const modalSaleEndsAt = game.saleEndsAt ? Number(game.saleEndsAt) : 0;
+  const isModalFlash = game.salePrice > 0 && modalSaleEndsAt > modalNow;
+  const modalEffectivePrice = isModalFlash ? Number(game.salePrice) : Number(game.price || 0);
+
+  const hasNumericPrice = modalEffectivePrice > 0;
+  let priceText;
+  if (isModalFlash) {
+    const normalPrice = Number(game.price || 0);
+    priceText = `<span style="text-decoration:line-through;opacity:.5;font-size:.85em;color:#aaa">${normalPrice.toFixed(2)}</span> <span style="color:#fb923c;font-weight:900;font-size:1.1em">${Number(game.salePrice).toFixed(2)} JOD</span> <span style="font-size:.7em;color:#fb923c">⚡ فلاش سيل</span>`;
+  } else {
+    priceText = game.priceText || game.priceLabel
+      || (hasNumericPrice ? `${modalEffectivePrice.toFixed(2)} JOD` : 'حسب الطلب');
+  }
   const rawLabel = game.platform || game.category || game.section || '';
   const detailLabel = (rawLabel === 'Other' || rawLabel === 'أخرى') ? '' : rawLabel;
   const genreText = (Array.isArray(game.genre) ? game.genre.join(' · ') : game.genre)
@@ -208,8 +262,8 @@ export function openGameDetails(game) {
 
   const cartData = encodeOnclick({
     name: game.name,
-    price: hasNumericPrice ? Number(game.price || 0) : parsePriceValue(priceText),
-    priceLabel: game.priceLabel || (!hasNumericPrice && priceText ? priceText : ''),
+    price: hasNumericPrice ? modalEffectivePrice : parsePriceValue(priceText),
+    priceLabel: game.priceLabel || (!hasNumericPrice && !isModalFlash && priceText ? priceText : ''),
     img: detailGallery.images[0] || game.img,
     icon: iconText,
     kind: game.kind || 'item',
@@ -227,7 +281,7 @@ export function openGameDetails(game) {
     : '';
 
   const addAction = game.canAdd !== false && (hasNumericPrice || game.priceLabel || game.addable)
-    ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">${CART_BIG_SVG} أضف للسلة</button>`
+    ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); closeGameDetails(); event.stopPropagation();">${CART_BIG_SVG} أضف للسلة</button>`
     : '';
 
   const detailDataForFav = encodeOnclick({
@@ -252,7 +306,7 @@ export function openGameDetails(game) {
       ${game.condition ? `<div class="game-detail-condition${game.condition === 'جديد' ? ' is-new' : ''}">${escapeHtml(game.condition)}</div>` : ''}
       <div class="game-detail-name">${escapeHtml(game.name)}</div>
       <div class="game-detail-genre">${escapeHtml(genreText)}</div>
-      <div class="game-detail-price">${game.priceLabel ? priceText : escapeHtml(priceText)}</div>
+      <div class="game-detail-price">${isModalFlash ? priceText : (game.priceLabel ? priceText : escapeHtml(priceText))}</div>
       ${descText ? `<div class="game-detail-desc">${escapeHtml(descText)}</div>` : ''}
       <div class="game-detail-actions">
         <button class="favorite-btn${isFav ? ' active' : ''}" onclick="toggleFavorite(this, '${detailDataForFav}'); event.stopPropagation();" title="${isFav ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}">${HEART_ICON_SVG}</button>

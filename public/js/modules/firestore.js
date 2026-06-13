@@ -32,6 +32,14 @@ function getCachedData() {
     if (!raw) return null;
     const { ts, categories, items } = JSON.parse(raw);
     if (Date.now() - ts > CACHE_TTL) return null;
+    // Skip cache if any item has an active flash sale
+    const now = Date.now();
+    const hasFlash = (items || []).some(it => {
+      if (!it.saleEndsAt) return false;
+      const ends = it.saleEndsAt?.toDate ? it.saleEndsAt.toDate().getTime() : new Date(it.saleEndsAt).getTime();
+      return ends > now;
+    });
+    if (hasFlash) return null;
     return { categories, items };
   } catch { return null; }
 }
@@ -181,7 +189,11 @@ function formatItem(item) {
     originalPrice,
     discountPrice,
     description: item.description || '',
-    quantity: item.quantity !== undefined ? Number(item.quantity) : null
+    quantity: item.quantity !== undefined ? Number(item.quantity) : null,
+    salePrice: item.salePrice || null,
+    saleEndsAt: item.saleEndsAt?.toDate
+      ? item.saleEndsAt.toDate().getTime()
+      : (item.saleEndsAt ? new Date(item.saleEndsAt).getTime() : null)
   };
 }
 

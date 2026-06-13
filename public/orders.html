@@ -306,7 +306,9 @@ function renderOrders() {
       const orderId = e.target.dataset.orderId;
       const newStatus = e.target.value;
       try {
-        await updateDoc(doc(db, 'Orders', orderId), { status: newStatus });
+        const updateData = { status: newStatus };
+        if (newStatus === 'منجز') updateData.deliveredAt = new Date();
+        await updateDoc(doc(db, 'Orders', orderId), updateData);
         toast('✅ تم تحديث حالة الطلب');
       } catch (err) {
         toast('خطأ: ' + err.message, true);
@@ -382,9 +384,11 @@ function renderOrderCard(order) {
 
       ${noteHtml}
 
-      <div class="order-total-bar">
-        <span>الإجمالي</span>
-        <span>${total.toFixed(2)} JOD</span>
+      <div class="order-total-bar" style="flex-direction:column;align-items:stretch;gap:6px">
+        ${order.itemsTotal != null ? `<div style="display:flex;justify-content:space-between;font-size:.82rem;opacity:.6"><span>إجمالي المنتجات</span><span>${(order.itemsTotal).toFixed(2)} JOD</span></div>` : ''}
+        ${order.discountAmount > 0 ? `<div style="display:flex;justify-content:space-between;font-size:.82rem;color:#34d399"><span>خصم الكوبون ${order.couponCode ? '(' + order.couponCode + ')' : ''}</span><span>- ${(order.discountAmount).toFixed(2)} JOD</span></div>` : ''}
+        ${deliveryFee > 0 ? `<div style="display:flex;justify-content:space-between;font-size:.82rem;opacity:.6"><span>رسوم التوصيل</span><span>${deliveryFee.toFixed(2)} JOD</span></div>` : ''}
+        <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:6px;margin-top:2px"><span>الإجمالي</span><span>${total.toFixed(2)} JOD</span></div>
       </div>
 
       <div class="order-actions">

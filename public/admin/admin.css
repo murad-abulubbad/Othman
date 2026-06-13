@@ -200,6 +200,24 @@ select.filter-input option{background:var(--dk2);color:var(--w)}
 .admin-tab.active{color:#fff;border-bottom-color:var(--rb);background:rgba(255,255,255,.07)}
 @media(max-width:600px){.admin-tabs{padding:8px 12px 0}.admin-tab{padding:6px 12px;font-size:.78rem}}
 
+/* ── BROWSE FILTERS ──────────────────── */
+#browse-filters select,
+#browse-filters input{
+  background:#15152c !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,.12) !important;
+  appearance:auto;
+}
+#browse-filters select option{
+  background:#15152c;
+  color:#fff;
+}
+#browse-filters select:focus,
+#browse-filters input:focus{
+  border-color:var(--bb) !important;
+  outline:none;
+}
+
 /* ── MOBILE RESPONSIVE ───────────────── */
 @media(max-width:600px){
   html,body{overflow-x:clip}

@@ -534,9 +534,17 @@ body {
       </div>
       <div class="co-summary-row"><span>إجمالي المنتجات</span><span id="sum-items">0.00 JOD</span></div>
       <div class="co-summary-row"><span>رسوم التوصيل</span><span id="sum-delivery">—</span></div>
+      <div class="co-summary-row" id="sum-discount-row" style="display:none;color:#34d399"><span>خصم الكوبون</span><span id="sum-discount"></span></div>
       <div class="co-summary-total">
         <span>المجموع الكلي</span>
         <span id="sum-total">0.00 JOD</span>
+      </div>
+      <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px">
+        <div style="display:flex;gap:8px">
+          <input id="coupon-input" type="text" placeholder="كود الخصم" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#fff;font-family:inherit;font-size:.88rem;outline:none;text-transform:uppercase" dir="ltr">
+          <button id="coupon-apply-btn" onclick="applyCoupon()" style="background:rgba(42,140,255,.15);border:1px solid rgba(42,140,255,.3);border-radius:8px;padding:9px 16px;color:#60a5fa;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s">تطبيق</button>
+        </div>
+        <div id="coupon-msg" style="font-size:.78rem;min-height:18px;margin-top:6px"></div>
       </div>
     </div>
   </div>
@@ -672,7 +680,7 @@ body {
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, increment, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCslThkqYCCNWRnp81P5_l2AY3gZkvFAgA",
@@ -693,6 +701,10 @@ try { cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch {}
 // ── Delivery state ──
 let deliveryFee = 0;
 let deliveryLabel = '';
+
+// ── Coupon state ──
+let appliedCoupon = null;
+let discountAmount = 0;
 
 // ── Render items ──
 function renderItems() {
@@ -724,11 +736,53 @@ function renderItems() {
 }
 
 function updateTotals() {
-  const itemsTotal = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  const itemsTotal   = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  const afterDiscount = Math.max(0, itemsTotal - discountAmount);
   document.getElementById('sum-items').textContent    = itemsTotal.toFixed(2) + ' JOD';
   document.getElementById('sum-delivery').textContent = deliveryFee > 0 ? deliveryFee.toFixed(2) + ' JOD' : (deliveryLabel ? 'مجاني' : '—');
-  document.getElementById('sum-total').textContent    = (itemsTotal + deliveryFee).toFixed(2) + ' JOD';
+  const discRow = document.getElementById('sum-discount-row');
+  if (discountAmount > 0) {
+    discRow.style.display = '';
+    document.getElementById('sum-discount').textContent = '-' + discountAmount.toFixed(2) + ' JOD';
+  } else {
+    discRow.style.display = 'none';
+  }
+  const finalTotal = afterDiscount + deliveryFee;
+  document.getElementById('sum-total').textContent = finalTotal.toFixed(2) + ' JOD';
 }
+
+// ── Coupon ──
+window.applyCoupon = async function() {
+  const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+  const msgEl = document.getElementById('coupon-msg');
+  const btn   = document.getElementById('coupon-apply-btn');
+  msgEl.textContent = '';
+  if (!code) { msgEl.style.color='#f87171'; msgEl.textContent='أدخل كود الخصم'; return; }
+
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const snap = await getDocs(query(collection(db, 'Coupons'), where('code', '==', code)));
+    if (snap.empty) { msgEl.style.color='#f87171'; msgEl.textContent='كود غير صحيح'; btn.disabled=false; btn.textContent='تطبيق'; return; }
+    const couponDoc = snap.docs[0];
+    const c = { id: couponDoc.id, ...couponDoc.data() };
+
+    if (c.usageLimit > 0 && (c.usedCount || 0) >= c.usageLimit) {
+      msgEl.style.color='#f87171'; msgEl.textContent='هذا الكوبون انتهت صلاحيته'; btn.disabled=false; btn.textContent='تطبيق'; return;
+    }
+    const itemsTotal = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+    if (c.minOrder > 0 && itemsTotal < c.minOrder) {
+      msgEl.style.color='#f87171'; msgEl.textContent=`هذا الكوبون يطبق على طلبات أكثر من ${c.minOrder} JOD`; btn.disabled=false; btn.textContent='تطبيق'; return;
+    }
+    appliedCoupon  = c;
+    discountAmount = c.type === 'percent' ? (itemsTotal * c.value / 100) : c.value;
+    discountAmount = Math.min(discountAmount, itemsTotal);
+    updateTotals();
+    msgEl.style.color='#34d399';
+    msgEl.textContent = c.type === 'percent' ? `تم تطبيق خصم ${c.value}%` : `تم تطبيق خصم ${c.value} JOD`;
+    document.getElementById('coupon-input').disabled = true;
+    btn.textContent = 'تم ✓'; btn.style.color='#34d399';
+  } catch (e) { msgEl.style.color='#f87171'; msgEl.textContent='خطأ: '+e.message; btn.disabled=false; btn.textContent='تطبيق'; }
+};
 
 // ── Delivery options ──
 document.querySelectorAll('.delivery-option').forEach(opt => {
@@ -811,7 +865,12 @@ window.placeOrder = async function() {
 
   try {
     const itemsTotal = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
-    const total      = itemsTotal + deliveryFee;
+    const afterDiscount = Math.max(0, itemsTotal - discountAmount);
+    const total      = afterDiscount + deliveryFee;
+
+    if (appliedCoupon) {
+      await updateDoc(doc(db, 'Coupons', appliedCoupon.id), { usedCount: increment(1) });
+    }
 
     await addDoc(collection(db, 'Orders'), {
       customerName: name,
@@ -830,6 +889,8 @@ window.placeOrder = async function() {
         platform:  i.platform || ''
       })),
       itemsTotal,
+      discountAmount: discountAmount || 0,
+      couponCode: appliedCoupon?.code || '',
       total,
       status: 'جديد',
       createdAt: serverTimestamp()

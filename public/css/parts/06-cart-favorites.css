@@ -67,7 +67,7 @@
 
 .cart-item-icon { font-size: 2rem; flex-shrink: 0; }
 .cart-item-info { flex: 1; min-width: 0; }
-.cart-item-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 3px; }
+.cart-item-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; line-height: 1.35; }
 .cart-item-price {
   font-family: 'Orbitron', monospace;
   color: var(--red-bright);

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تتبع طلبك | عثمان للألعاب</title>
+<link rel="shortcut icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--r:#E60029;--rb:#FF2D55;--b:#0066E6;--bb:#2A8CFF;--dk:#0E0E1F;--dk2:#15152C;--w:#fff}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse 100% 80% at 0% 0%,rgba(30,100,255,.75),transparent 58%),radial-gradient(ellipse 100% 80% at 100% 100%,rgba(255,25,60,.75),transparent 58%),linear-gradient(135deg,#0c1245 0%,#1a0d3a 50%,#3a0d18 100%);background-attachment:fixed;min-height:100vh;color:var(--w);font-family:'Cairo',sans-serif;direction:rtl;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 16px}
+
+.track-card{background:rgba(21,21,44,.92);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:36px 32px;width:min(520px,100%);box-shadow:0 12px 50px rgba(0,0,0,.5)}
+.track-card h1{font-size:1.3rem;color:var(--bb);margin-bottom:6px}
+.track-card p{font-size:.82rem;opacity:.5;margin-bottom:24px}
+
+.track-input-row{display:flex;gap:10px}
+.track-input-row input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:#fff;font-family:inherit;font-size:.95rem;outline:none;direction:ltr}
+.track-input-row input:focus{border-color:var(--bb)}
+.btn-track{background:var(--rb);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+.btn-track:hover{opacity:.85}
+.btn-track:disabled{opacity:.5;cursor:not-allowed}
+
+.back-link{display:inline-block;margin-bottom:24px;font-size:.82rem;opacity:.45;color:inherit;text-decoration:none}
+.back-link:hover{opacity:.7}
+
+.err-msg{color:var(--rb);font-size:.82rem;min-height:18px;margin-top:10px}
+.results{margin-top:24px;display:flex;flex-direction:column;gap:12px}
+
+.order-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px 18px}
+.order-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.order-date{font-size:.75rem;opacity:.4}
+
+/* Status badge */
+.status-badge{padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:700}
+.s-new      {background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3)}
+.s-confirmed{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
+.s-done     {background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25)}
+.s-cancelled{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+
+/* Stepper */
+.stepper{display:flex;align-items:center;gap:0;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+.step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:60px}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;transition:all .3s;position:relative;z-index:1}
+.step-label{font-size:.65rem;opacity:.45;text-align:center;line-height:1.3}
+.step.active .step-dot{border-color:var(--bb);background:rgba(42,140,255,.2);color:var(--bb);box-shadow:0 0 10px rgba(42,140,255,.3)}
+.step.active .step-label{opacity:.9;color:var(--bb)}
+.step.done .step-dot{border-color:#34d399;background:rgba(52,211,153,.2);color:#34d399}
+.step.done .step-label{opacity:.7}
+.step-line{flex:1;height:2px;background:rgba(255,255,255,.08);margin-top:-24px;position:relative;z-index:0}
+.step-line.done{background:rgba(52,211,153,.35)}
+
+.order-items{display:flex;flex-direction:column;gap:6px}
+.order-item{display:flex;align-items:center;gap:10px;font-size:.83rem;opacity:.75}
+.order-item img{width:36px;height:36px;object-fit:cover;border-radius:6px;opacity:.85}
+.order-total{margin-top:10px;text-align:left;font-size:.88rem;font-weight:700;color:var(--bb)}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">← العودة للمتجر</a>
+
+<div class="track-card">
+  <h1>تتبع طلبك</h1>
+  <p>أدخل رقم هاتفك لمعرفة حالة طلبك</p>
+  <div class="track-input-row">
+    <input type="tel" id="phone-input" placeholder="07XXXXXXXX" autocomplete="tel">
+    <button class="btn-track" id="track-btn">بحث</button>
+  </div>
+  <div class="err-msg" id="err-msg"></div>
+  <div class="results" id="results"></div>
+</div>
+
+<script type="module">
+import { db } from './firebase.js';
+import { collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const $  = id => document.getElementById(id);
+const HOURS_48 = 48 * 60 * 60 * 1000;
+
+const STATUS_LABELS = {
+  'جديد'  : 'تم استلام الطلب',
+  'مؤكد'  : 'جاري التجهيز',
+  'منجز'  : 'في الطريق اليك',
+  'ملغي'  : 'تم الالغاء'
+};
+
+const STEPS = ['جديد', 'مؤكد', 'منجز'];
+
+function stepperHtml(status) {
+  if (status === 'ملغي') return '';
+  const curIdx = STEPS.indexOf(status);
+  let html = '<div class="stepper">';
+  STEPS.forEach((s, i) => {
+    const isDone   = i < curIdx;
+    const isActive = i === curIdx;
+    const cls = isDone ? 'done' : isActive ? 'active' : '';
+    const labels = ['استلام', 'تجهيز', 'توصيل'];
+    html += `<div class="step ${cls}"><div class="step-dot">${isDone ? '✓' : i+1}</div><div class="step-label">${labels[i]}</div></div>`;
+    if (i < STEPS.length - 1) html += `<div class="step-line ${isDone ? 'done' : ''}"></div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function badgeClass(status) {
+  return { 'جديد':'s-new', 'مؤكد':'s-confirmed', 'منجز':'s-done', 'ملغي':'s-cancelled' }[status] || 's-new';
+}
+
+$('track-btn').addEventListener('click', search);
+$('phone-input').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+
+async function search() {
+  const phone = $('phone-input').value.trim();
+  const errEl = $('err-msg');
+  const res   = $('results');
+  errEl.textContent = '';
+  res.innerHTML = '';
+
+  if (!phone) { errEl.textContent = 'الرجاء إدخال رقم الهاتف'; return; }
+
+  const btn = $('track-btn');
+  btn.disabled = true;
+  btn.textContent = 'جاري البحث...';
+
+  try {
+    const snap = await getDocs(query(
+      collection(db, 'Orders'),
+      where('phone', '==', phone),
+      orderBy('createdAt', 'desc')
+    ));
+
+    const now = Date.now();
+    const orders = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(o => {
+        if (o.status === 'ملغي') return false;
+        if (o.status === 'منجز' && o.deliveredAt) {
+          const deliveredTime = o.deliveredAt?.toDate ? o.deliveredAt.toDate().getTime() : new Date(o.deliveredAt).getTime();
+          return (now - deliveredTime) < HOURS_48;
+        }
+        return true;
+      });
+
+    if (orders.length === 0) {
+      res.innerHTML = '<div style="text-align:center;opacity:.4;padding:24px;font-size:.9rem">لا توجد طلبات لهذا الرقم</div>';
+    } else {
+      res.innerHTML = orders.map(order => {
+        const status = order.status || 'جديد';
+        const label  = STATUS_LABELS[status] || status;
+        const date   = order.createdAt?.toDate
+          ? order.createdAt.toDate().toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' })
+          : '—';
+        const items  = (order.items || []);
+        const total  = order.total ?? items.reduce((s,i) => s+(i.price||0)*(i.qty||1), 0);
+        const itemsHtml = items.map(it => `
+          <div class="order-item">
+            <img src="${it.imageUrl||''}" alt="${it.name||''}" onerror="this.style.display='none'">
+            <span>${it.name||'—'} x${it.qty||1}</span>
+          </div>`).join('');
+
+        return `
+        <div class="order-card">
+          <div class="order-card-header">
+            <span class="status-badge ${badgeClass(status)}">${label}</span>
+            <span class="order-date">${date}</span>
+          </div>
+          ${stepperHtml(status)}
+          <div class="order-items">${itemsHtml}</div>
+          <div class="order-total">${total.toFixed ? total.toFixed(2) : total} JOD</div>
+        </div>`;
+      }).join('');
+    }
+  } catch (e) {
+    errEl.textContent = 'خطأ في البحث: ' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'بحث';
+}
+</script>
+</body>
+</html>

@@ -181,6 +181,17 @@ img.console-float { height: auto; display: block; }
 .hero-social-icons .social-icon.map { background: linear-gradient(135deg, #ea4335, #c5221f); border-color: rgba(234,67,53,0.5); }
 .hero-social-icons .social-icon.yt  { background: linear-gradient(135deg, #ff0000, #cc0000); border-color: rgba(255,0,0,0.5); }
 
+/* ── Track order button ────────────────────────────────────────── */
+.track-order-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 14px; padding: 9px 22px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 25px; color: rgba(255,255,255,.75);
+  font-family: inherit; font-size: .85rem; font-weight: 600;
+  text-decoration: none; transition: all .2s; cursor: pointer;
+}
+.track-order-btn:hover { background: rgba(42,140,255,.15); border-color: rgba(42,140,255,.4); color: #fff; }
+
 /* ── Social offer bait ─────────────────────────────────────────── */
 .social-offer-bait {
   width: min(520px, calc(100vw - 36px));
