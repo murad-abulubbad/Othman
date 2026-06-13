@@ -6,15 +6,6 @@ html[data-theme="light"] {
   --text-main:   #f0e8ff;
   --text-dim:    rgba(220,200,255,0.55);
   --bg-main:     #08050f;
-  --bg-card:     rgba(204,0,0,0.05);
-  --bg-glass:    rgba(0,85,204,0.04);
-  --border-dim:  rgba(204,0,0,0.2);
-  --red:         #cc0000;
-  --red-bright:  #ff2244;
-  --blue:        #0055cc;
-  --blue-bright: #2277ff;
-  --glow-red:    0 0 24px rgba(204,0,0,0.7), 0 0 48px rgba(204,0,0,0.3);
-  --glow-blue:   0 0 24px rgba(0,85,204,0.7), 0 0 48px rgba(0,85,204,0.3);
 }
 
 /* ── Body & html ───────────────────────────────────────────────── */

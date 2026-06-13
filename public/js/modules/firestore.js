@@ -173,7 +173,7 @@ function renderAll(categories) {
 
     renderSectionCards(categories);
     renderDynamicSections(categories);
-    populateCatSidebar(categories, new Map(categories.map(c => [c.id, 0])));
+    populateCatSidebar(categories);
     populateTicker();
 
     applyPendingDeepLink();
@@ -330,7 +330,7 @@ async function populateTicker() {
 
 // ── Categories sidebar ──────────────────────────────────────────────
 
-function populateCatSidebar(categories, categoryCounts) {
+function populateCatSidebar(categories) {
   const list = document.getElementById('cat-sidebar-list');
   if (!list) return;
   const overlay = document.getElementById('cat-sidebar-overlay');
@@ -338,7 +338,6 @@ function populateCatSidebar(categories, categoryCounts) {
   const close = () => { sidebar?.classList.remove('open'); overlay?.classList.remove('open'); };
 
   list.innerHTML = categories.map(cat => {
-    const count = categoryCounts.get(cat.id) || 0;
     const img = cat.imageUrl
       ? `<img src="${cat.imageUrl}" alt="${cat.name}">`
       : SIDEBAR_FALLBACK_ICON;

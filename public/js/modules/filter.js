@@ -227,9 +227,6 @@ export function setupCategoryFilter(catId, catName, items, color) {
       if (!isOpen) {
         dropdown.classList.add('open');
         btn.classList.add('active');
-        console.log('Dropdown opened for', type);
-      } else {
-        console.log('Dropdown closed for', type);
       }
     };
 
@@ -252,7 +249,6 @@ export function setupCategoryFilter(catId, catName, items, color) {
         dropdown.classList.remove('open');
         btn.classList.remove('active');
         applyFilter();
-        console.log('Selected', type, ':', val);
       };
     });
   });
