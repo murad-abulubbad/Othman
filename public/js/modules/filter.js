@@ -4,6 +4,58 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { renderGameGrid } from './products.js';
+import { t, onLangChange } from './i18n.js';
+
+// Re-translate all existing filter bars when language changes
+onLangChange(() => {
+  // Update search placeholders
+  document.querySelectorAll('.cat-filter-search').forEach(el => {
+    const catId = el.dataset.cat;
+    const wrap = document.getElementById(`filter-cat-${catId}`);
+    if (!wrap) return;
+    const catName = el.placeholder.replace(/^.*?\s/, '').replace(/\.\.\.$/, '').trim();
+    // placeholder format: "بحث في CatName..." or "Search in CatName..."
+    const nameMatch = el.placeholder.match(/(?:بحث في|Search in)\s+(.+?)\.\.\./i);
+    if (nameMatch) el.placeholder = `${t('filter.search')} ${nameMatch[1]}...`;
+  });
+  // Update max price label
+  document.querySelectorAll('.cat-filter-price span:first-child').forEach(el => {
+    el.textContent = t('filter.maxprice');
+  });
+  // Update price value currency
+  document.querySelectorAll('.price-value').forEach(el => {
+    el.textContent = el.textContent.replace(/(\d+\.?\d*)\s*(دينار|JOD)/, `$1 ${t('filter.currency')}`);
+  });
+  // Update condition button text (when showing "all")
+  document.querySelectorAll('.cat-filter-condition').forEach(btn => {
+    if (!btn.dataset.value) btn.textContent = `${t('filter.condition.all')} ▾`;
+  });
+  // Update genre button text (when showing "all")
+  document.querySelectorAll('.cat-filter-genre').forEach(btn => {
+    if (!btn.dataset.value) btn.textContent = `${t('filter.genre.all')} ▾`;
+  });
+  // Update condition dropdown options
+  document.querySelectorAll('.custom-select-wrap[data-type="condition"] .custom-option').forEach(opt => {
+    const val = opt.dataset.value;
+    if (!val) opt.textContent = t('filter.condition.all');
+    else if (val === 'جديد') opt.textContent = t('product.cond.new');
+    else if (val === 'مستعمل') opt.textContent = t('product.cond.used');
+  });
+  // Update genre dropdown "all" option
+  document.querySelectorAll('.custom-select-wrap[data-type="genre"] .custom-option[data-value=""]').forEach(opt => {
+    opt.textContent = t('filter.genre.all');
+  });
+  // Update no-results messages
+  document.querySelectorAll('.cat-game-grid').forEach(grid => {
+    const empty = grid.querySelector('[style*="grid-column"]');
+    if (empty) empty.textContent = t('filter.noresults');
+  });
+  // Update condition badges on all rendered product cards
+  document.querySelectorAll('.product-condition-badge').forEach(badge => {
+    const isNew = badge.classList.contains('is-new');
+    badge.textContent = isNew ? t('product.cond.new') : t('product.cond.used');
+  });
+});
 
 // Normalize misspelled genre names from Firestore
 const genreNormalize = { 'طخاخة': 'طخطخه', 'أكشن': 'أكشن و مغامرات', 'أكشن مغامرات': 'أكشن و مغامرات', 'VR': 'واقع افتراضي' };
@@ -28,16 +80,17 @@ function buildFilterBarHtml(catId, catName, items) {
   });
   
   // Build condition options
-  const conditionOptions = ['<div class="custom-option" data-value="">الكل</div>'];
+  const conditionOptions = [`<div class="custom-option" data-value="">${t('filter.condition.all')}</div>`];
   conditions.forEach(c => {
-    conditionOptions.push(`<div class="custom-option" data-value="${c}">${c}</div>`);
+    const label = c === 'جديد' ? t('product.cond.new') : c === 'مستعمل' ? t('product.cond.used') : c;
+    conditionOptions.push(`<div class="custom-option" data-value="${c}">${label}</div>`);
   });
   
   const normalizedGenres = new Set();
   genres.forEach(g => normalizedGenres.add(genreNormalize[g] || g));
 
   // Build genre options dynamically - only show genres that exist in items
-  const genreOptions = ['<div class="custom-option" data-value="">الكل</div>'];
+  const genreOptions = [`<div class="custom-option" data-value="">${t('filter.genre.all')}</div>`];
   const genreLabels = {
     'أكشن و مغامرات': 'أكشن و مغامرات',
     'طخطخه': 'طخطخه',
@@ -65,21 +118,21 @@ function buildFilterBarHtml(catId, catName, items) {
   return `
   <div class="cat-filter-bar" id="filter-cat-${catId}">
     <div class="cat-filter-row">
-      <input type="text" class="cat-filter-search" placeholder="بحث في ${catName}..." data-cat="${catId}">
+      <input type="text" class="cat-filter-search" placeholder="${t('filter.search')} ${catName}..." data-cat="${catId}">
       <div class="cat-filter-price">
-        <span>أقصى سعر:</span>
+        <span>${t('filter.maxprice')}</span>
         <input type="range" class="cat-filter-slider" min="0" max="100" value="100" data-cat="${catId}">
-        <span class="price-value">100 دينار</span>
+        <span class="price-value">100 ${t('filter.currency')}</span>
       </div>
       <div class="cat-filter-selects-row">
         <div class="custom-select-wrap" data-type="condition" data-cat="${catId}" ${conditionDisplay}>
-          <button class="custom-select-btn cat-filter-condition" data-cat="${catId}" data-value="">الحالة: الكل ▾</button>
+          <button class="custom-select-btn cat-filter-condition" data-cat="${catId}" data-value="">${t('filter.condition.all')} ▾</button>
           <div class="custom-select-dropdown">
             ${conditionOptions.join('')}
           </div>
         </div>
         <div class="custom-select-wrap" data-type="genre" data-cat="${catId}" ${genreDisplay}>
-          <button class="custom-select-btn cat-filter-genre" data-cat="${catId}" data-value="">النوع: الكل ▾</button>
+          <button class="custom-select-btn cat-filter-genre" data-cat="${catId}" data-value="">${t('filter.genre.all')} ▾</button>
           <div class="custom-select-dropdown">
             ${genreOptions.join('')}
           </div>
@@ -110,7 +163,7 @@ export function setupCategoryFilter(catId, catName, items, color) {
     const sliderMax = Math.ceil(maxItemPrice / 5) * 5;
     priceSlider.max = sliderMax;
     priceSlider.value = sliderMax;
-    if (priceValue) priceValue.textContent = `${sliderMax} دينار`;
+    if (priceValue) priceValue.textContent = `${sliderMax} ${t('filter.currency')}`;
   }
 
   function applyFilter() {
@@ -136,13 +189,13 @@ export function setupCategoryFilter(catId, catName, items, color) {
 
     const grid = document.getElementById(`grid-cat-${catId}`);
     if (filtered.length === 0 && grid) {
-      grid.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px; font-size: 0.9rem; grid-column: 1/-1;">لا توجد منتجات مطابقة للبحث</div>';
+      grid.innerHTML = `<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px; font-size: 0.9rem; grid-column: 1/-1;">${t('filter.noresults')}</div>`;
     }
   }
 
   if (priceSlider && priceValue) {
     priceSlider.addEventListener('input', () => {
-      priceValue.textContent = `${priceSlider.value} دينار`;
+      priceValue.textContent = `${priceSlider.value} ${t('filter.currency')}`;
       cancelAnimationFrame(sliderFrame);
       sliderFrame = requestAnimationFrame(applyFilter);
     });
@@ -190,10 +243,10 @@ export function setupCategoryFilter(catId, catName, items, color) {
         opt.classList.add('selected');
         if (type === 'condition') {
           conditionVal = val;
-          btn.textContent = val ? `${label} ▾` : 'الحالة: الكل ▾';
+          btn.textContent = val ? `${label} ▾` : `${t('filter.condition.all')} ▾`;
         } else {
           genreVal = val;
-          btn.textContent = val ? `${label} ▾` : 'النوع: الكل ▾';
+          btn.textContent = val ? `${label} ▾` : `${t('filter.genre.all')} ▾`;
         }
         btn.classList.toggle('has-value', !!val);
         dropdown.classList.remove('open');

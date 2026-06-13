@@ -4,9 +4,8 @@ import {
   doc, query, orderBy, where, onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { initGenres, loadGenres, renderGenreTags } from './genres.js';
-import { printInvoice, saveInvoicePDF } from '../js/invoice.js';
+import { printInvoice } from '../js/invoice.js';
 window._printInvoice = printInvoice;
-window._saveInvoicePDF = saveInvoicePDF;
 
 // ── STATE ──────────────────────────────────────────────
 let categories = [];
@@ -1804,8 +1803,7 @@ function renderOrderCard(order) {
           <option value="منجز" ${status==='منجز'?'selected':''}>منجز</option>
           <option value="ملغي" ${status==='ملغي'?'selected':''}>ملغي</option>
         </select>
-        <button onclick="window._printInvoice(window._orderMap['${order.id}'])" style="background:rgba(42,140,255,.15);color:#60a5fa;border:1px solid rgba(42,140,255,.3);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer">🖨️ طباعة</button>
-        <button onclick="window._saveInvoicePDF(window._orderMap['${order.id}'])" style="background:rgba(25,135,84,.15);color:#4ade80;border:1px solid rgba(25,135,84,.3);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer">💾 PDF</button>
+        <button onclick="window._printInvoice(window._orderMap['${order.id}'])" style="background:rgba(42,140,255,.15);color:#60a5fa;border:1px solid rgba(42,140,255,.3);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer">🧾 فاتورة</button>
       </div>
     </div>
   </div>`;

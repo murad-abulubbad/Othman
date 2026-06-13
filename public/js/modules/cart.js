@@ -7,6 +7,7 @@
 import { cart, saveCart, PAGE_TITLES } from './state.js';
 import { decodeOnclick } from './utils.js';
 import { showCartToast, showToast } from './toast.js';
+import { t, onLangChange } from './i18n.js';
 import { db } from '../../firebase.js';
 import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -124,14 +125,20 @@ export function closeCart() {
 
 // ── Render ─────────────────────────────────────────────────────────
 
-const EMPTY_CART_HTML = `
+const emptyCartHtml = () => `
   <div class="cart-empty">
     <span class="cart-empty-icon">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.2)"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
     </span>
-    <p>السلة فارغة</p>
-    <p style="font-size:0.8rem;margin-top:8px;color:rgba(255,255,255,0.3)">أضف منتجات من أي قسم</p>
+    <p>${t('cart.empty')}</p>
+    <p style="font-size:0.8rem;margin-top:8px;color:rgba(255,255,255,0.3)">${t('cart.empty.sub')}</p>
   </div>`;
+
+// Re-render cart list when language changes (so empty-state text updates)
+onLangChange(() => {
+  const list = document.getElementById('cart-items-list');
+  if (list && cart.length === 0) list.innerHTML = emptyCartHtml();
+});
 
 const CART_ITEM_FALLBACK_SVG = `<span class="cart-item-icon"><svg width='24' height='24' viewBox='0 0 24 24' fill='rgba(255,255,255,0.3)'><path d='M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/></svg></span>`;
 
@@ -148,7 +155,7 @@ export function updateCartUI() {
   if (!list || !footer) return;
 
   if (cart.length === 0) {
-    list.innerHTML = EMPTY_CART_HTML;
+    list.innerHTML = emptyCartHtml();
     footer.style.display = 'none';
     return;
   }
@@ -194,7 +201,6 @@ export function updateCartUI() {
 // ── Order Modal (Firestore) ─────────────────────────────────────────
 
 export function openOrderModal() {
-  if (!cart.length) { showToast('السلة فارغة', '🛒'); return; }
   const overlay = document.getElementById('order-modal-overlay');
   const itemsEl = document.getElementById('order-modal-items');
   const errEl   = document.getElementById('order-modal-err');

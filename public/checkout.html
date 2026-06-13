@@ -4,6 +4,80 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إتمام الطلب | عثمان للألعاب</title>
+<script>
+(function(){
+  const lang = localStorage.getItem('ofg_lang') || 'ar';
+  const T = {
+    ar: {
+      back: 'العودة للمتجر',
+      pageTitle: 'إتمام الطلب', pageSub: 'راجع طلبك واختر طريقة الاستلام',
+      successTitle: 'تم إرسال طلبك بنجاح!',
+      successMsg: 'سنتواصل معك على رقم الهاتف الذي أدخلته<br>خلال أقل من 48 ساعة لتأكيد الطلب والتوصيل.',
+      backStore: 'العودة للمتجر',
+      orderItems: 'المنتجات المطلوبة', cartEmpty: 'السلة فارغة',
+      summary: 'ملخص الطلب', itemsTotal: 'إجمالي المنتجات',
+      deliveryFee: 'رسوم التوصيل', couponDisc: 'خصم الكوبون', grandTotal: 'المجموع الكلي',
+      couponPh: 'كود الخصم', applyBtn: 'تطبيق',
+      deliveryTitle: 'طريقة الاستلام',
+      pickup: 'استلام شخصي', pickupDesc: 'تستلم من المحل مباشرة', free: 'مجاني',
+      jarash: 'داخل جرش', jarashDesc: 'توصيل داخل جرش',
+      north: 'الشمال', northDesc: 'عمّان · إربد · الزرقاء',
+      south: 'الجنوب', southDesc: 'السلط · الكرك · معان · العقبة · البحر الميت',
+      noticeLabel: 'مدة التوصيل:', noticeText: 'خلال 48 ساعة كحد أقصى من تأكيد الطلب.',
+      continueBtn: 'متابعة وإرسال الطلب',
+      contactTitle: 'بيانات التواصل',
+      nameLabel: 'الاسم الكامل *', namePh: 'محمد عثمان',
+      phoneLabel: 'رقم الهاتف *',
+      emailLabel: 'البريد الإلكتروني', emailPh: 'example@email.com',
+      addressLabel: 'العنوان التفصيلي *', addressPh: 'المنطقة / الشارع / أقرب معلم...',
+      noteLabel: 'ملاحظات إضافية', notePh: 'أي تفاصيل تريد إضافتها...',
+      submitBtn: 'تأكيد وإرسال الطلب',
+      errNoPhone: 'أدخل كود الخصم', errBadCode: 'كود غير صحيح', errExpired: 'هذا الكوبون انتهت صلاحيته',
+      errMinOrder: 'هذا الكوبون يطبق على طلبات أكثر من',
+      couponOkPct: 'تم تطبيق خصم', couponOkFixed: 'تم تطبيق خصم',
+      couponDone: 'تم ✓',
+      errCartEmpty: 'السلة فارغة', errNoName: 'الرجاء إدخال الاسم الكامل',
+      errNoPhoneField: 'الرجاء إدخال رقم الهاتف', errNoDelivery: 'الرجاء اختيار طريقة الاستلام',
+      errNoAddress: 'الرجاء إدخال العنوان التفصيلي',
+      sending: 'جاري الإرسال...'
+    },
+    en: {
+      back: 'Back to Store',
+      pageTitle: 'Checkout', pageSub: 'Review your order and choose delivery method',
+      successTitle: 'Order Placed Successfully!',
+      successMsg: 'We will contact you on the phone number you entered<br>within 48 hours to confirm the order.',
+      backStore: 'Back to Store',
+      orderItems: 'Order Items', cartEmpty: 'Cart is empty',
+      summary: 'Order Summary', itemsTotal: 'Items Total',
+      deliveryFee: 'Delivery Fee', couponDisc: 'Coupon Discount', grandTotal: 'Grand Total',
+      couponPh: 'Discount Code', applyBtn: 'Apply',
+      deliveryTitle: 'Delivery Method',
+      pickup: 'Pickup', pickupDesc: 'Pick up from the store directly', free: 'Free',
+      jarash: 'Within Jarash', jarashDesc: 'Delivery within Jarash',
+      north: 'North', northDesc: 'Amman · Irbid · Zarqa',
+      south: 'South', southDesc: 'Salt · Karak · Maan · Aqaba · Dead Sea',
+      noticeLabel: 'Delivery Time:', noticeText: 'Within 48 hours max from order confirmation.',
+      continueBtn: 'Continue & Place Order',
+      contactTitle: 'Contact Details',
+      nameLabel: 'Full Name *', namePh: 'John Doe',
+      phoneLabel: 'Phone Number *',
+      emailLabel: 'Email', emailPh: 'example@email.com',
+      addressLabel: 'Detailed Address *', addressPh: 'Area / Street / Nearest landmark...',
+      noteLabel: 'Additional Notes', notePh: 'Any details you want to add...',
+      submitBtn: 'Confirm & Place Order',
+      errNoPhone: 'Enter discount code', errBadCode: 'Invalid code', errExpired: 'This coupon has expired',
+      errMinOrder: 'This coupon applies to orders over',
+      couponOkPct: 'Discount applied', couponOkFixed: 'Discount applied',
+      couponDone: 'Done ✓',
+      errCartEmpty: 'Cart is empty', errNoName: 'Please enter your full name',
+      errNoPhoneField: 'Please enter your phone number', errNoDelivery: 'Please choose a delivery method',
+      errNoAddress: 'Please enter the detailed address',
+      sending: 'Sending...'
+    }
+  };
+  window._T = T[lang] || T.ar;
+})()
+</script>
 <link rel="shortcut icon" href="/assets/icons/favicon.ico">
 <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
@@ -493,14 +567,14 @@ body {
   </span>
   <a href="index.html" class="co-nav-back">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    العودة للمتجر
+    <span id="co-back-txt">العودة للمتجر</span>
   </a>
 </nav>
 
 <!-- PAGE TITLE -->
 <div class="co-page-title">
-  <h1>إتمام الطلب</h1>
-  <p>راجع طلبك واختر طريقة الاستلام</p>
+  <h1 id="co-page-h1">إتمام الطلب</h1>
+  <p id="co-page-sub">راجع طلبك واختر طريقة الاستلام</p>
 </div>
 
 <!-- SUCCESS STATE -->
@@ -508,9 +582,9 @@ body {
   <div class="co-success-icon">
     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
   </div>
-  <h2>تم إرسال طلبك بنجاح!</h2>
-  <p>سنتواصل معك على رقم الهاتف الذي أدخلته<br>خلال أقل من 48 ساعة لتأكيد الطلب والتوصيل.</p>
-  <a href="index.html" class="back-btn">العودة للمتجر</a>
+  <h2 id="co-success-title">تم إرسال طلبك بنجاح!</h2>
+  <p id="co-success-msg">سنتواصل معك على رقم الهاتف الذي أدخلته<br>خلال أقل من 48 ساعة لتأكيد الطلب والتوصيل.</p>
+  <a href="index.html" class="back-btn" id="co-back-store">العودة للمتجر</a>
 </div>
 
 <!-- CHECKOUT FORM -->
@@ -521,27 +595,27 @@ body {
     <div class="co-card">
       <div class="co-card-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg>
-        المنتجات المطلوبة
+        <span id="co-items-title">المنتجات المطلوبة</span>
       </div>
-      <div id="co-items-list"><div class="co-empty">السلة فارغة</div></div>
+      <div id="co-items-list"><div class="co-empty" id="co-empty-msg">السلة فارغة</div></div>
     </div>
 
     <!-- Summary totals -->
     <div class="co-card" style="margin-top:16px" id="co-totals-card">
       <div class="co-card-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        ملخص الطلب
+        <span id="co-summary-title">ملخص الطلب</span>
       </div>
-      <div class="co-summary-row"><span>إجمالي المنتجات</span><span id="sum-items">0.00 JOD</span></div>
-      <div class="co-summary-row"><span>رسوم التوصيل</span><span id="sum-delivery">—</span></div>
-      <div class="co-summary-row" id="sum-discount-row" style="display:none;color:#34d399"><span>خصم الكوبون</span><span id="sum-discount"></span></div>
+      <div class="co-summary-row"><span id="co-items-total-lbl">إجمالي المنتجات</span><span id="sum-items">0.00 JOD</span></div>
+      <div class="co-summary-row"><span id="co-delivery-fee-lbl">رسوم التوصيل</span><span id="sum-delivery">—</span></div>
+      <div class="co-summary-row" id="sum-discount-row" style="display:none;color:#34d399"><span id="co-coupon-disc-lbl">خصم الكوبون</span><span id="sum-discount"></span></div>
       <div class="co-summary-total">
-        <span>المجموع الكلي</span>
+        <span id="co-grand-total-lbl">المجموع الكلي</span>
         <span id="sum-total">0.00 JOD</span>
       </div>
       <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px">
         <div style="display:flex;gap:8px">
-          <input id="coupon-input" type="text" placeholder="كود الخصم" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#fff;font-family:inherit;font-size:.88rem;outline:none;text-transform:uppercase" dir="ltr">
+          <input id="coupon-input" type="text" placeholder="كود الخصم" id="coupon-input" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#fff;font-family:inherit;font-size:.88rem;outline:none;text-transform:uppercase" dir="ltr">
           <button id="coupon-apply-btn" onclick="applyCoupon()" style="background:rgba(42,140,255,.15);border:1px solid rgba(42,140,255,.3);border-radius:8px;padding:9px 16px;color:#60a5fa;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s">تطبيق</button>
         </div>
         <div id="coupon-msg" style="font-size:.78rem;min-height:18px;margin-top:6px"></div>
@@ -556,7 +630,7 @@ body {
     <div class="co-card">
       <div class="co-card-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        طريقة الاستلام
+        <span id="co-delivery-title">طريقة الاستلام</span>
       </div>
       <div class="delivery-options" id="delivery-options">
 
@@ -567,10 +641,10 @@ body {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           </div>
           <div class="delivery-info">
-            <div class="delivery-label">استلام شخصي</div>
-            <div class="delivery-desc">تستلم من المحل مباشرة</div>
+            <div class="delivery-label" id="d-pickup-lbl">استلام شخصي</div>
+            <div class="delivery-desc" id="d-pickup-desc">تستلم من المحل مباشرة</div>
           </div>
-          <div class="delivery-price">مجاني</div>
+          <div class="delivery-price" id="d-pickup-price">مجاني</div>
         </label>
 
         <label class="delivery-option" data-fee="2">
@@ -580,8 +654,8 @@ body {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
           <div class="delivery-info">
-            <div class="delivery-label">داخل جرش</div>
-            <div class="delivery-desc">توصيل داخل جرش</div>
+            <div class="delivery-label" id="d-jarash-lbl">داخل جرش</div>
+            <div class="delivery-desc" id="d-jarash-desc">توصيل داخل جرش</div>
           </div>
           <div class="delivery-price paid">2.00 JOD</div>
         </label>
@@ -593,8 +667,8 @@ body {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
           <div class="delivery-info">
-            <div class="delivery-label">الشمال</div>
-            <div class="delivery-desc">عمّان · إربد · الزرقاء</div>
+            <div class="delivery-label" id="d-north-lbl">الشمال</div>
+            <div class="delivery-desc" id="d-north-desc">عمّان · إربد · الزرقاء</div>
           </div>
           <div class="delivery-price paid">3.50 JOD</div>
         </label>
@@ -606,8 +680,8 @@ body {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
           </div>
           <div class="delivery-info">
-            <div class="delivery-label">الجنوب</div>
-            <div class="delivery-desc">السلط · الكرك · معان · العقبة · البحر الميت</div>
+            <div class="delivery-label" id="d-south-lbl">الجنوب</div>
+            <div class="delivery-desc" id="d-south-desc">السلط · الكرك · معان · العقبة · البحر الميت</div>
           </div>
           <div class="delivery-price paid">5.00 JOD</div>
         </label>
@@ -615,14 +689,14 @@ body {
       </div>
       <div class="co-notice">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:5px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <strong>مدة التوصيل:</strong> خلال 48 ساعة كحد أقصى من تأكيد الطلب.
+        <strong id="co-notice-label">مدة التوصيل:</strong> <span id="co-notice-text">خلال 48 ساعة كحد أقصى من تأكيد الطلب.</span>
       </div>
     </div>
 
     <!-- Trigger button -->
     <button class="co-submit" style="margin-top:16px" onclick="openContactSheet()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      متابعة وإرسال الطلب
+      <span id="co-continue-btn-txt">متابعة وإرسال الطلب</span>
     </button>
 
   </div>
@@ -639,7 +713,7 @@ body {
   <div class="cs-header">
     <div class="cs-title">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      بيانات التواصل
+      <span id="co-contact-title">بيانات التواصل</span>
     </div>
     <button class="cs-close" onclick="closeContactSheet()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -648,25 +722,25 @@ body {
 
   <div class="cs-grid">
     <div class="co-field">
-      <label>الاسم الكامل *</label>
+      <label id="lbl-name">الاسم الكامل *</label>
       <input id="co-name" type="text" placeholder="محمد عثمان" autocomplete="name">
     </div>
     <div class="co-field">
-      <label>رقم الهاتف *</label>
+      <label id="lbl-phone">رقم الهاتف *</label>
       <input id="co-phone" type="tel" placeholder="07XXXXXXXX" dir="ltr" autocomplete="tel">
     </div>
     <div class="co-field">
-      <label>البريد الإلكتروني</label>
+      <label id="lbl-email">البريد الإلكتروني</label>
       <input id="co-email" type="email" placeholder="example@email.com" dir="ltr" autocomplete="email">
     </div>
     <div class="co-field" id="address-field" style="display:none">
-      <label>العنوان التفصيلي *</label>
+      <label id="lbl-address">العنوان التفصيلي *</label>
       <input id="co-address" type="text" placeholder="المنطقة / الشارع / أقرب معلم...">
     </div>
   </div>
 
   <div class="co-field">
-    <label>ملاحظات إضافية</label>
+    <label id="lbl-note">ملاحظات إضافية</label>
     <textarea id="co-note" placeholder="أي تفاصيل تريد إضافتها..."></textarea>
   </div>
 
@@ -674,13 +748,58 @@ body {
 
   <button class="co-submit" id="co-submit-btn" onclick="placeOrder()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    تأكيد وإرسال الطلب
+    <span id="co-submit-txt">تأكيد وإرسال الطلب</span>
   </button>
 </div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, increment, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const T = window._T;
+
+// Apply all translations on load
+(function applyTranslations() {
+  const g = id => document.getElementById(id);
+  if (g('co-back-txt'))       g('co-back-txt').textContent       = T.back;
+  if (g('co-page-h1'))        g('co-page-h1').textContent        = T.pageTitle;
+  if (g('co-page-sub'))       g('co-page-sub').textContent       = T.pageSub;
+  if (g('co-success-title'))  g('co-success-title').textContent  = T.successTitle;
+  if (g('co-success-msg'))    g('co-success-msg').innerHTML      = T.successMsg;
+  if (g('co-back-store'))     g('co-back-store').textContent     = T.backStore;
+  if (g('co-items-title'))    g('co-items-title').textContent    = T.orderItems;
+  if (g('co-empty-msg'))      g('co-empty-msg').textContent      = T.cartEmpty;
+  if (g('co-summary-title'))  g('co-summary-title').textContent  = T.summary;
+  if (g('co-items-total-lbl'))g('co-items-total-lbl').textContent= T.itemsTotal;
+  if (g('co-delivery-fee-lbl'))g('co-delivery-fee-lbl').textContent=T.deliveryFee;
+  if (g('co-coupon-disc-lbl'))g('co-coupon-disc-lbl').textContent= T.couponDisc;
+  if (g('co-grand-total-lbl'))g('co-grand-total-lbl').textContent= T.grandTotal;
+  if (g('coupon-input'))      g('coupon-input').placeholder      = T.couponPh;
+  if (g('coupon-apply-btn'))  g('coupon-apply-btn').textContent  = T.applyBtn;
+  if (g('co-delivery-title')) g('co-delivery-title').textContent = T.deliveryTitle;
+  if (g('d-pickup-lbl'))      g('d-pickup-lbl').textContent      = T.pickup;
+  if (g('d-pickup-desc'))     g('d-pickup-desc').textContent     = T.pickupDesc;
+  if (g('d-pickup-price'))    g('d-pickup-price').textContent    = T.free;
+  if (g('d-jarash-lbl'))      g('d-jarash-lbl').textContent      = T.jarash;
+  if (g('d-jarash-desc'))     g('d-jarash-desc').textContent     = T.jarashDesc;
+  if (g('d-north-lbl'))       g('d-north-lbl').textContent       = T.north;
+  if (g('d-north-desc'))      g('d-north-desc').textContent      = T.northDesc;
+  if (g('d-south-lbl'))       g('d-south-lbl').textContent       = T.south;
+  if (g('d-south-desc'))      g('d-south-desc').textContent      = T.southDesc;
+  if (g('co-notice-label'))   g('co-notice-label').textContent   = T.noticeLabel;
+  if (g('co-notice-text'))    g('co-notice-text').textContent    = T.noticeText;
+  if (g('co-continue-btn-txt'))g('co-continue-btn-txt').textContent=T.continueBtn;
+  if (g('co-contact-title'))  g('co-contact-title').textContent  = T.contactTitle;
+  if (g('lbl-name'))          g('lbl-name').textContent          = T.nameLabel;
+  if (g('co-name'))           g('co-name').placeholder           = T.namePh;
+  if (g('lbl-phone'))         g('lbl-phone').textContent         = T.phoneLabel;
+  if (g('lbl-email'))         g('lbl-email').textContent         = T.emailLabel;
+  if (g('lbl-address'))       g('lbl-address').textContent       = T.addressLabel;
+  if (g('co-address'))        g('co-address').placeholder        = T.addressPh;
+  if (g('lbl-note'))          g('lbl-note').textContent          = T.noteLabel;
+  if (g('co-note'))           g('co-note').placeholder           = T.notePh;
+  if (g('co-submit-txt'))     g('co-submit-txt').textContent     = T.submitBtn;
+})();
 
 const firebaseConfig = {
   apiKey: "AIzaSyCslThkqYCCNWRnp81P5_l2AY3gZkvFAgA",
@@ -757,31 +876,31 @@ window.applyCoupon = async function() {
   const msgEl = document.getElementById('coupon-msg');
   const btn   = document.getElementById('coupon-apply-btn');
   msgEl.textContent = '';
-  if (!code) { msgEl.style.color='#f87171'; msgEl.textContent='أدخل كود الخصم'; return; }
+  if (!code) { msgEl.style.color='#f87171'; msgEl.textContent=T.errNoPhone; return; }
 
   btn.disabled = true; btn.textContent = '...';
   try {
     const snap = await getDocs(query(collection(db, 'Coupons'), where('code', '==', code)));
-    if (snap.empty) { msgEl.style.color='#f87171'; msgEl.textContent='كود غير صحيح'; btn.disabled=false; btn.textContent='تطبيق'; return; }
+    if (snap.empty) { msgEl.style.color='#f87171'; msgEl.textContent=T.errBadCode; btn.disabled=false; btn.textContent=T.applyBtn; return; }
     const couponDoc = snap.docs[0];
     const c = { id: couponDoc.id, ...couponDoc.data() };
 
     if (c.usageLimit > 0 && (c.usedCount || 0) >= c.usageLimit) {
-      msgEl.style.color='#f87171'; msgEl.textContent='هذا الكوبون انتهت صلاحيته'; btn.disabled=false; btn.textContent='تطبيق'; return;
+      msgEl.style.color='#f87171'; msgEl.textContent=T.errExpired; btn.disabled=false; btn.textContent=T.applyBtn; return;
     }
     const itemsTotal = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
     if (c.minOrder > 0 && itemsTotal < c.minOrder) {
-      msgEl.style.color='#f87171'; msgEl.textContent=`هذا الكوبون يطبق على طلبات أكثر من ${c.minOrder} JOD`; btn.disabled=false; btn.textContent='تطبيق'; return;
+      msgEl.style.color='#f87171'; msgEl.textContent=`${T.errMinOrder} ${c.minOrder} JOD`; btn.disabled=false; btn.textContent=T.applyBtn; return;
     }
     appliedCoupon  = c;
     discountAmount = c.type === 'percent' ? (itemsTotal * c.value / 100) : c.value;
     discountAmount = Math.min(discountAmount, itemsTotal);
     updateTotals();
     msgEl.style.color='#34d399';
-    msgEl.textContent = c.type === 'percent' ? `تم تطبيق خصم ${c.value}%` : `تم تطبيق خصم ${c.value} JOD`;
+    msgEl.textContent = c.type === 'percent' ? `${T.couponOkPct} ${c.value}%` : `${T.couponOkFixed} ${c.value} JOD`;
     document.getElementById('coupon-input').disabled = true;
-    btn.textContent = 'تم ✓'; btn.style.color='#34d399';
-  } catch (e) { msgEl.style.color='#f87171'; msgEl.textContent='خطأ: '+e.message; btn.disabled=false; btn.textContent='تطبيق'; }
+    btn.textContent = T.couponDone; btn.style.color='#34d399';
+  } catch (e) { msgEl.style.color='#f87171'; msgEl.textContent='Error: '+e.message; btn.disabled=false; btn.textContent=T.applyBtn; }
 };
 
 // ── Delivery options ──
@@ -850,18 +969,18 @@ window.placeOrder = async function() {
 
   errEl.textContent = '';
 
-  if (!cart.length) { errEl.textContent = 'السلة فارغة'; return; }
-  if (!name)        { errEl.textContent = 'الرجاء إدخال الاسم الكامل'; return; }
-  if (!phone)       { errEl.textContent = 'الرجاء إدخال رقم الهاتف'; return; }
-  if (!selectedOpt) { errEl.textContent = 'الرجاء اختيار طريقة الاستلام'; return; }
+  if (!cart.length) { errEl.textContent = T.errCartEmpty; return; }
+  if (!name)        { errEl.textContent = T.errNoName; return; }
+  if (!phone)       { errEl.textContent = T.errNoPhoneField; return; }
+  if (!selectedOpt) { errEl.textContent = T.errNoDelivery; return; }
 
   const delivery = selectedOpt.querySelector('input').value;
   if (delivery !== 'pickup' && !address) {
-    errEl.textContent = 'الرجاء إدخال العنوان التفصيلي';
+    errEl.textContent = T.errNoAddress;
     return;
   }
 
-  btn.disabled = true; btn.textContent = 'جاري الإرسال...';
+  btn.disabled = true; btn.textContent = T.sending;
 
   try {
     const itemsTotal = cart.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);

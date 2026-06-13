@@ -4,6 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تتبع طلبك | عثمان للألعاب</title>
+<script>
+(function(){
+  const lang = localStorage.getItem('ofg_lang') || 'ar';
+  const T = {
+    ar: {
+      back: '← العودة للمتجر', title: 'تتبع طلبك',
+      sub: 'أدخل رقم هاتفك لمعرفة حالة طلبك',
+      placeholder: '07XXXXXXXX', search: 'بحث',
+      searching: 'جاري البحث...', noPhone: 'الرجاء إدخال رقم الهاتف',
+      noOrders: 'لا توجد طلبات لهذا الرقم',
+      statuses: { 'جديد':'تم استلام الطلب','مؤكد':'جاري التجهيز','منجز':'في الطريق اليك','ملغي':'تم الالغاء' },
+      steps: ['استلام','تجهيز','توصيل']
+    },
+    en: {
+      back: '← Back to Store', title: 'Track Your Order',
+      sub: 'Enter your phone number to check your order status',
+      placeholder: '07XXXXXXXX', search: 'Search',
+      searching: 'Searching...', noPhone: 'Please enter your phone number',
+      noOrders: 'No orders found for this number',
+      statuses: { 'جديد':'Order Received','مؤكد':'Being Prepared','منجز':'On the Way','ملغي':'Cancelled' },
+      steps: ['Received','Preparing','Delivery']
+    }
+  };
+  window._T = T[lang] || T.ar;
+  window._lang = lang;
+})()
+</script>
 <link rel="shortcut icon" href="/assets/icons/favicon.ico">
 <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
@@ -61,11 +88,11 @@ body{background:radial-gradient(ellipse 100% 80% at 0% 0%,rgba(30,100,255,.75),t
 </head>
 <body>
 
-<a href="index.html" class="back-link">← العودة للمتجر</a>
+<a href="index.html" class="back-link" id="back-link">← العودة للمتجر</a>
 
 <div class="track-card">
-  <h1>تتبع طلبك</h1>
-  <p>أدخل رقم هاتفك لمعرفة حالة طلبك</p>
+  <h1 id="track-title">تتبع طلبك</h1>
+  <p id="track-sub">أدخل رقم هاتفك لمعرفة حالة طلبك</p>
   <div class="track-input-row">
     <input type="tel" id="phone-input" placeholder="07XXXXXXXX" autocomplete="tel">
     <button class="btn-track" id="track-btn">بحث</button>
@@ -80,14 +107,16 @@ import { collection, query, where, getDocs, orderBy } from 'https://www.gstatic.
 
 const $  = id => document.getElementById(id);
 const HOURS_48 = 48 * 60 * 60 * 1000;
+const T = window._T;
 
-const STATUS_LABELS = {
-  'جديد'  : 'تم استلام الطلب',
-  'مؤكد'  : 'جاري التجهيز',
-  'منجز'  : 'في الطريق اليك',
-  'ملغي'  : 'تم الالغاء'
-};
+// Apply translations
+$('back-link').textContent = T.back;
+$('track-title').textContent = T.title;
+$('track-sub').textContent = T.sub;
+$('phone-input').placeholder = T.placeholder;
+$('track-btn').textContent = T.search;
 
+const STATUS_LABELS = T.statuses;
 const STEPS = ['جديد', 'مؤكد', 'منجز'];
 
 function stepperHtml(status) {
@@ -98,8 +127,7 @@ function stepperHtml(status) {
     const isDone   = i < curIdx;
     const isActive = i === curIdx;
     const cls = isDone ? 'done' : isActive ? 'active' : '';
-    const labels = ['استلام', 'تجهيز', 'توصيل'];
-    html += `<div class="step ${cls}"><div class="step-dot">${isDone ? '✓' : i+1}</div><div class="step-label">${labels[i]}</div></div>`;
+    html += `<div class="step ${cls}"><div class="step-dot">${isDone ? '✓' : i+1}</div><div class="step-label">${T.steps[i]}</div></div>`;
     if (i < STEPS.length - 1) html += `<div class="step-line ${isDone ? 'done' : ''}"></div>`;
   });
   html += '</div>';
@@ -120,11 +148,11 @@ async function search() {
   errEl.textContent = '';
   res.innerHTML = '';
 
-  if (!phone) { errEl.textContent = 'الرجاء إدخال رقم الهاتف'; return; }
+  if (!phone) { errEl.textContent = T.noPhone; return; }
 
   const btn = $('track-btn');
   btn.disabled = true;
-  btn.textContent = 'جاري البحث...';
+  btn.textContent = T.searching;
 
   try {
     const snap = await getDocs(query(
@@ -146,7 +174,7 @@ async function search() {
       });
 
     if (orders.length === 0) {
-      res.innerHTML = '<div style="text-align:center;opacity:.4;padding:24px;font-size:.9rem">لا توجد طلبات لهذا الرقم</div>';
+      res.innerHTML = `<div style="text-align:center;opacity:.4;padding:24px;font-size:.9rem">${T.noOrders}</div>`;
     } else {
       res.innerHTML = orders.map(order => {
         const status = order.status || 'جديد';
@@ -179,7 +207,7 @@ async function search() {
   }
 
   btn.disabled = false;
-  btn.textContent = 'بحث';
+  btn.textContent = T.search;
 }
 </script>
 </body>

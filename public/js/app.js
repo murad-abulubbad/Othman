@@ -42,11 +42,13 @@ import {
 
 import { startFirestoreLoader } from './modules/firestore.js';
 import { initCopyProtection } from './modules/utils.js';
+import { toggleLang, applyTranslations } from './modules/i18n.js';
 
 // ── Expose all functions used by inline onclick handlers ────────────
 // Inline onclick="..." in HTML reads from the global scope. ES modules
 // have their own scope, so we explicitly bridge each one to window.
 Object.assign(window, {
+  toggleLang,
   // Cart
   addToCart,
   removeFromCart,

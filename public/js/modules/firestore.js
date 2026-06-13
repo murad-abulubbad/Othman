@@ -10,7 +10,7 @@
 //                videoTrailerUrl, description, quantity, featured, createdAt
 // ═══════════════════════════════════════════════════════════════════
 
-import { db, collection, query, orderBy, getDocs, onSnapshot } from '../../firebase.js';
+import { db, collection, query, orderBy, where, getDocs, onSnapshot } from '../../firebase.js';
 import { catItems, catPageTitles, IS_MOBILE } from './state.js';
 import { renderGameGrid } from './products.js';
 import { buildFilterBarHtml, setupCategoryFilter, attachDropdownCloseHandler } from './filter.js';
@@ -18,7 +18,7 @@ import { applyPendingDeepLink } from './router.js';
 import { initTickerVisibility } from './effects.js';
 
 const CACHE_KEY = 'ofg_data_cache';
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 // Image sizes adapt to viewport — saves bandwidth & decode time on mobile.
 const GRID_THUMB_WIDTH   = IS_MOBILE ? 1000 : 1200;
@@ -30,23 +30,15 @@ function getCachedData() {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
-    const { ts, categories, items } = JSON.parse(raw);
+    const { ts, categories } = JSON.parse(raw);
     if (Date.now() - ts > CACHE_TTL) return null;
-    // Skip cache if any item has an active flash sale
-    const now = Date.now();
-    const hasFlash = (items || []).some(it => {
-      if (!it.saleEndsAt) return false;
-      const ends = it.saleEndsAt?.toDate ? it.saleEndsAt.toDate().getTime() : new Date(it.saleEndsAt).getTime();
-      return ends > now;
-    });
-    if (hasFlash) return null;
-    return { categories, items };
+    return { categories };
   } catch { return null; }
 }
 
-function setCachedData(categories, items) {
+function setCachedData(categories) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), categories, items }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), categories }));
   } catch { /* localStorage full or denied — ignore */ }
 }
 
@@ -63,66 +55,36 @@ function toSlug(name) {
 // ── State ───────────────────────────────────────────────────────────
 
 let _categories = [];
-let _items = [];
 let _catsReady = false;
-let _itemsReady = false;
 let _rendered = false;
 let _unsubCats = null;
-let _unsubItems = null;
-
-function tryRender() {
-  if (!_catsReady || !_itemsReady) return;
-  setCachedData(_categories, _items);
-  renderAll(_categories, _items);
-}
+const _loadedCats = new Set(); // track which categoryIDs already fetched
 
 // ── Public entry ────────────────────────────────────────────────────
 
 export function startFirestoreLoader() {
-  // Paint from cache for instant first frame.
+  if (_unsubCats) { _unsubCats(); _unsubCats = null; }
+
+  // Paint from cache for instant first frame (categories only).
   const cached = getCachedData();
   if (cached && !_rendered) {
     _categories = cached.categories;
-    _items = cached.items;
-    _catsReady = true;
-    _itemsReady = true;
-    renderAll(_categories, _items);
+    renderAll(_categories);
   }
 
-  if (_unsubCats) { _unsubCats(); _unsubCats = null; }
-  if (_unsubItems) { _unsubItems(); _unsubItems = null; }
-
-  // Realtime listener — Categories.
+  // Load Categories only — Items are fetched per-category on demand.
   _unsubCats = onSnapshot(
     query(collection(db, 'Categories'), orderBy('order', 'asc')),
     (snap) => {
       _categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      _catsReady = true;
-      tryRender();
+      setCachedData(_categories);
+      if (!_rendered) renderAll(_categories);
     },
     () => {
-      // Fallback if listener fails (e.g. offline).
       getDocs(collection(db, 'Categories')).then(snap => {
         _categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        _catsReady = true;
-        tryRender();
-      });
-    }
-  );
-
-  // Realtime listener — Items.
-  _unsubItems = onSnapshot(
-    collection(db, 'Items'),
-    (snap) => {
-      _items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      _itemsReady = true;
-      tryRender();
-    },
-    () => {
-      getDocs(collection(db, 'Items')).then(snap => {
-        _items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        _itemsReady = true;
-        tryRender();
+        setCachedData(_categories);
+        if (!_rendered) renderAll(_categories);
       });
     }
   );
@@ -199,45 +161,28 @@ function formatItem(item) {
 
 // ── Render the entire page from categories + items ─────────────────
 
-function renderAll(categories, items) {
+function renderAll(categories) {
   _rendered = true;
   try {
-    const itemsByCategory = new Map();
-    const categoriesById = new Map();
-    const categoryCounts = new Map();
-
     const slugMap = new Map();
     categories.forEach(cat => {
       cat.slug = toSlug(cat.name);
       slugMap.set(cat.slug, cat.id);
-      categoriesById.set(cat.id, cat);
-      itemsByCategory.set(cat.id, []);
-      categoryCounts.set(cat.id, 0);
     });
     window._catSlugMap = slugMap;
 
-    items.forEach(item => {
-      const catId = item.categoryID;
-      if (!itemsByCategory.has(catId)) itemsByCategory.set(catId, []);
-      itemsByCategory.get(catId).push(item);
-      categoryCounts.set(catId, (categoryCounts.get(catId) || 0) + 1);
-    });
-
     renderSectionCards(categories);
-    renderDynamicSections(categories, items, itemsByCategory);
-    populateTicker(items, categoriesById);
-    populateCatSidebar(categories, categoryCounts);
+    renderDynamicSections(categories);
+    populateCatSidebar(categories, new Map(categories.map(c => [c.id, 0])));
+    populateTicker();
 
-    // Apply any deep-link the user landed on.
     applyPendingDeepLink();
 
   } catch (error) {
-    // Surface a friendly error if anything breaks.
     const sectionsGrid = document.getElementById('sections-grid');
     if (sectionsGrid) {
       sectionsGrid.innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 20px;">فشل تحميل البيانات. يرجى تحديث الصفحة.</div>';
     }
-    // Log to console for debugging but never throw.
     console.error('[firestore] renderAll failed:', error);
   }
 }
@@ -274,35 +219,66 @@ function renderSectionCards(categories) {
 
 // ── Dynamic per-category sections ───────────────────────────────────
 
-function renderDynamicSections(categories, items, itemsByCategory) {
+function renderDynamicSections(categories) {
   const dynamicSections = document.getElementById('dynamic-sections');
   if (!dynamicSections) return;
 
+  // Render section shells — items will be loaded on demand.
   dynamicSections.innerHTML = categories.map(cat => {
-    const categoryItems = itemsByCategory.get(cat.id) || [];
-    const hasItems = categoryItems.length > 0;
-    const body = hasItems
-      ? `${buildFilterBarHtml(cat.id, cat.name, categoryItems)}<div class="image-grid" id="grid-cat-${cat.id}"></div>`
-      : COMING_SOON_HTML(cat.name);
-
     const titleColor = cat.color || '#3b82f6';
     return `
       <section id="${cat.slug}" class="dynamic-category-section" data-cat-id="${cat.id}">
         <h2 class="section-title visible" style="color:${titleColor};text-shadow:0 0 20px ${titleColor}40">${cat.name}</h2>
         <div class="section-line visible" style="background:${titleColor};box-shadow:0 0 15px ${titleColor}"></div>
-        ${body}
+        <div class="image-grid" id="grid-cat-${cat.id}"></div>
       </section>`;
   }).join('');
 
-  // Render items per category + wire filter setup.
-  categories.forEach(cat => {
-    const categoryItems = items.filter(item => item.categoryID === cat.id);
-    if (categoryItems.length === 0) return;
+  // Observe each section — fetch + render its items only when visible.
+  const lazyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      lazyObserver.unobserve(entry.target);
+      const catId = entry.target.dataset.catId;
+      if (_loadedCats.has(catId)) return;
+      _loadedCats.add(catId);
+      const cat = _categories.find(c => c.id === catId);
+      if (cat) _fetchAndRenderCategory(cat);
+    });
+  }, { rootMargin: '300px' });
 
-    const formattedItems = categoryItems.map(formatItem);
+  categories.forEach(cat => {
+    const section = document.getElementById(cat.slug);
+    if (section) lazyObserver.observe(section);
+  });
+}
+
+async function _fetchAndRenderCategory(cat) {
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'Items'), where('categoryID', '==', cat.id))
+    );
+    const rawItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (rawItems.length === 0) {
+      const grid = document.getElementById(`grid-cat-${cat.id}`);
+      if (grid) grid.outerHTML = COMING_SOON_HTML(cat.name);
+
+      return;
+    }
+
+    const formattedItems = rawItems.map(formatItem);
+    catItems[cat.id] = formattedItems;
+    catPageTitles[cat.slug] = cat.name;
+
+    // Inject filter bar above the grid.
+    const grid = document.getElementById(`grid-cat-${cat.id}`);
+    if (grid) {
+      grid.insertAdjacentHTML('beforebegin', buildFilterBarHtml(cat.id, cat.name, formattedItems));
+    }
+
     renderGameGrid(`grid-cat-${cat.id}`, formattedItems, cat.name, cat.color);
 
-    // Reveal newly-rendered cards.
     requestAnimationFrame(() => {
       document.querySelectorAll(`#grid-cat-${cat.id} .image-card`).forEach((el, i) => {
         el.style.transitionDelay = ((i % 6) * 0.08) + 's';
@@ -310,49 +286,46 @@ function renderDynamicSections(categories, items, itemsByCategory) {
       });
     });
 
-    catItems[cat.id] = formattedItems;
-    // Wire filter listeners on next tick to keep the main paint fast.
     setTimeout(() => setupCategoryFilter(cat.id, cat.name, formattedItems, cat.color), 0);
 
-    // Map for router titles.
-    catPageTitles[cat.slug] = cat.name;
-  });
+
+  } catch (err) {
+    console.error(`[firestore] failed to load category ${cat.name}:`, err);
+  }
 }
 
 // ── Featured ticker ─────────────────────────────────────────────────
 
-function populateTicker(items, categoriesById) {
+async function populateTicker() {
   const tickerWrap = document.getElementById('news-ticker-wrap');
   const tickerTrack = document.getElementById('news-ticker-track');
   if (!tickerTrack) return;
 
-  let featuredItems = items.filter(i => i.featured === true);
-  if (featuredItems.length === 0) featuredItems = [...items].slice(0, 10);
-  if (featuredItems.length === 0) return;
+  try {
+    const snap = await getDocs(
+      query(collection(db, 'Items'), where('featured', '==', true))
+    );
+    const featuredItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (featuredItems.length === 0) return;
 
-  const buildItem = (item) => {
-    const safeId = (item.id || '').replace(/'/g, '');
-    return `<div class="ticker-item" onclick="(function(){var el=document.querySelector('[data-item-id=\\'${safeId}\\']')||document.getElementById('cat-${item.categoryID}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});})()">
-        <span class="ticker-item-badge">جديد</span>
-        ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.name}">` : ''}
-        <span class="ticker-item-name">${item.name}</span>
-      </div>`;
-  };
-  const itemsHtml = featuredItems.map(buildItem).join('');
-
-  // Ensure the loop fills the viewport seamlessly.
-  const minCopies = Math.max(10, Math.ceil(20 / featuredItems.length));
-  const copies = minCopies % 2 === 0 ? minCopies : minCopies + 1;
-  tickerTrack.innerHTML = itemsHtml.repeat(copies);
-  // Use a class instead of inline style so CSS can still hide the ticker
-  // on inner pages (body.in-page-mode). Inline style.display always wins
-  // over CSS rules \u2014 that's why the ticker was leaking onto category pages.
-  if (tickerWrap) tickerWrap.classList.add('is-populated');
-  tickerTrack.style.animationDuration = Math.max(20, featuredItems.length * 7) + 's';
-
-  // Pause the ticker animation when it scrolls off-screen — saves the
-  // compositor a continuous layer update on mobile.
-  initTickerVisibility();
+    const buildItem = (item) => {
+      const safeId = (item.id || '').replace(/'/g, '');
+      return `<div class="ticker-item" onclick="(function(){var el=document.querySelector('[data-item-id=\\'${safeId}\\']');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});})()">
+          <span class="ticker-item-badge">جديد</span>
+          ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.name}">` : ''}
+          <span class="ticker-item-name">${item.name}</span>
+        </div>`;
+    };
+    const itemsHtml = featuredItems.map(buildItem).join('');
+    const minCopies = Math.max(10, Math.ceil(20 / featuredItems.length));
+    const copies = minCopies % 2 === 0 ? minCopies : minCopies + 1;
+    tickerTrack.innerHTML = itemsHtml.repeat(copies);
+    if (tickerWrap) tickerWrap.classList.add('is-populated');
+    tickerTrack.style.animationDuration = Math.max(20, featuredItems.length * 7) + 's';
+    initTickerVisibility();
+  } catch (err) {
+    console.error('[firestore] ticker fetch failed:', err);
+  }
 }
 
 // ── Categories sidebar ──────────────────────────────────────────────
@@ -372,7 +345,6 @@ function populateCatSidebar(categories, categoryCounts) {
     return `<button class="cat-sidebar-item" onclick="closeCatSidebar();navigateToPage('${cat.slug}')">
       ${img}
       <span class="cat-sb-name">${cat.name}</span>
-      <span class="cat-sb-count">${count}</span>
     </button>`;
   }).join('');
 

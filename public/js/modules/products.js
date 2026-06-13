@@ -6,6 +6,7 @@
 import { itemImagesMap, detailGallery } from './state.js';
 import { escapeHtml, parsePriceValue, encodeOnclick, buildImageKey } from './utils.js';
 import { getFavoriteLookup } from './favorites.js';
+import { t } from './i18n.js';
 
 const CART_ICON_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg>`;
 const PLAY_ICON_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
@@ -62,7 +63,7 @@ export function renderGameGrid(targetId, games, platform, color) {
     });
 
     const trailerButton = g.trailer
-      ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${trailerData}'); event.stopPropagation();">${PLAY_ICON_SVG} تريلر</button>`
+      ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${trailerData}'); event.stopPropagation();">${PLAY_ICON_SVG} ${t('product.trailer')}</button>`
       : '';
 
     // Flash sale logic
@@ -103,7 +104,7 @@ export function renderGameGrid(targetId, games, platform, color) {
     });
 
     const addButton = (effectivePrice > 0 || g.priceLabel) && !isOutOfStock
-      ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">${CART_ICON_SVG} أضف</button>`
+      ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">${CART_ICON_SVG} ${t('product.add')}</button>`
       : '';
 
     const isFav = favoriteLookup.has(`${g.name}::${platform || ''}`);
@@ -113,7 +114,7 @@ export function renderGameGrid(targetId, games, platform, color) {
     <div class="image-card${isPS5 ? ' is-ps5' : ''}${isOutOfStock ? ' is-out-of-stock' : ''}" data-item-id="${g.id || ''}" onclick="openGameDetails(JSON.parse(decodeURIComponent('${detailData}')))">
       <div class="image-card-imgwrap">
         ${showPlatformBadge ? `<span class="image-card-platform" ${platformStyle}>${platform}</span>` : ''}
-        <span class="product-condition-badge${conditionClass}">${condition}</span>
+        <span class="product-condition-badge${conditionClass}">${condition === 'جديد' ? t('product.cond.new') : t('product.cond.used')}</span>
         ${isOutOfStock ? '<span class="out-of-stock-badge">نفذت الكمية</span>' : ''}
         ${flashBadge}
         <img class="image-card-img" src="${g.img}" alt="${escapeHtml(g.name)}" loading="lazy" decoding="async" fetchpriority="low" onerror="${NO_IMAGE_FALLBACK}"/>
@@ -277,11 +278,11 @@ export function openGameDetails(game) {
   const isFav = favLookup.has(`${game.name}::${game.platform || ''}`);
 
   const trailerAction = game.trailer
-    ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${encodeOnclick({ id: game.trailer, title: game.name, provider: game.trailerProvider || 'youtube' })}'); event.stopPropagation();">${PLAY_BIG_SVG} مشاهدة التريلر</button>`
+    ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${encodeOnclick({ id: game.trailer, title: game.name, provider: game.trailerProvider || 'youtube' })}'); event.stopPropagation();">${PLAY_BIG_SVG} ${t('product.watch.trailer')}</button>`
     : '';
 
   const addAction = game.canAdd !== false && (hasNumericPrice || game.priceLabel || game.addable)
-    ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); closeGameDetails(); event.stopPropagation();">${CART_BIG_SVG} أضف للسلة</button>`
+    ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); closeGameDetails(); event.stopPropagation();">${CART_BIG_SVG} ${t('product.add.cart')}</button>`
     : '';
 
   const detailDataForFav = encodeOnclick({
@@ -303,7 +304,7 @@ export function openGameDetails(game) {
     </div>
     <div class="game-detail-content">
       ${detailLabel ? `<div class="game-detail-kicker">${escapeHtml(detailLabel)}</div>` : ''}
-      ${game.condition ? `<div class="game-detail-condition${game.condition === 'جديد' ? ' is-new' : ''}">${escapeHtml(game.condition)}</div>` : ''}
+      ${game.condition ? `<div class="game-detail-condition${game.condition === 'جديد' ? ' is-new' : ''}">${game.condition === 'جديد' ? t('product.cond.new') : t('product.cond.used')}</div>` : ''}
       <div class="game-detail-name">${escapeHtml(game.name)}</div>
       <div class="game-detail-genre">${escapeHtml(genreText)}</div>
       <div class="game-detail-price">${isModalFlash ? priceText : (game.priceLabel ? priceText : escapeHtml(priceText))}</div>

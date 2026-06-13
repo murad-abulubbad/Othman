@@ -5,15 +5,22 @@
 
 import { getFavorites, setFavorites } from './state.js';
 import { decodeOnclick, encodeOnclick, escapeHtml } from './utils.js';
+import { t, onLangChange } from './i18n.js';
 
-const EMPTY_FAVORITES_HTML = `
+const emptyFavoritesHtml = () => `
   <div class="favorite-sidebar-empty">
     <div class="favorite-sidebar-empty-icon">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
     </div>
-    <p>لا توجد مفضلات بعد</p>
-    <p style="font-size:0.85rem;margin-top:8px;">اضغط على القلب لحفظ المنتجات</p>
+    <p>${t('fav.empty')}</p>
+    <p style="font-size:0.85rem;margin-top:8px;">${t('fav.empty.sub')}</p>
   </div>`;
+
+// Re-render favorites when language changes
+onLangChange(() => {
+  const content = document.querySelector('.favorite-sidebar-content');
+  if (content && getFavorites().length === 0) content.innerHTML = emptyFavoritesHtml();
+});
 
 const ADD_TO_CART_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg>`;
 
@@ -97,7 +104,7 @@ export function renderFavorites() {
   if (!content) return;
 
   if (favorites.length === 0) {
-    content.innerHTML = EMPTY_FAVORITES_HTML;
+    content.innerHTML = emptyFavoritesHtml();
     return;
   }
 
