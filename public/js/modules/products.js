@@ -330,3 +330,63 @@ export function closeGameDetails(event) {
     document.body.style.overflow = '';
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+//  FLASH SALE TIMER UPDATES
+//  Updates countdown timers and re-renders when flash sales expire
+// ═══════════════════════════════════════════════════════════════════
+
+function formatFlashCountdown(ms) {
+  if (ms <= 0) return '00:00:00';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+let _flashUpdateInterval = null;
+let _lastFlashState = new Map(); // Track which items had active flash
+
+export function startFlashTimerUpdates() {
+  if (_flashUpdateInterval) return;
+
+  // Initialize state tracking
+  _lastFlashState.clear();
+
+  _flashUpdateInterval = setInterval(() => {
+    const now = Date.now();
+    const timers = document.querySelectorAll('.flash-timer[data-ends]');
+    let needsReRender = false;
+
+    timers.forEach(timer => {
+      const ends = parseInt(timer.dataset.ends, 10);
+      const remaining = ends - now;
+
+      if (remaining <= 0) {
+        timer.textContent = '00:00:00';
+        // Timer expired - need to re-render to show original price
+        needsReRender = true;
+      } else {
+        timer.textContent = formatFlashCountdown(remaining);
+      }
+    });
+
+    // If any timer expired, trigger a re-render of all categories
+    if (needsReRender) {
+      // Dispatch custom event to trigger re-render
+      window.dispatchEvent(new CustomEvent('flashsale-expired'));
+    }
+  }, 1000);
+}
+
+export function stopFlashTimerUpdates() {
+  if (_flashUpdateInterval) {
+    clearInterval(_flashUpdateInterval);
+    _flashUpdateInterval = null;
+  }
+}
+
+// Auto-start flash timer updates
+document.addEventListener('DOMContentLoaded', () => {
+  startFlashTimerUpdates();
+});

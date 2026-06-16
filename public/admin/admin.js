@@ -621,6 +621,7 @@ async function loadItems() {
     renderItemsTable();
     renderCategoriesTable();
     renderDashboardStats();
+    updatePublishButtonVisibility();
   } catch (e) {
     toast('خطأ في تحميل العناصر: ' + e.message, true);
   }
@@ -1328,6 +1329,7 @@ function renderBrowseItems() {
     const hasDiscount = it.discountPrice && it.originalPrice && it.discountPrice < it.originalPrice;
     const saleEndsAt = it.saleEndsAt?.toDate ? it.saleEndsAt.toDate().getTime() : (it.saleEndsAt ? new Date(it.saleEndsAt).getTime() : 0);
     const isFlash = it.salePrice > 0 && saleEndsAt > now;
+    const isDraft = it.salePrice > 0 && !saleEndsAt;
     const cat = categories.find(c => c.id === it.categoryID);
     const catColor = cat?.color || '#3b82f6';
 
@@ -1352,6 +1354,7 @@ function renderBrowseItems() {
             ${it.genre?`<span style="font-size:.67rem;opacity:.38">${Array.isArray(it.genre)?it.genre[0]:it.genre}</span>`:''}
             ${it.quantity!=null?`<span style="font-size:.67rem;opacity:.32">الكمية: ${it.quantity}</span>`:''}
             ${isFlash?'<span style="font-size:.67rem;background:rgba(251,146,60,.2);color:#fb923c;padding:1px 6px;border-radius:4px">⚡ فلاش</span>':''}
+            ${isDraft?'<span style="font-size:.67rem;background:rgba(100,116,139,.2);color:#94a3b8;padding:1px 6px;border-radius:4px">📝 مسودة</span>':''}
           </div>
         </div>
         <div style="font-family:'Orbitron',monospace;font-size:.8rem;color:#60a5fa;white-space:nowrap;flex-shrink:0;text-align:left">${priceHtml} <span style="opacity:.3;font-size:.65em">JOD</span></div>
@@ -1379,6 +1382,40 @@ function showConfirm({ icon = '❓', title = '', msg = '', okLabel = 'تأكيد
     okBtn.onclick = () => cleanup(true);
     $('confirm-cancel-btn').onclick = () => cleanup(false);
     modal.onclick = (e) => { if (e.target === modal) cleanup(false); };
+  });
+}
+
+// Custom prompt modal for flash sale hours
+function showPrompt({ title = '', msg = '', defaultValue = '', placeholder = '' } = {}) {
+  return new Promise(resolve => {
+    const modal = $('prompt-modal');
+    $('prompt-title').textContent = title;
+    $('prompt-msg').textContent = msg;
+    const input = $('prompt-input');
+    input.value = defaultValue;
+    input.placeholder = placeholder;
+    modal.style.display = 'flex';
+    input.focus();
+    input.select();
+
+    const cleanup = (val) => {
+      modal.style.display = 'none';
+      resolve(val);
+    };
+
+    $('prompt-ok-btn').onclick = () => {
+      const val = parseFloat(input.value);
+      cleanup(isNaN(val) || val <= 0 ? null : val);
+    };
+    $('prompt-cancel-btn').onclick = () => cleanup(null);
+    modal.onclick = (e) => { if (e.target === modal) cleanup(null); };
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        const val = parseFloat(input.value);
+        cleanup(isNaN(val) || val <= 0 ? null : val);
+      }
+      if (e.key === 'Escape') cleanup(null);
+    };
   });
 }
 
@@ -1425,6 +1462,7 @@ window.browseBulkMove = async function() {
     ids.forEach(id => { const it = items.find(i => i.id === id); if (it) it.categoryID = catId; });
     renderBrowseItems();
     renderBrowsePills();
+    updatePublishButtonVisibility();
     toast(`✅ تم تحويل ${ids.length} عنصر إلى "${catName}"`);
   } catch(e) { toast('❌ حدث خطأ: ' + e.message); }
 };
@@ -1449,6 +1487,7 @@ window.browseBulkDelete = async function() {
     renderBrowseItems();
     renderBrowsePills();
     renderDashboardStats();
+    updatePublishButtonVisibility();
     toast(`🗑 تم حذف ${ids.length} عنصر`);
   } catch(e) { toast('❌ حدث خطأ: ' + e.message); }
 };
@@ -1457,6 +1496,7 @@ window.clearBrowseFilters = function() {
   ['browse-search','browse-price','browse-discount','browse-qty'].forEach(id=>{const el=$(id);if(el)el.value='';});
   ['browse-condition','browse-genre','browse-sort'].forEach(id=>{const el=$(id);if(el)el.value='';});
   _browsePage=1; renderBrowseItems();
+  updatePublishButtonVisibility();
 };
 
 window.openItemModalForBrowse = function() {
@@ -1485,31 +1525,88 @@ document.addEventListener('click', e => {
     setTimeout(() => {
       renderBrowsePills();
       renderBrowseItems();
+      updatePublishButtonVisibility();
     }, 50);
   }
 });
 
 // ══════════════════════════════════════════════════
-//  FLASH SALE
+//  FLASH SALE (Single Item)
 // ══════════════════════════════════════════════════
 let flashTargetId = null;
+let flashCurrentType = 'percent'; // 'percent' | 'fixed'
+let flashOrigPrice = 0;
 
 window.openFlashModal = function(itemId) {
   flashTargetId = itemId;
   const item = items.find(i => i.id === itemId);
   if (!item) return;
+
+  // Calculate original price
+  flashOrigPrice = parseFloat(item.discountPrice || item.originalPrice || item.price || 0);
+
+  // Set modal data
   $('flash-item-name').textContent = item.name;
+  $('flash-original-price').textContent = flashOrigPrice > 0 ? `السعر الأصلي: ${flashOrigPrice.toFixed(2)} JOD` : 'السعر: حسب الطلب';
+
+  // Show current flash if exists
   const currentSale = item.saleEndsAt?.toDate ? item.saleEndsAt.toDate() : (item.saleEndsAt ? new Date(item.saleEndsAt) : null);
   const isActive = currentSale && currentSale > new Date();
   $('flash-current').style.display = isActive ? '' : 'none';
   if (isActive) {
     $('flash-current-info').textContent = `سعر الفلاش: ${item.salePrice} JOD — ينتهي: ${currentSale.toLocaleTimeString('ar-EG', {hour:'2-digit',minute:'2-digit'})}`;
   }
+
+  // Reset form
+  setFlashType('percent');
+  $('flash-percent').value = '';
   $('flash-sale-price').value = '';
   $('flash-duration').value = '2';
   $('flash-modal-err').textContent = '';
+  $('flash-preview').style.display = 'none';
   $('flash-add-modal').style.display = 'flex';
-  $('flash-sale-price').focus();
+  $('flash-percent').focus();
+};
+
+window.setFlashType = function(type) {
+  flashCurrentType = type;
+  const percentBtn = $('flash-type-percent');
+  const fixedBtn = $('flash-type-fixed');
+
+  if (type === 'percent') {
+    percentBtn.style.background = 'rgba(251,146,60,.2)';
+    percentBtn.style.color = '#fb923c';
+    percentBtn.style.borderColor = 'rgba(251,146,60,.5)';
+    fixedBtn.style.background = 'transparent';
+    fixedBtn.style.color = 'rgba(255,255,255,.6)';
+    fixedBtn.style.borderColor = 'rgba(255,255,255,.15)';
+    $('flash-percent-wrap').style.display = '';
+    $('flash-fixed-wrap').style.display = 'none';
+    $('flash-percent').focus();
+  } else {
+    fixedBtn.style.background = 'rgba(251,146,60,.2)';
+    fixedBtn.style.color = '#fb923c';
+    fixedBtn.style.borderColor = 'rgba(251,146,60,.5)';
+    percentBtn.style.background = 'transparent';
+    percentBtn.style.color = 'rgba(255,255,255,.6)';
+    percentBtn.style.borderColor = 'rgba(255,255,255,.15)';
+    $('flash-percent-wrap').style.display = 'none';
+    $('flash-fixed-wrap').style.display = '';
+    $('flash-sale-price').focus();
+  }
+  $('flash-preview').style.display = 'none';
+};
+
+window.updateFlashPreview = function() {
+  if (flashCurrentType !== 'percent' || flashOrigPrice <= 0) return;
+  const percent = parseFloat($('flash-percent').value);
+  if (isNaN(percent) || percent <= 0 || percent >= 100) {
+    $('flash-preview').style.display = 'none';
+    return;
+  }
+  const salePrice = (flashOrigPrice * (1 - percent / 100)).toFixed(2);
+  $('flash-preview-price').textContent = `${salePrice} JOD (خصم ${percent}%)`;
+  $('flash-preview').style.display = 'block';
 };
 
 window.cancelFlashSale = async function() {
@@ -1524,31 +1621,77 @@ window.cancelFlashSale = async function() {
   } catch(e) { $('flash-modal-err').textContent = 'خطأ: ' + e.message; }
 };
 
+// Helper to get sale price from form
+function getFlashSalePrice() {
+  if (flashCurrentType === 'percent') {
+    const percent = parseFloat($('flash-percent').value);
+    if (isNaN(percent) || percent <= 0 || percent >= 100) return null;
+    if (flashOrigPrice <= 0) return null;
+    return parseFloat((flashOrigPrice * (1 - percent / 100)).toFixed(2));
+  } else {
+    return parseFloat($('flash-sale-price').value);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Draft save
+  $('flash-draft-btn')?.addEventListener('click', async () => {
+    if (!flashTargetId) return;
+    const salePrice = getFlashSalePrice();
+    const errEl = $('flash-modal-err');
+    errEl.textContent = '';
+
+    if (salePrice === null || salePrice <= 0) {
+      errEl.textContent = flashCurrentType === 'percent' ? 'أدخل نسبة خصم صحيحة (1-99)' : 'أدخل سعراً صحيحاً';
+      return;
+    }
+    if (flashOrigPrice > 0 && salePrice >= flashOrigPrice) {
+      errEl.textContent = `السعر يجب أن يكون أقل من ${flashOrigPrice} JOD`;
+      return;
+    }
+
+    const btn = $('flash-draft-btn');
+    btn.disabled = true; btn.textContent = 'جاري الحفظ...';
+    try {
+      await updateDoc(doc(db, 'Items', flashTargetId), { salePrice, saleEndsAt: null });
+      const item = items.find(i => i.id === flashTargetId);
+      if (item) { item.salePrice = salePrice; item.saleEndsAt = null; }
+      try { localStorage.removeItem('ofg_data_cache'); } catch {}
+      $('flash-add-modal').style.display = 'none';
+      toast('💾 تم حفظ الفلاش سيل كمسودة');
+    } catch(e) { errEl.textContent = 'خطأ: ' + e.message; }
+    finally { btn.disabled = false; btn.textContent = '💾 حفظ كمسودة'; }
+  });
+
+  // Publish/Activate
   $('flash-save-btn')?.addEventListener('click', async () => {
     if (!flashTargetId) return;
-    const salePrice = parseFloat($('flash-sale-price').value);
-    const hours     = parseFloat($('flash-duration').value) || 2;
-    const errEl     = $('flash-modal-err');
+    const salePrice = getFlashSalePrice();
+    const hours = parseFloat($('flash-duration').value) || 2;
+    const errEl = $('flash-modal-err');
     errEl.textContent = '';
-    const item = items.find(i => i.id === flashTargetId);
-    if (!item) return;
-    const origPrice = parseFloat(item.discountPrice || item.originalPrice || item.price || 0);
-    if (isNaN(salePrice) || salePrice <= 0) { errEl.textContent = 'أدخل سعراً صحيحاً'; return; }
-    if (origPrice > 0 && salePrice >= origPrice) { errEl.textContent = `السعر يجب أن يكون أقل من ${origPrice} JOD`; return; }
+
+    if (salePrice === null || salePrice <= 0) {
+      errEl.textContent = flashCurrentType === 'percent' ? 'أدخل نسبة خصم صحيحة (1-99)' : 'أدخل سعراً صحيحاً';
+      return;
+    }
+    if (flashOrigPrice > 0 && salePrice >= flashOrigPrice) {
+      errEl.textContent = `السعر يجب أن يكون أقل من ${flashOrigPrice} JOD`;
+      return;
+    }
 
     const saveBtn = $('flash-save-btn');
-    saveBtn.disabled = true; saveBtn.textContent = 'جاري الحفظ...';
+    saveBtn.disabled = true; saveBtn.textContent = 'جاري التفعيل...';
     try {
       const endsAt = new Date(Date.now() + hours * 3600000);
       await updateDoc(doc(db, 'Items', flashTargetId), { salePrice, saleEndsAt: endsAt });
-      item.salePrice  = salePrice;
-      item.saleEndsAt = endsAt;
+      const item = items.find(i => i.id === flashTargetId);
+      if (item) { item.salePrice = salePrice; item.saleEndsAt = endsAt; }
       try { localStorage.removeItem('ofg_data_cache'); } catch {}
       $('flash-add-modal').style.display = 'none';
-      toast(`⚡ فلاش سيل مفعّل لـ ${hours} ساعة`);
+      toast(`⚡ تم تفعيل الفلاش سيل لـ ${hours} ساعة`);
     } catch(e) { errEl.textContent = 'خطأ: ' + e.message; }
-    finally { saveBtn.disabled = false; saveBtn.textContent = 'تفعيل'; }
+    finally { saveBtn.disabled = false; saveBtn.textContent = '⚡ تفعيل'; }
   });
 });
 
@@ -1556,6 +1699,190 @@ document.addEventListener('click', e => {
   const flashBtn = e.target.closest('[data-item-flash]');
   if (flashBtn) { window.openFlashModal(flashBtn.dataset.itemFlash); return; }
 });
+
+// ══════════════════════════════════════════════════
+//  BULK FLASH SALE (by percentage)
+// ══════════════════════════════════════════════════
+window.openBulkFlashModal = function() {
+  const selectedIds = getSelectedBrowseIds();
+  if (selectedIds.length === 0) {
+    toast('⚠️ حدد منتجات أولاً', true);
+    return;
+  }
+
+  $('bulk-flash-count').textContent = selectedIds.length;
+  $('bulk-flash-percent').value = '';
+  $('bulk-flash-duration').value = '2';
+  $('bulk-flash-err').textContent = '';
+  $('bulk-flash-preview').style.display = 'none';
+  $('bulk-flash-modal').style.display = 'flex';
+  $('bulk-flash-percent').focus();
+
+  // Auto-preview on input
+  $('bulk-flash-percent').oninput = updateBulkFlashPreview;
+};
+
+function getSelectedBrowseIds() {
+  return [...document.querySelectorAll('.browse-item-cb:checked')].map(cb => cb.dataset.id);
+}
+
+function updateBulkFlashPreview() {
+  const percent = parseFloat($('bulk-flash-percent').value);
+  const selectedIds = getSelectedBrowseIds();
+  const previewDiv = $('bulk-flash-preview');
+  const previewList = $('bulk-flash-preview-list');
+
+  if (isNaN(percent) || percent <= 0 || percent >= 100) {
+    previewDiv.style.display = 'none';
+    return;
+  }
+
+  const selectedItems = selectedIds.map(id => items.find(i => i.id === id)).filter(Boolean);
+  const discount = percent / 100;
+
+  previewList.innerHTML = selectedItems.slice(0, 5).map(item => {
+    const origPrice = parseFloat(item.discountPrice || item.originalPrice || item.price || 0);
+    const salePrice = origPrice > 0 ? (origPrice * (1 - discount)).toFixed(2) : 0;
+    return `<div style="display:flex;justify-content:space-between;margin-bottom:3px">
+      <span style="opacity:.7">${item.name.substring(0, 25)}${item.name.length > 25 ? '...' : ''}</span>
+      <span>${origPrice > 0 ? `<span style="text-decoration:line-through;opacity:.5">${origPrice.toFixed(2)}</span> → <span style="color:#fb923c;font-weight:700">${salePrice}</span>` : '—'}</span>
+    </div>`;
+  }).join('') + (selectedItems.length > 5 ? `<div style="opacity:.5;text-align:center;margin-top:6px">... و ${selectedItems.length - 5} منتجات أخرى</div>` : '');
+
+  previewDiv.style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Save as Draft - only sets salePrice, saleEndsAt stays null
+  $('bulk-flash-draft-btn')?.addEventListener('click', async () => {
+    await processBulkFlash({ publish: false });
+  });
+
+  // Publish Now - sets both salePrice and saleEndsAt
+  $('bulk-flash-publish-btn')?.addEventListener('click', async () => {
+    await processBulkFlash({ publish: true });
+  });
+});
+
+async function processBulkFlash({ publish }) {
+  const percent = parseFloat($('bulk-flash-percent').value);
+  const hours = parseFloat($('bulk-flash-duration').value) || 2;
+  const errEl = $('bulk-flash-err');
+  errEl.textContent = '';
+
+  if (isNaN(percent) || percent <= 0 || percent >= 100) {
+    errEl.textContent = 'أدخل نسبة خصم بين 1 و 99';
+    return;
+  }
+
+  const selectedIds = getSelectedBrowseIds();
+  if (selectedIds.length === 0) {
+    errEl.textContent = 'لا يوجد منتجات محددة';
+    return;
+  }
+
+  const discount = percent / 100;
+  const endsAt = publish ? new Date(Date.now() + hours * 3600000) : null;
+  const btn = publish ? $('bulk-flash-publish-btn') : $('bulk-flash-draft-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = publish ? 'جاري النشر...' : 'جاري الحفظ...';
+
+  try {
+    let appliedCount = 0;
+    const batchUpdates = selectedIds.map(async (id) => {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+
+      const origPrice = parseFloat(item.discountPrice || item.originalPrice || item.price || 0);
+      if (origPrice <= 0) return;
+
+      const salePrice = parseFloat((origPrice * (1 - discount)).toFixed(2));
+      if (salePrice <= 0 || salePrice >= origPrice) return;
+
+      const updateData = { salePrice };
+      if (publish) updateData.saleEndsAt = endsAt;
+      // If draft, explicitly set saleEndsAt to null (in case it was set before)
+      else updateData.saleEndsAt = null;
+
+      await updateDoc(doc(db, 'Items', id), updateData);
+      item.salePrice = salePrice;
+      item.saleEndsAt = endsAt;
+      appliedCount++;
+    });
+
+    await Promise.all(batchUpdates);
+
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
+    $('bulk-flash-modal').style.display = 'none';
+
+    // Clear selection
+    document.querySelectorAll('.browse-item-cb:checked').forEach(cb => cb.checked = false);
+    browseUpdateCount();
+    updatePublishButtonVisibility();
+
+    if (publish) {
+      toast(`🚀 تم نشر الفلاش سيل لـ ${appliedCount} منتج!`);
+    } else {
+      toast(`💾 تم حفظ ${appliedCount} منتج كمسودة. اضغط "🚀 نشر الفلاش سيلز" عند الجاهزية`);
+    }
+  } catch (e) {
+    errEl.textContent = 'خطأ: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+// Show/hide publish button based on draft flash sales count
+function updatePublishButtonVisibility() {
+  const publishBtn = $('publish-flash-btn');
+  if (!publishBtn) return;
+
+  // Draft = has salePrice > 0 but saleEndsAt is null (not published yet)
+  const draftCount = items.filter(i => i.salePrice > 0 && !i.saleEndsAt).length;
+
+  if (draftCount > 0) {
+    publishBtn.style.display = 'inline-flex';
+    publishBtn.textContent = `🚀 نشر الفلاش سيلز (${draftCount})`;
+  } else {
+    publishBtn.style.display = 'none';
+  }
+}
+
+// Publish all draft flash sales
+window.publishAllFlashSales = async function() {
+  const draftItems = items.filter(i => i.salePrice > 0 && !i.saleEndsAt);
+  if (draftItems.length === 0) {
+    toast('لا يوجد فلاش سيلز مسودة للنشر', true);
+    return;
+  }
+
+  const hours = parseFloat(prompt('المدة (بالساعات):', '2')) || 2;
+  const endsAt = new Date(Date.now() + hours * 3600000);
+
+  const btn = $('publish-flash-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'جاري النشر...';
+
+  try {
+    await Promise.all(draftItems.map(item =>
+      updateDoc(doc(db, 'Items', item.id), { saleEndsAt: endsAt }).then(() => {
+        item.saleEndsAt = endsAt;
+      })
+    ));
+
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
+    updatePublishButtonVisibility();
+    toast(`🚀 تم نشر ${draftItems.length} فلاش سيل للزبائن!`);
+  } catch (e) {
+    toast('خطأ في النشر: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+};
 
 // ══════════════════════════════════════════════════
 //  COUPONS
@@ -1833,4 +2160,235 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-tab="orders"]')?.addEventListener('click', () => {
     if (!_ordersUnsub) subscribeOrders();
   });
+
+  // Flash Sales tab
+  document.querySelector('[data-tab="flashsales"]')?.addEventListener('click', () => {
+    renderFlashSalesList();
+  });
+
+  // Cleanup flash timer when leaving flash sales tab
+  document.querySelectorAll('[data-tab]:not([data-tab="flashsales"])').forEach(btn => {
+    btn.addEventListener('click', () => stopFlashTimerUpdates());
+  });
 });
+
+// ══════════════════════════════════════════════════
+//  FLASH SALES PANEL
+// ══════════════════════════════════════════════════
+let _flashTab = 'active'; // 'draft' | 'active' | 'expired'
+let _flashTimerInterval = null;
+
+function switchFlashTab(tab) {
+  _flashTab = tab;
+  // Update tab styles
+  document.querySelectorAll('.flash-sub-tab').forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.background = 'rgba(255,255,255,.08)';
+    btn.style.color = '#888';
+    btn.style.borderColor = 'rgba(255,255,255,.15)';
+  });
+  const activeBtn = $(`flash-tab-${tab}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+    if (tab === 'draft') {
+      activeBtn.style.background = 'rgba(100,116,139,.2)';
+      activeBtn.style.color = '#94a3b8';
+      activeBtn.style.borderColor = 'rgba(100,116,139,.3)';
+    } else if (tab === 'active') {
+      activeBtn.style.background = 'rgba(251,146,60,.2)';
+      activeBtn.style.color = '#fb923c';
+      activeBtn.style.borderColor = 'rgba(251,146,60,.3)';
+    }
+  }
+  renderFlashSalesList();
+}
+
+window.switchFlashTab = switchFlashTab;
+
+function formatCountdown(ms) {
+  if (ms <= 0) return '00:00:00';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function renderFlashSalesList() {
+  const listEl = $('flash-sales-list');
+  const publishBtn = $('flash-publish-all-btn');
+
+  // Filter items with salePrice > 0
+  const flashItems = items.filter(i => i.salePrice > 0);
+  const now = Date.now();
+
+  const drafts = flashItems.filter(i => !i.saleEndsAt);
+  const active = flashItems.filter(i => i.saleEndsAt?.toDate ? i.saleEndsAt.toDate().getTime() > now : (i.saleEndsAt ? new Date(i.saleEndsAt).getTime() > now : false));
+  const expired = flashItems.filter(i => i.saleEndsAt?.toDate ? i.saleEndsAt.toDate().getTime() <= now : (i.saleEndsAt ? new Date(i.saleEndsAt).getTime() <= now : false));
+
+  // Update counts
+  $('count-draft').textContent = drafts.length;
+  $('count-active').textContent = active.length;
+  $('count-expired').textContent = expired.length;
+
+  // Show/hide publish all button (only in draft tab)
+  publishBtn.style.display = (_flashTab === 'draft' && drafts.length > 0) ? 'inline-flex' : 'none';
+
+  // Get items for current tab
+  let itemsToShow = [];
+  if (_flashTab === 'draft') itemsToShow = drafts;
+  else if (_flashTab === 'active') itemsToShow = active;
+  else itemsToShow = expired;
+
+  if (itemsToShow.length === 0) {
+    const emptyMsg = _flashTab === 'draft' ? 'لا يوجد مسودات' : (_flashTab === 'active' ? 'لا يوجد فلاش سيلز نشطة' : 'لا يوجد فلاش سيلز منتهية');
+    listEl.innerHTML = `<div style="text-align:center;padding:50px;opacity:.5;font-size:1.1rem">${emptyMsg}</div>`;
+    return;
+  }
+
+  listEl.innerHTML = itemsToShow.map(item => {
+    const img = item.images?.[0] || item.imageUrl || '';
+    const cat = categories.find(c => c.id === item.categoryID);
+    const catColor = cat?.color || '#3b82f6';
+
+    const saleEndsAtMs = item.saleEndsAt?.toDate ? item.saleEndsAt.toDate().getTime() : (item.saleEndsAt ? new Date(item.saleEndsAt).getTime() : 0);
+    const remaining = saleEndsAtMs - now;
+    const isActive = _flashTab === 'active';
+    const isDraft = _flashTab === 'draft';
+
+    const origPrice = parseFloat(item.discountPrice || item.originalPrice || item.price || 0);
+    const discountPercent = origPrice > 0 ? Math.round(((origPrice - item.salePrice) / origPrice) * 100) : 0;
+
+    // Countdown timer for active items
+    const timerHtml = isActive
+      ? `<div class="flash-timer" data-ends="${saleEndsAtMs}" style="font-family:'Orbitron',monospace;font-size:.9rem;color:#fb923c;font-weight:700;background:rgba(251,146,60,.15);padding:4px 12px;border-radius:6px;border:1px solid rgba(251,146,60,.3)">${formatCountdown(remaining)}</div>`
+      : '';
+
+    return `
+      <div style="background:rgba(255,255,255,.04);border:1px solid ${isDraft?'rgba(100,116,139,.2)':(isActive?'rgba(251,146,60,.2)':'rgba(255,255,255,.06)')};border-radius:12px;display:flex;align-items:center;gap:14px;padding:14px 18px">
+        ${img ? `<img src="${img}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0" onerror="this.style.display='none'">` : '<div style="width:60px;height:60px;border-radius:10px;flex-shrink:0;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:1.6rem">🎮</div>'}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</span>
+            <span style="background:${catColor}22;color:${catColor};padding:2px 8px;border-radius:4px;border:1px solid ${catColor}44;font-size:.75rem">${cat?.name||'—'}</span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.78rem;margin-top:6px">
+            <span style="text-decoration:line-through;opacity:.5">${origPrice.toFixed(2)} JOD</span>
+            <span style="color:#fb923c;font-weight:900;font-size:.9rem">${item.salePrice} JOD</span>
+            <span style="background:rgba(34,197,94,.15);color:#4ade80;padding:2px 8px;border-radius:4px">-${discountPercent}%</span>
+          </div>
+        </div>
+        ${timerHtml}
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          ${isDraft ? `<button onclick="publishFlashSale('${item.id}')" class="btn btn-sm" style="background:linear-gradient(135deg,#f97316,#fb923c);border:none;color:#fff;font-size:.75rem;padding:6px 14px;border-radius:8px;cursor:pointer">⚡ نشر</button>` : ''}
+          ${isActive ? `<button onclick="cancelFlashSaleById('${item.id}')" class="btn btn-sm" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);font-size:.75rem;padding:6px 14px;border-radius:8px;cursor:pointer">إلغاء</button>` : ''}
+          <button onclick="openFlashModal('${item.id}')" class="btn btn-sm btn-edit" style="font-size:.75rem;padding:6px 12px">تعديل</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Start timer updates for active tab
+  if (_flashTab === 'active') {
+    startFlashTimerUpdates();
+  } else {
+    stopFlashTimerUpdates();
+  }
+}
+
+function startFlashTimerUpdates() {
+  if (_flashTimerInterval) clearInterval(_flashTimerInterval);
+  _flashTimerInterval = setInterval(() => {
+    const now = Date.now();
+    let needsRefresh = false;
+    document.querySelectorAll('.flash-timer').forEach(el => {
+      const ends = parseInt(el.dataset.ends);
+      const remaining = ends - now;
+      if (remaining <= 0) {
+        needsRefresh = true;
+      } else {
+        el.textContent = formatCountdown(remaining);
+      }
+    });
+    if (needsRefresh) renderFlashSalesList();
+  }, 1000);
+}
+
+function stopFlashTimerUpdates() {
+  if (_flashTimerInterval) {
+    clearInterval(_flashTimerInterval);
+    _flashTimerInterval = null;
+  }
+}
+
+// Publish single draft flash sale
+window.publishFlashSale = async function(itemId) {
+  const hours = parseFloat(prompt('المدة (بالساعات):', '2')) || 2;
+  if (!hours || hours <= 0) return;
+
+  const endsAt = new Date(Date.now() + hours * 3600000);
+  try {
+    await updateDoc(doc(db, 'Items', itemId), { saleEndsAt: endsAt });
+    const item = items.find(i => i.id === itemId);
+    if (item) item.saleEndsAt = endsAt;
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
+    renderFlashSalesList();
+    toast(`⚡ تم نشر الفلاش سيل (${hours} ساعة)`);
+  } catch (e) {
+    toast('خطأ: ' + e.message, true);
+  }
+};
+
+// Publish all draft flash sales
+window.publishAllDraftFlashSales = async function() {
+  const draftItems = items.filter(i => i.salePrice > 0 && !i.saleEndsAt);
+  if (draftItems.length === 0) {
+    toast('لا يوجد مسودات للنشر', true);
+    return;
+  }
+
+  const hours = parseFloat(prompt(`نشر ${draftItems.length} فلاش سيل\nالمدة (بالساعات):`, '2')) || 2;
+  if (!hours || hours <= 0) return;
+
+  const endsAt = new Date(Date.now() + hours * 3600000);
+  const btn = $('flash-publish-all-btn');
+  btn.disabled = true;
+  btn.textContent = 'جاري النشر...';
+
+  try {
+    await Promise.all(draftItems.map(item =>
+      updateDoc(doc(db, 'Items', item.id), { saleEndsAt: endsAt }).then(() => {
+        item.saleEndsAt = endsAt;
+      })
+    ));
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
+    renderFlashSalesList();
+    toast(`🚀 تم نشر ${draftItems.length} فلاش سيل!`);
+  } catch (e) {
+    toast('خطأ: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 نشر كل المسودات';
+  }
+};
+
+// Cancel flash sale by ID
+window.cancelFlashSaleById = async function(itemId) {
+  const ok = await showConfirm({
+    icon: '⚠️',
+    title: 'إلغاء الفلاش سيل',
+    msg: 'هل أنت متأكد من إلغاء هذا الفلاش سيل؟',
+    okLabel: 'إلغاء',
+    danger: true
+  });
+  if (!ok) return;
+
+  try {
+    await updateDoc(doc(db, 'Items', itemId), { salePrice: null, saleEndsAt: null });
+    const item = items.find(i => i.id === itemId);
+    if (item) { item.salePrice = null; item.saleEndsAt = null; }
+    try { localStorage.removeItem('ofg_data_cache'); } catch {}
+    renderFlashSalesList();
+    toast('✅ تم إلغاء الفلاش سيل');
+  } catch (e) {
+    toast('خطأ: ' + e.message, true);
+  }
+};

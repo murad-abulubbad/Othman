@@ -294,6 +294,17 @@ async function _fetchAndRenderCategory(cat) {
   }
 }
 
+// Re-render visible categories when flash sales expire
+window.addEventListener('flashsale-expired', () => {
+  // Re-render all loaded categories to update prices
+  _categories.forEach(cat => {
+    if (_loadedCats.has(cat.id) && catItems[cat.id]) {
+      // Re-render with fresh time check
+      renderGameGrid(`grid-cat-${cat.id}`, catItems[cat.id], cat.name, cat.color);
+    }
+  });
+});
+
 // ── Featured ticker ─────────────────────────────────────────────────
 
 async function populateTicker() {

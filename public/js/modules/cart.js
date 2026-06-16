@@ -101,7 +101,7 @@ export function openCart() {
 
 function syncCartPricesWithFlash() {
   const allItems = Object.values(window._catItems || {}).flat();
-  if (!allItems.length) return;
+  if (!allItems.length) return false;
   const now = Date.now();
   let changed = false;
   cart.forEach(cartItem => {
@@ -115,8 +115,37 @@ function syncCartPricesWithFlash() {
       changed = true;
     }
   });
-  if (changed) saveCart();
+  if (changed) {
+    saveCart();
+    updateCartUI(); // Update UI immediately when prices change
+    // Show toast if cart is open
+    const sidebar = document.getElementById('cart-sidebar');
+    if (sidebar?.classList.contains('open')) {
+      showToast('⚡ انتهى فلاش سيل! تم تحديث الأسعار', '⏱️');
+    }
+  }
+  return changed;
 }
+
+// Auto-sync cart prices every 10 seconds to catch expired flash sales
+let _cartSyncInterval = null;
+function startCartPriceSync() {
+  if (_cartSyncInterval) return;
+  _cartSyncInterval = setInterval(() => {
+    if (cart.length > 0) syncCartPricesWithFlash();
+  }, 10000); // Check every 10 seconds
+}
+function stopCartPriceSync() {
+  if (_cartSyncInterval) {
+    clearInterval(_cartSyncInterval);
+    _cartSyncInterval = null;
+  }
+}
+// Start sync when cart has items, stop when empty
+setInterval(() => {
+  if (cart.length > 0 && !_cartSyncInterval) startCartPriceSync();
+  if (cart.length === 0 && _cartSyncInterval) stopCartPriceSync();
+}, 1000);
 
 export function closeCart() {
   document.getElementById('cart-sidebar')?.classList.remove('open');
