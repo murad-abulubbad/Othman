@@ -104,6 +104,21 @@
     .status-select{width:100%}
     .order-items-list{padding:8px 10px}
   }
+  #confirm-modal{position:fixed;inset:0;z-index:9500;display:none;
+    align-items:center;justify-content:center;padding:20px;
+    background:rgba(8,8,24,.85);backdrop-filter:blur(8px)}
+  #confirm-modal.open{display:flex}
+  .confirm-card{background:var(--dk2);border:1px solid rgba(255,45,85,.28);
+    border-radius:16px;padding:26px 24px;width:min(400px,100%);text-align:center;
+    box-shadow:0 24px 70px rgba(0,0,0,.55);animation:confirmIn .18s ease}
+  @keyframes confirmIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+  .confirm-icon{font-size:2rem;margin-bottom:10px}
+  .confirm-card h3{font-size:1.05rem;color:var(--rb);margin-bottom:8px}
+  .confirm-card p{font-size:.86rem;opacity:.7;line-height:1.7;margin-bottom:20px;word-break:break-word}
+  .confirm-actions{display:flex;gap:10px}
+  .confirm-actions .btn{flex:1;justify-content:center}
+  .btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.75)}
+  .btn-ghost:hover{background:rgba(255,255,255,.12)}
 </style>
 </head>
 <body>
@@ -176,10 +191,8 @@
       <button class="btn btn-edit btn-sm" id="refresh-btn">🔄 تحديث</button>
     </div>
 
-    <!-- Filters -->
     <div class="filters-bar">
-      <button class="filter-btn active" data-status="">الكل</button>
-      <button class="filter-btn" data-status="جديد">
+      <button class="filter-btn active" data-status="جديد">
         <span id="filter-new-badge"></span> جديد
       </button>
       <button class="filter-btn" data-status="مؤكد">مؤكد</button>
@@ -187,11 +200,22 @@
       <button class="filter-btn" data-status="ملغي">ملغي</button>
     </div>
 
-    <!-- Orders List -->
     <div id="orders-list">
       <div class="loading-spinner">⏳ جاري تحميل الطلبات...</div>
     </div>
 
+  </div>
+</div>
+
+<div id="confirm-modal">
+  <div class="confirm-card">
+    <div class="confirm-icon" id="confirm-icon">🗑️</div>
+    <h3 id="confirm-title"></h3>
+    <p id="confirm-text"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost btn-sm" id="confirm-cancel">إلغاء</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok"></button>
+    </div>
   </div>
 </div>
 
@@ -200,16 +224,55 @@
 <script type="module">
 import { app, db, auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from './firebase.js';
 import {
-  collection, getDocs, updateDoc, doc, query, orderBy, onSnapshot
+  collection, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot,
+  where, limit, getCountFromServer
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const $ = id => document.getElementById(id);
+const esc = v => String(v ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 let allOrders = [];
-let currentFilter = '';
+let currentFilter = 'جديد';
 let unsubscribe = null;
 
-// ── TOAST ──
+const PAGE_SIZE = 50;
+const STATUSES = ['جديد', 'مؤكد', 'منجز', 'ملغي'];
+
+function confirmDialog({ title, text, confirmLabel = 'تأكيد', icon = '🗑️' }) {
+  return new Promise(resolve => {
+    const modal = $('confirm-modal');
+    $('confirm-icon').textContent  = icon;
+    $('confirm-title').textContent = title;
+    $('confirm-text').textContent  = text;
+    $('confirm-ok').textContent    = confirmLabel;
+    modal.classList.add('open');
+
+    const close = result => {
+      modal.classList.remove('open');
+      $('confirm-ok').onclick = null;
+      $('confirm-cancel').onclick = null;
+      modal.onclick = null;
+      document.removeEventListener('keydown', onKey);
+      resolve(result);
+    };
+    const onKey = e => {
+      if (e.key === 'Escape') close(false);
+      if (e.key === 'Enter')  close(true);
+    };
+
+    $('confirm-ok').onclick     = () => close(true);
+    $('confirm-cancel').onclick = () => close(false);
+    modal.onclick = e => { if (e.target === modal) close(false); };
+    document.addEventListener('keydown', onKey);
+    $('confirm-cancel').focus();
+  });
+}
+
 function toast(msg, isErr = false) {
   const el = $('toast');
   el.textContent = msg;
@@ -218,7 +281,6 @@ function toast(msg, isErr = false) {
   setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-// ── AUTH ──
 $('login-btn').addEventListener('click', login);
 $('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 $('logout-btn').addEventListener('click', () => signOut(auth));
@@ -246,6 +308,7 @@ onAuthStateChanged(auth, user => {
     $('login-overlay').style.display = 'none';
     $('dashboard').style.display = 'block';
     subscribeOrders();
+    renderStats();
   } else {
     $('dashboard').style.display = 'none';
     $('login-overlay').style.display = 'flex';
@@ -253,63 +316,107 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-// ── REAL-TIME ORDERS ──
 function subscribeOrders() {
   if (unsubscribe) unsubscribe();
-  const q = query(collection(db, 'Orders'), orderBy('createdAt', 'desc'));
+  const q = query(
+    collection(db, 'Orders'),
+    where('status', '==', currentFilter),
+    orderBy('createdAt', 'desc'),
+    limit(PAGE_SIZE)
+  );
+  let firstSnapshot = true;
   unsubscribe = onSnapshot(q, snap => {
     allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderStats();
     renderOrders();
+    if (!firstSnapshot) renderStats();
+    firstSnapshot = false;
   }, err => {
+    const link = /https:\/\/\S+/.exec(err.message);
+    if (link) {
+      $('orders-list').innerHTML =
+        `<div class="empty-msg">⚠️ هذا الفلتر يحتاج فهرساً في Firestore.<br>`
+        + `<a href="${link[0]}" target="_blank" rel="noopener" style="color:var(--bb)">اضغط هنا لإنشائه ثم حدّث الصفحة</a></div>`;
+      return;
+    }
     $('orders-list').innerHTML = `<div class="empty-msg">❌ خطأ في تحميل الطلبات: ${err.message}</div>`;
   });
 }
 
 // ── STATS ──
-function renderStats() {
-  const newCount = allOrders.filter(o => (o.status || 'جديد') === 'جديد').length;
-  const confirmedCount = allOrders.filter(o => o.status === 'مؤكد').length;
-  const doneCount = allOrders.filter(o => o.status === 'منجز').length;
-  const cancelledCount = allOrders.filter(o => o.status === 'ملغي').length;
-  $('stat-new-count').textContent = newCount;
-  $('stat-total-count').textContent = allOrders.length;
-  $('stat-confirmed-count').textContent = confirmedCount;
-  $('stat-done-count').textContent = doneCount;
-  $('stat-cancelled-count').textContent = cancelledCount;
+async function renderStats() {
+  const cells = {
+    'جديد': 'stat-new-count',
+    'مؤكد': 'stat-confirmed-count',
+    'منجز': 'stat-done-count',
+    'ملغي': 'stat-cancelled-count'
+  };
+  try {
+    const [total, ...counts] = await Promise.all([
+      getCountFromServer(collection(db, 'Orders')),
+      ...STATUSES.map(st =>
+        getCountFromServer(query(collection(db, 'Orders'), where('status', '==', st)))
+      )
+    ]);
 
-  const badge = $('filter-new-badge');
-  if (newCount > 0) {
-    badge.innerHTML = `<span class="order-count-badge">${newCount}</span>`;
-  } else {
-    badge.innerHTML = '';
+    $('stat-total-count').textContent = total.data().count;
+    STATUSES.forEach((st, i) => { $(cells[st]).textContent = counts[i].data().count; });
+
+    const newCount = counts[STATUSES.indexOf('جديد')].data().count;
+    $('filter-new-badge').innerHTML = newCount > 0
+      ? `<span class="order-count-badge">${newCount}</span>`
+      : '';
+  } catch (e) {
+    console.warn('Failed to load order counts:', e.message || e);
   }
 }
 
-// ── RENDER ──
 function renderOrders() {
   const list = $('orders-list');
-  const filtered = currentFilter
-    ? allOrders.filter(o => (o.status || 'جديد') === currentFilter)
-    : allOrders;
+  const filtered = allOrders;
 
   if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty-msg">📭 لا توجد طلبات${currentFilter ? ' بهذه الحالة' : ' بعد'}</div>`;
+    list.innerHTML = `<div class="empty-msg">📭 لا توجد طلبات بهذه الحالة</div>`;
     return;
   }
 
   list.innerHTML = filtered.map(order => renderOrderCard(order)).join('');
 
-  // Wire status selects
   list.querySelectorAll('.status-select').forEach(sel => {
     sel.addEventListener('change', async e => {
       const orderId = e.target.dataset.orderId;
       const newStatus = e.target.value;
       try {
         await updateDoc(doc(db, 'Orders', orderId), { status: newStatus });
+        renderStats();
         toast('✅ تم تحديث حالة الطلب');
       } catch (err) {
         toast('خطأ: ' + err.message, true);
+      }
+    });
+  });
+
+  list.querySelectorAll('.order-delete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const { orderId, orderName } = btn.dataset;
+      const ok = await confirmDialog({
+        title: 'حذف الطلب نهائياً؟',
+        text: `طلب "${orderName}" سيُحذف بشكل نهائي ولا يمكن التراجع عن هذا الإجراء.`,
+        confirmLabel: 'نعم، احذف'
+      });
+      if (!ok) return;
+
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = 'جاري الحذف...';
+      try {
+        await deleteDoc(doc(db, 'Orders', orderId));
+        // The listener drops the card on its own; only the tiles need a nudge.
+        renderStats();
+        toast('✅ تم حذف الطلب');
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = original;
+        toast('خطأ في الحذف: ' + err.message, true);
       }
     });
   });
@@ -333,21 +440,21 @@ function renderOrderCard(order) {
                     : it.condition === 'مستعمل' ? 'background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.25)' : '';
     return `
     <div class="order-item-row">
-      <img class="order-item-img" src="${it.imageUrl||''}" alt="${it.name||''}" onerror="this.style.opacity='.15'">
-      <span class="order-item-name">${it.name||'—'}</span>
-      ${it.condition ? `<span class="order-item-badge" style="${condClass}">${it.condition}</span>` : ''}
-      ${it.platform  ? `<span class="order-item-badge" style="background:rgba(42,140,255,.12);color:#60a5fa;border:1px solid rgba(42,140,255,.2)">${it.platform}</span>` : ''}
+      <img class="order-item-img" src="${esc(it.imageUrl||'')}" alt="${esc(it.name||'')}" onerror="this.style.opacity='.15'">
+      <span class="order-item-name">${esc(it.name||'—')}</span>
+      ${it.condition ? `<span class="order-item-badge" style="${condClass}">${esc(it.condition)}</span>` : ''}
+      ${it.platform  ? `<span class="order-item-badge" style="background:rgba(42,140,255,.12);color:#60a5fa;border:1px solid rgba(42,140,255,.2)">${esc(it.platform)}</span>` : ''}
       <span class="order-item-qty">× ${it.qty||1}</span>
       <span class="order-item-price">${((it.price||0)*(it.qty||1)).toFixed(2)} JOD</span>
     </div>`;
   }).join('');
 
   const noteHtml = order.note
-    ? `<div class="order-note"><div class="order-note-label">ملاحظة</div>${order.note}</div>` : '';
+    ? `<div class="order-note"><div class="order-note-label">ملاحظة</div>${esc(order.note)}</div>` : '';
 
-  const emailRow   = order.email   ? `<div class="detail-row"><span>البريد</span><strong>${order.email}</strong></div>` : '';
-  const addressRow = order.address ? `<div class="detail-row"><span>العنوان</span><strong>${order.address}</strong></div>` : '';
-  const deliveryRow = order.deliveryMethod ? `<div class="detail-row"><span>طريقة الاستلام</span><strong>${order.deliveryMethod}</strong></div>` : '';
+  const emailRow   = order.email   ? `<div class="detail-row"><span>البريد</span><strong>${esc(order.email)}</strong></div>` : '';
+  const addressRow = order.address ? `<div class="detail-row"><span>العنوان</span><strong>${esc(order.address)}</strong></div>` : '';
+  const deliveryRow = order.deliveryMethod ? `<div class="detail-row"><span>طريقة الاستلام</span><strong>${esc(order.deliveryMethod)}</strong></div>` : '';
   const deliveryFeeRow = deliveryFee > 0 ? `<div class="detail-row"><span>رسوم التوصيل</span><strong>${deliveryFee.toFixed(2)} JOD</strong></div>` : '';
 
   return `
@@ -355,10 +462,10 @@ function renderOrderCard(order) {
 
     <!-- COLLAPSED SUMMARY BAR -->
     <div class="order-summary" onclick="toggleOrder('${order.id}')">
-      <div class="os-status"><span class="${badgeClass}">${status}</span></div>
-      <div class="os-name">${order.customerName || 'غير محدد'}</div>
-      <div class="os-phone">${order.phone || '—'}</div>
-      <div class="os-address">${order.address || order.deliveryMethod || '—'}</div>
+      <div class="os-status"><span class="${badgeClass}">${esc(status)}</span></div>
+      <div class="os-name">${esc(order.customerName || 'غير محدد')}</div>
+      <div class="os-phone">${esc(order.phone || '—')}</div>
+      <div class="os-address">${esc(order.address || order.deliveryMethod || '—')}</div>
       <div class="os-total">${total.toFixed(2)} JOD</div>
       <div class="os-date">${date}</div>
       <button class="order-expand-btn" title="التفاصيل">
@@ -371,8 +478,8 @@ function renderOrderCard(order) {
       <div class="order-id">#${order.id}</div>
 
       <div style="background:rgba(255,255,255,.03);border-radius:9px;padding:10px 14px;margin-bottom:12px">
-        <div class="detail-row"><span>الاسم</span><strong>${order.customerName||'—'}</strong></div>
-        <div class="detail-row"><span>الهاتف</span><strong style="direction:ltr">${order.phone||'—'}</strong></div>
+        <div class="detail-row"><span>الاسم</span><strong>${esc(order.customerName||'—')}</strong></div>
+        <div class="detail-row"><span>الهاتف</span><strong style="direction:ltr">${esc(order.phone||'—')}</strong></div>
         ${emailRow}${addressRow}${deliveryRow}${deliveryFeeRow}
       </div>
 
@@ -395,6 +502,10 @@ function renderOrderCard(order) {
           <option value="منجز" ${status==='منجز'?'selected':''}>منجز</option>
           <option value="ملغي" ${status==='ملغي'?'selected':''}>ملغي</option>
         </select>
+        <button class="btn btn-danger btn-sm order-delete"
+                data-order-id="${order.id}"
+                data-order-name="${esc(order.customerName || 'غير محدد')}"
+                style="margin-inline-start:auto">🗑️ حذف نهائي</button>
       </div>
     </div>
   </div>`;
@@ -411,7 +522,8 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.status;
-    renderOrders();
+    $('orders-list').innerHTML = '<div class="loading-spinner">⏳ جاري التحميل...</div>';
+    subscribeOrders();
   });
 });
 
@@ -420,6 +532,7 @@ $('refresh-btn').addEventListener('click', () => {
   if (unsubscribe) { unsubscribe(); unsubscribe = null; }
   $('orders-list').innerHTML = '<div class="loading-spinner">⏳ جاري التحديث...</div>';
   subscribeOrders();
+  renderStats();
   toast('🔄 تم التحديث');
 });
 </script>

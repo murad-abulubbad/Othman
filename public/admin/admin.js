@@ -26,6 +26,16 @@ function fmtDate(ts) {
 
 function $ (id) { return document.getElementById(id); }
 
+// Catalog text is typed into this panel, but it is still rendered back
+// through innerHTML — an apostrophe or angle bracket in a product name
+// would break the markup, and imported data could carry worse.
+const esc = v => String(v ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 function getCategoryItemCount(categoryId) {
   return items
     .filter(item => item.categoryID === categoryId)
@@ -41,7 +51,7 @@ function renderDashboardStats() {
     return `
       <div class="stat-card stat-card-category">
         <div class="s-num">${count}</div>
-        <div class="s-lbl">${cat.name}</div>
+        <div class="s-lbl">${esc(cat.name)}</div>
       </div>
     `;
   }).join('');
@@ -66,7 +76,7 @@ function renderCategoriesTable() {
     sel.innerHTML = '<option value="">— اختر تصنيفاً —</option>' +
       categories.map(c => {
         const count = getCategoryItemCount(c.id);
-        return `<option value="${c.id}">${c.name} (${count})</option>`;
+        return `<option value="${c.id}">${esc(c.name)} (${count})</option>`;
       }).join('');
   }
 
@@ -75,7 +85,7 @@ function renderCategoriesTable() {
     const currentVal = filterSel.value;
     filterSel.innerHTML = '<option value="">كل التصنيفات</option>' +
       '<option value="__none__">⚠️ بدون تصنيف</option>' +
-      categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      categories.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
     filterSel.value = currentVal;
   }
 
@@ -87,9 +97,9 @@ function renderCategoriesTable() {
         const count = getCategoryItemCount(c.id);
         return `<tr data-cat-id="${c.id}">
           <td class="td-drag-handle" title="اسحب لإعادة الترتيب" style="cursor:grab">☰</td>
-          <td>${c.name}</td>
+          <td>${esc(c.name)}</td>
           <td><span class="badge badge-other">${count}</span></td>
-          <td>${c.imageUrl ? `<img src="${c.imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
+          <td>${c.imageUrl ? `<img src="${esc(c.imageUrl)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
             <td style="display:flex;gap:6px;flex-wrap:wrap">
               <button class="btn btn-edit btn-sm" data-cat-edit="${c.id}">✏️ تعديل</button>
               <button class="btn btn-danger btn-sm" data-cat-del="${c.id}">🗑 حذف</button>
@@ -376,14 +386,14 @@ function renderItemsTable() {
         return `
         <tr class="${selectedItemIds.has(it.id) ? 'row-selected' : ''}">
           <td class="td-select"><input type="checkbox" class="row-select" data-item-select="${it.id}" ${selectedItemIds.has(it.id) ? 'checked' : ''}></td>
-          <td><img class="item-img" src="${it.imageUrl||''}" alt="${it.name}"
+          <td><img class="item-img" src="${esc(it.imageUrl||'')}" alt="${esc(it.name)}"
                onerror="this.style.opacity='.25'"></td>
-          <td>${it.name}</td>
-          <td>${categoryName}</td>
+          <td>${esc(it.name)}</td>
+          <td>${esc(categoryName)}</td>
           <td>${priceHtml}</td>
           <td>${hasDiscount ? it.discountPrice + ' JOD' : '—'}</td>
-          <td>${it.condition||'—'}</td>
-          <td>${Array.isArray(it.genre) ? (it.genre.join('، ') || '—') : (it.genre || '—')}</td>
+          <td>${esc(it.condition||'—')}</td>
+          <td>${esc(Array.isArray(it.genre) ? (it.genre.join('، ') || '—') : (it.genre || '—'))}</td>
           <td>${qtyBadge}</td>
           <td class="td-actions">
             <button class="btn btn-edit btn-sm" data-item-edit="${it.id}">✏ تعديل</button>
@@ -556,13 +566,60 @@ window.openItemModal  = openItemModal;
 
 function closeItemModal() { $('item-modal').classList.remove('open'); }
 window.closeItemModal = closeItemModal;
+const MAX_UPLOAD_WIDTH = 1000;
+const WEBP_QUALITY     = 0.82;
+const SKIP_COMPRESSION = /^image\/(gif|svg\+xml)$/i;
+
+function compressImage(file) {
+  return new Promise(resolve => {
+    if (!file.type.startsWith('image/') || SKIP_COMPRESSION.test(file.type)) {
+      resolve(file);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const scale  = Math.min(1, MAX_UPLOAD_WIDTH / img.naturalWidth);
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.naturalWidth  * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        blob => resolve(blob && blob.size < file.size ? blob : file),
+        'image/webp',
+        WEBP_QUALITY
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file); };
+    img.src = objectUrl;
+  });
+}
 
 // ── IMAGE UPLOAD (Firebase Storage) ─────────────────────────────────
-function uploadToFirebase(file, folder) {
+async function uploadToFirebase(file, folder) {
+  const payload = await compressImage(file);
+
+  const stem = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9]/g, '_');
+  const ext  = payload === file
+    ? (/\.([a-zA-Z0-9]+)$/.exec(file.name)?.[1] || 'jpg')
+    : 'webp';
+
   return new Promise((resolve, reject) => {
-    const fileName = `${folder}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const fileName = `${folder}/${Date.now()}_${stem}.${ext}`;
     const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    // Filenames are timestamped, so a stored object is immutable and
+    // can be cached by the browser forever.
+    const uploadTask = uploadBytesResumable(storageRef, payload, {
+      contentType: payload.type || file.type,
+      cacheControl: 'public, max-age=31536000, immutable'
+    });
 
     uploadTask.on('state_changed',
       snapshot => {

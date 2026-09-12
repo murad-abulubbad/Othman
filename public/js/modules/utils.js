@@ -43,6 +43,13 @@ export function decodeOnclick(encoded) {
 }
 
 // Build a stable image-key for the global itemImagesMap.
+// An item is sold out only when quantity is explicitly zero. A missing
+// quantity means "not tracked", which must stay purchasable.
+export function isSoldOut(item) {
+  const q = item?.quantity;
+  return q !== null && q !== undefined && Number(q) === 0;
+}
+
 export function buildImageKey(name, mainImg) {
   return name + '_' + (mainImg || '').slice(-20);
 }

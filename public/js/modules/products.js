@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { itemImagesMap, detailGallery } from './state.js';
-import { escapeHtml, parsePriceValue, encodeOnclick, buildImageKey } from './utils.js';
+import { escapeHtml, parsePriceValue, encodeOnclick, buildImageKey, isSoldOut } from './utils.js';
 import { getFavoriteLookup } from './favorites.js';
 
 const CART_ICON_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-14.5-14h-2V2H0v2h1.5l2.7 5.59L3.25 12c-.16.28-.25.61-.25.96C3 14.1 3.9 15 5 15h14v-2H5.42c-.14 0-.25-.11-.25-.25l.03-.12L6.1 11H19c.75 0 1.41-.41 1.75-1.03L23.7 4H4.21l-.71-2H2.5z"/></svg>`;
@@ -32,7 +32,7 @@ export function renderGameGrid(targetId, games, platform, color) {
   grid.innerHTML = games.map(g => {
     const condition = g.condition || 'مستعمل';
     const conditionClass = condition === 'جديد' ? ' is-new' : '';
-    const isOutOfStock = g.quantity !== null && g.quantity !== undefined && Number(g.quantity) === 0;
+    const isOutOfStock = isSoldOut(g);
 
     // Store images in the global map (avoids encoding multi-image arrays in onclick).
     const itemKey = buildImageKey(g.name, g.img);
@@ -51,7 +51,8 @@ export function renderGameGrid(targetId, games, platform, color) {
       originalPrice: g.originalPrice,
       discountPrice: g.discountPrice,
       description: g.description,
-      platform
+      platform,
+      quantity: g.quantity
     });
     const cartData = encodeOnclick({
       name: g.name,
@@ -61,7 +62,8 @@ export function renderGameGrid(targetId, games, platform, color) {
       icon: '',
       kind: 'game',
       platform,
-      condition
+      condition,
+      quantity: g.quantity
     });
     const trailerData = encodeOnclick({
       id: g.trailer,
@@ -215,7 +217,8 @@ export function openGameDetails(game) {
     kind: game.kind || 'item',
     platform: game.platform || null,
     section: game.section || game.category || null,
-    condition: game.condition || ''
+    condition: game.condition || '',
+    quantity: game.quantity
   });
 
   // Check if this item is favorited
@@ -226,9 +229,13 @@ export function openGameDetails(game) {
     ? `<button class="image-card-trailer" onclick="openTrailerFromEncoded('${encodeOnclick({ id: game.trailer, title: game.name, provider: game.trailerProvider || 'youtube' })}'); event.stopPropagation();">${PLAY_BIG_SVG} مشاهدة التريلر</button>`
     : '';
 
-  const addAction = game.canAdd !== false && (hasNumericPrice || game.priceLabel || game.addable)
-    ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">${CART_BIG_SVG} أضف للسلة</button>`
-    : '';
+  const isOutOfStock = isSoldOut(game);
+
+  const addAction = isOutOfStock
+    ? `<span class="detail-sold-out">نفذت الكمية</span>`
+    : (game.canAdd !== false && (hasNumericPrice || game.priceLabel || game.addable)
+        ? `<button class="image-card-add" onclick="addGameToCartFromEncoded('${cartData}', this); event.stopPropagation();">${CART_BIG_SVG} أضف للسلة</button>`
+        : '');
 
   const detailDataForFav = encodeOnclick({
     name: game.name,

@@ -17,6 +17,16 @@ import {
 
 const $ = (id) => document.getElementById(id);
 
+// Catalog text is typed into this panel, but it is still rendered back
+// through innerHTML — an apostrophe or angle bracket in a product name
+// would break the markup, and imported data could carry worse.
+const esc = v => String(v ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 // ── State / dependencies ────────────────────────────────────────────
 let genres = [];
 let _toast = (msg) => console.log(msg);
@@ -57,7 +67,7 @@ export function renderGenresTable() {
   if (filterSel) {
     const cur = filterSel.value;
     filterSel.innerHTML = '<option value="">كل الأنواع</option>' +
-      genres.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+      genres.map(g => `<option value="${esc(g.name)}">${esc(g.name)}</option>`).join('');
     filterSel.value = cur;
   }
 
@@ -65,7 +75,7 @@ export function renderGenresTable() {
   if (tbody) {
     tbody.innerHTML = genres.length
       ? genres.map(g => `<tr data-genre-id="${g.id}">
-          <td>${g.name}</td>
+          <td>${esc(g.name)}</td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
             <button class="btn btn-edit btn-sm" data-genre-edit="${g.id}">✏️ تعديل</button>
             <button class="btn btn-danger btn-sm" data-genre-del="${g.id}">🗑 حذف</button>

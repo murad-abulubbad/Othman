@@ -11,7 +11,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { db, collection, query, orderBy, getDocs, onSnapshot } from '../../firebase.js';
-import { catItems, catPageTitles, IS_MOBILE } from './state.js';
+import { catItems, catPageTitles } from './state.js';
 import { renderGameGrid } from './products.js';
 import { buildFilterBarHtml, setupCategoryFilter, attachDropdownCloseHandler } from './filter.js';
 import { applyPendingDeepLink } from './router.js';
@@ -19,10 +19,6 @@ import { initTickerVisibility } from './effects.js';
 
 const CACHE_KEY = 'ofg_data_cache';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-// Image sizes adapt to viewport — saves bandwidth & decode time on mobile.
-const GRID_THUMB_WIDTH   = IS_MOBILE ? 1000 : 1200;
-const DETAIL_IMAGE_WIDTH = 1200;
 
 // ── Cache helpers ──────────────────────────────────────────────────
 

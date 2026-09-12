@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { cart, saveCart, PAGE_TITLES } from './state.js';
-import { decodeOnclick } from './utils.js';
+import { decodeOnclick, isSoldOut } from './utils.js';
 import { showCartToast, showToast } from './toast.js';
 import { db } from '../../firebase.js';
 import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -27,6 +27,10 @@ export function addToCart(arg1, price, icon) {
   const item = (typeof arg1 === 'object' && arg1 !== null)
     ? arg1
     : { name: arg1, price, icon };
+  if (isSoldOut(item)) {
+    showToast('نفذت الكمية من هذا المنتج', '⚠️');
+    return false;
+  }
   const itemSection = item.section || getCurrentCartSection();
   const itemPlatform = item.platform || null;
   const itemCondition = item.condition || null;
